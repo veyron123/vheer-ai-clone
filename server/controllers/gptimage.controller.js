@@ -9,7 +9,38 @@ export const generateImage = async (req, res) => {
   try {
     const { prompt, input_image, style, aspectRatio = '1:1' } = req.body;
 
-    console.log('GPT IMAGE generation request:', { style, aspectRatio, hasPrompt: !!prompt, hasImage: !!input_image });
+    // Map our aspect ratios to GPT Image supported formats
+    // GPT Image only supports: "1:1", "3:2", "2:3"
+    let gptImageSize = '1:1'; // default
+    
+    switch(aspectRatio) {
+      case '1:1':
+        gptImageSize = '1:1';
+        break;
+      case '16:9':
+      case '4:3':
+        gptImageSize = '3:2'; // landscape formats map to 3:2
+        break;
+      case '9:16':
+      case '3:4':
+        gptImageSize = '2:3'; // portrait formats map to 2:3
+        break;
+      case 'match':
+        // For match, we'll default to 1:1
+        // This could be improved by analyzing the input image aspect ratio
+        gptImageSize = '1:1';
+        break;
+      default:
+        gptImageSize = '1:1';
+    }
+
+    console.log('GPT IMAGE generation request:', { 
+      style, 
+      originalAspectRatio: aspectRatio,
+      mappedSize: gptImageSize, 
+      hasPrompt: !!prompt, 
+      hasImage: !!input_image 
+    });
 
     if (!prompt || !input_image) {
       return res.status(400).json({ 
@@ -54,7 +85,7 @@ export const generateImage = async (req, res) => {
     const response = await axios.post(GPT_IMAGE_API_URL, {
       filesUrl: [imageUrl],
       prompt: prompt,
-      size: aspectRatio,
+      size: gptImageSize,  // Use the mapped size that GPT Image supports
       isEnhance: true,
       uploadCn: false,
       nVariants: 1,
