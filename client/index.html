@@ -34,28 +34,12 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="https://vheer.ai/" />
     
-    <!-- NO CSP HERE - Will be set dynamically to override Render defaults -->
+    <!-- CSP Fixed according to user specification -->
+    <meta http-equiv="Content-Security-Policy" content="font-src 'self' data:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://vheer-api.onrender.com https://api.openai.com https://api.anthropic.com; default-src 'self' https://vheer-client.onrender.com;">
+    
     <script>
-      // CRITICAL: Override Render's restrictive CSP immediately when DOM loads
-      document.addEventListener('DOMContentLoaded', function() {
-        // Remove any existing restrictive CSP
-        const existingCSP = document.querySelectorAll('meta[http-equiv*="Content-Security-Policy"]');
-        existingCSP.forEach(meta => meta.remove());
-        
-        // Add our permissive CSP
-        const newCSP = document.createElement('meta');
-        newCSP.httpEquiv = 'Content-Security-Policy';
-        newCSP.content = "default-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https: data:; font-src 'self' https: data: blob:; img-src 'self' https: data: blob:; connect-src 'self' https: wss: data:; frame-src 'none'; object-src 'none'; base-uri 'self'; manifest-src 'self'";
-        document.head.prepend(newCSP);
-        
-        console.log('CSP override applied for font loading');
-      });
-      
-      // Backup: Also try to set CSP immediately (in case DOM is already loaded)
-      const backupCSP = document.createElement('meta');
-      backupCSP.httpEquiv = 'Content-Security-Policy';
-      backupCSP.content = "default-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https: data:; font-src 'self' https: data: blob:; img-src 'self' https: data: blob:; connect-src 'self' https: wss: data:; frame-src 'none'; object-src 'none'; base-uri 'self'; manifest-src 'self'";
-      document.head.appendChild(backupCSP);
+      // Log CSP application for debugging
+      console.log('CSP applied with font-src self data: for font loading');
     </script>
     
     <!-- Favicon -->
