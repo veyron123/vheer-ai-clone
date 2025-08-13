@@ -9,6 +9,7 @@ import ModelSelector from '../components/anime/ModelSelector';
 import AspectRatioSelector from '../components/anime/AspectRatioSelector';
 import GenerateButton from '../components/anime/GenerateButton';
 import ExampleGallery from '../components/anime/ExampleGallery';
+import SEO from '../components/SEO';
 
 // Constants
 import { ANIME_STYLES } from '../constants/anime.constants';
@@ -37,7 +38,14 @@ const AnimeGeneratorPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <>
+      <SEO 
+        title="AI Anime Generator - Transform Photos to Anime Art"
+        description="Convert your photos into stunning anime, Disney, Pixar, and manga styles instantly. Use advanced AI models including Flux Pro, Flux Max, and GPT Image for amazing results."
+        keywords="anime generator, photo to anime, AI anime converter, Disney style generator, Pixar filter, manga creator, cartoon filter, anime art AI"
+        url="https://vheer.ai/anime-generator"
+      />
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Breadcrumb */}
       <div className="container-custom py-4">
         <div className="flex items-center text-sm text-gray-600">
@@ -105,6 +113,7 @@ const AnimeGeneratorPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

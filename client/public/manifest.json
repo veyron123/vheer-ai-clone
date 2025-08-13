@@ -1,0 +1,45 @@
+{
+  "name": "Vheer AI Image Generator",
+  "short_name": "Vheer AI",
+  "description": "Transform your photos into stunning anime and cartoon art using advanced AI models",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "entertainment",
+    "photo",
+    "productivity"
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot1.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "label": "Transform photos to anime"
+    },
+    {
+      "src": "/screenshot2.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "label": "Multiple art styles available"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

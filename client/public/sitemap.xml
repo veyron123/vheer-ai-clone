@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  
+  <!-- Homepage -->
+  <url>
+    <loc>https://vheer.ai/</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://vheer.ai/og-image.jpg</image:loc>
+      <image:title>Vheer AI Image Generator</image:title>
+      <image:caption>Transform photos into anime art with AI</image:caption>
+    </image:image>
+  </url>
+  
+  <!-- Anime Generator Page -->
+  <url>
+    <loc>https://vheer.ai/anime-generator</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- Gallery Page -->
+  <url>
+    <loc>https://vheer.ai/gallery</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Pricing Page -->
+  <url>
+    <loc>https://vheer.ai/pricing</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- About Page -->
+  <url>
+    <loc>https://vheer.ai/about</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <!-- Login Page -->
+  <url>
+    <loc>https://vheer.ai/login</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <!-- Register Page -->
+  <url>
+    <loc>https://vheer.ai/register</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <!-- Terms of Service -->
+  <url>
+    <loc>https://vheer.ai/terms</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+  <!-- Privacy Policy -->
+  <url>
+    <loc>https://vheer.ai/privacy</loc>
+    <lastmod>2025-01-13</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+</urlset>

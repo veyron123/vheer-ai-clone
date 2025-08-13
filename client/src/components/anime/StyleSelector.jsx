@@ -24,8 +24,9 @@ const StyleSelector = ({ styles, selectedStyle, onStyleChange }) => {
           >
             <img 
               src={style.image} 
-              alt={style.name}
+              alt={`${style.name} AI art style - Transform photos to ${style.name} style`}
               className="w-full h-full object-cover"
+              loading="lazy"
             />
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-1">
               <p className="text-white text-[10px] leading-tight">{style.name}</p>
