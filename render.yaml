@@ -1,0 +1,29 @@
+services:
+  # Web service for the application
+  - type: web
+    name: vheer-clone
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: vheer-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CLIENT_URL
+        value: https://vheer-clone.onrender.com
+      - key: PORT
+        value: 5000
+
+databases:
+  # PostgreSQL database
+  - name: vheer-db
+    region: oregon
+    plan: free
+    postgresMajorVersion: 15
