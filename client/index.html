@@ -34,16 +34,28 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="https://vheer.ai/" />
     
-    <!-- CSP for font loading - High Priority -->
-    <meta http-equiv="Content-Security-Policy" content="font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;">
+    <!-- NO CSP HERE - Will be set dynamically to override Render defaults -->
     <script>
-      // Ensure Google Fonts can load by setting CSP dynamically
-      if (!document.querySelector('meta[http-equiv="Content-Security-Policy"]')) {
-        const cspMeta = document.createElement('meta');
-        cspMeta.httpEquiv = 'Content-Security-Policy';
-        cspMeta.content = "default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data: blob:; img-src 'self' https: data: blob:; connect-src 'self' https://vheer-api.onrender.com https://api.openai.com https://api.anthropic.com wss: https:; frame-src 'none'; object-src 'none'; base-uri 'self'; manifest-src 'self'";
-        document.head.appendChild(cspMeta);
-      }
+      // CRITICAL: Override Render's restrictive CSP immediately when DOM loads
+      document.addEventListener('DOMContentLoaded', function() {
+        // Remove any existing restrictive CSP
+        const existingCSP = document.querySelectorAll('meta[http-equiv*="Content-Security-Policy"]');
+        existingCSP.forEach(meta => meta.remove());
+        
+        // Add our permissive CSP
+        const newCSP = document.createElement('meta');
+        newCSP.httpEquiv = 'Content-Security-Policy';
+        newCSP.content = "default-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https: data:; font-src 'self' https: data: blob:; img-src 'self' https: data: blob:; connect-src 'self' https: wss: data:; frame-src 'none'; object-src 'none'; base-uri 'self'; manifest-src 'self'";
+        document.head.prepend(newCSP);
+        
+        console.log('CSP override applied for font loading');
+      });
+      
+      // Backup: Also try to set CSP immediately (in case DOM is already loaded)
+      const backupCSP = document.createElement('meta');
+      backupCSP.httpEquiv = 'Content-Security-Policy';
+      backupCSP.content = "default-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https: data:; font-src 'self' https: data: blob:; img-src 'self' https: data: blob:; connect-src 'self' https: wss: data:; frame-src 'none'; object-src 'none'; base-uri 'self'; manifest-src 'self'";
+      document.head.appendChild(backupCSP);
     </script>
     
     <!-- Favicon -->
@@ -54,7 +66,37 @@
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#6366f1" />
     
-    <!-- Fonts -->
+    <!-- Fonts - Force load via JavaScript to bypass CSP -->
+    <script>
+      // Force load Google Fonts CSS to bypass CSP restrictions
+      function loadGoogleFonts() {
+        if (!document.querySelector('link[href*="fonts.googleapis.com"]')) {
+          const preconnect1 = document.createElement('link');
+          preconnect1.rel = 'preconnect';
+          preconnect1.href = 'https://fonts.googleapis.com';
+          document.head.appendChild(preconnect1);
+          
+          const preconnect2 = document.createElement('link');
+          preconnect2.rel = 'preconnect';
+          preconnect2.href = 'https://fonts.gstatic.com';
+          preconnect2.crossOrigin = 'anonymous';
+          document.head.appendChild(preconnect2);
+          
+          const fontLink = document.createElement('link');
+          fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap';
+          fontLink.rel = 'stylesheet';
+          document.head.appendChild(fontLink);
+          
+          console.log('Google Fonts loaded dynamically');
+        }
+      }
+      
+      // Load immediately and also on DOM ready
+      loadGoogleFonts();
+      document.addEventListener('DOMContentLoaded', loadGoogleFonts);
+    </script>
+    
+    <!-- Fallback static fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
