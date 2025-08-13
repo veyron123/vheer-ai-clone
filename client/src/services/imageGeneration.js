@@ -183,9 +183,10 @@ export async function generateWithFlux(imageBase64, style = 'disney', model = 'f
  * @param {string} imageUrl - URL or base64 of the uploaded image
  * @param {string} style - Selected anime style
  * @param {string} aiModel - AI model to use ('flux-pro', 'flux-max', or 'gpt-image')
+ * @param {string} aspectRatio - Aspect ratio for generation ('1:1', '16:9', etc.)
  * @returns {Promise} Generated image data
  */
-export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = 'flux-pro') {
+export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = 'flux-pro', aspectRatio = '1:1') {
   // Use Flux for image-to-image generation
   if (aiModel === 'flux-pro' || aiModel === 'flux-max') {
     return await generateWithFlux(imageUrl, style, aiModel);
@@ -217,7 +218,8 @@ export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = '
         body: JSON.stringify({
           prompt: prompt,
           input_image: base64Only,
-          style: style
+          style: style,
+          aspectRatio: aspectRatio
         })
       });
       

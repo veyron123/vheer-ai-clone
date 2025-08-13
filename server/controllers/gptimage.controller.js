@@ -7,9 +7,9 @@ const IMGBB_API_KEY = process.env.IMGBB_API_KEY || 'd5872cba0cfa53b44580045b1446
 // Generate image with GPT IMAGE 1
 export const generateImage = async (req, res) => {
   try {
-    const { prompt, input_image, style } = req.body;
+    const { prompt, input_image, style, aspectRatio = '1:1' } = req.body;
 
-    console.log('GPT IMAGE generation request:', { style, hasPrompt: !!prompt, hasImage: !!input_image });
+    console.log('GPT IMAGE generation request:', { style, aspectRatio, hasPrompt: !!prompt, hasImage: !!input_image });
 
     if (!prompt || !input_image) {
       return res.status(400).json({ 
@@ -54,7 +54,7 @@ export const generateImage = async (req, res) => {
     const response = await axios.post(GPT_IMAGE_API_URL, {
       filesUrl: [imageUrl],
       prompt: prompt,
-      size: "1:1",
+      size: aspectRatio,
       isEnhance: true,
       uploadCn: false,
       nVariants: 1,

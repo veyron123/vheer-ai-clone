@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -19,9 +19,30 @@ const AnimeGeneratorPage = () => {
   const [generatedImage, setGeneratedImage] = useState(null);
   const [aiModel, setAiModel] = useState('flux-pro');
   const [aspectRatio, setAspectRatio] = useState('match');
+  const [showAspectRatioDropdown, setShowAspectRatioDropdown] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationTime, setGenerationTime] = useState(null);
   const fileInputRef = useRef(null);
+  const aspectRatioDropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (aspectRatioDropdownRef.current && !aspectRatioDropdownRef.current.contains(event.target)) {
+        setShowAspectRatioDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Close dropdown when model changes
+  useEffect(() => {
+    setShowAspectRatioDropdown(false);
+  }, [aiModel]);
 
   const animeStyles = [
     { id: 'disney', name: 'Disney', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc27?w=200&h=200&fit=crop' },
@@ -43,6 +64,15 @@ const AnimeGeneratorPage = () => {
   ];
 
   // Example generated images data
+  const aspectRatioOptions = [
+    { id: 'match', name: 'Match input image', description: 'Auto-detect from input' },
+    { id: '1:1', name: 'Square (1:1)', description: '1024×1024' },
+    { id: '16:9', name: 'Landscape (16:9)', description: '1344×768' },
+    { id: '9:16', name: 'Portrait (9:16)', description: '768×1344' },
+    { id: '4:3', name: 'Album (4:3)', description: '1152×896' },
+    { id: '3:4', name: 'Portrait (3:4)', description: '896×1152' }
+  ];
+
   const exampleImages = [
     {
       id: 1,
@@ -91,6 +121,29 @@ const AnimeGeneratorPage = () => {
     event.preventDefault();
   };
 
+  // Function to detect aspect ratio from image
+  const detectAspectRatio = (imageDataUrl) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const width = img.width;
+        const height = img.height;
+        const ratio = width / height;
+        
+        // Match to closest standard ratio
+        if (Math.abs(ratio - 1) < 0.1) resolve('1:1');
+        else if (Math.abs(ratio - 16/9) < 0.1) resolve('16:9');
+        else if (Math.abs(ratio - 9/16) < 0.1) resolve('9:16');
+        else if (Math.abs(ratio - 4/3) < 0.1) resolve('4:3');
+        else if (Math.abs(ratio - 3/4) < 0.1) resolve('3:4');
+        else if (ratio > 1.3) resolve('16:9'); // Wide images default to landscape
+        else if (ratio < 0.8) resolve('9:16'); // Tall images default to portrait
+        else resolve('1:1'); // Default to square
+      };
+      img.src = imageDataUrl;
+    });
+  };
+
   const handleGenerate = async () => {
     if (!uploadedImage) {
       alert('Please upload an image first');
@@ -113,8 +166,17 @@ const AnimeGeneratorPage = () => {
         imageUrl = await uploadImage(uploadedImage);
       }
       
-      // Generate the anime image with selected AI model
-      const result = await generateAnimeImage(imageUrl, selectedStyle, aiModel);
+      // Determine aspect ratio for generation (only for GPT Image)
+      let finalAspectRatio = '1:1';
+      if (aiModel === 'gpt-image') {
+        finalAspectRatio = aspectRatio;
+        if (aspectRatio === 'match') {
+          finalAspectRatio = await detectAspectRatio(uploadedImage);
+        }
+      }
+
+      // Generate the anime image with selected AI model and aspect ratio
+      const result = await generateAnimeImage(imageUrl, selectedStyle, aiModel, finalAspectRatio);
       
       // Calculate generation time
       const endTime = Date.now();
@@ -357,12 +419,60 @@ const AnimeGeneratorPage = () => {
             </div>
 
             {/* Aspect Ratio */}
-            <div className="mb-6">
-              <label className="text-sm font-medium mb-3 block">Aspect Ratio</label>
-              <button className="w-full px-4 py-2 text-left bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors flex items-center justify-between">
-                <span className="text-sm">Match input image</span>
-                <ChevronDown className="w-4 h-4 text-gray-400" />
+            <div className="mb-6 relative" ref={aspectRatioDropdownRef}>
+              <label className="text-sm font-medium mb-3 block">
+                Aspect Ratio
+                {aiModel !== 'gpt-image' && (
+                  <span className="text-xs text-gray-400 ml-2">(GPT Image only)</span>
+                )}
+              </label>
+              <button 
+                onClick={() => aiModel === 'gpt-image' && setShowAspectRatioDropdown(!showAspectRatioDropdown)}
+                disabled={aiModel !== 'gpt-image'}
+                className={`w-full px-4 py-2 text-left rounded-lg border transition-colors flex items-center justify-between ${
+                  aiModel === 'gpt-image' 
+                    ? 'bg-gray-50 border-gray-200 hover:border-gray-300 cursor-pointer' 
+                    : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                <div>
+                  <span className="text-sm">
+                    {aiModel === 'gpt-image' 
+                      ? aspectRatioOptions.find(opt => opt.id === aspectRatio)?.name
+                      : 'Match input image'
+                    }
+                  </span>
+                  <span className="text-xs text-gray-500 ml-1">
+                    ({aiModel === 'gpt-image' 
+                      ? aspectRatioOptions.find(opt => opt.id === aspectRatio)?.description
+                      : 'Auto-detect from input'
+                    })
+                  </span>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${
+                  showAspectRatioDropdown && aiModel === 'gpt-image' ? 'rotate-180' : ''
+                }`} />
               </button>
+              
+              {showAspectRatioDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                  {aspectRatioOptions.map((option) => (
+                    <button
+                      key={option.id}
+                      onClick={() => {
+                        setAspectRatio(option.id);
+                        setShowAspectRatioDropdown(false);
+                      }}
+                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 ${
+                        aspectRatio === option.id ? 'bg-primary-50 text-primary-700' : ''
+                      }`}
+                    >
+                      <div className="text-sm font-medium">{option.name}</div>
+                      <div className="text-xs text-gray-500">{option.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Generate Button */}
