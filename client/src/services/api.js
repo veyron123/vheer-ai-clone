@@ -1,11 +1,11 @@
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { API_CONFIG } from '../config/api.config';
 
 const api = axios.create({
-  baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: API_CONFIG.baseURL,
+  headers: API_CONFIG.headers,
+  timeout: API_CONFIG.timeout,
 });
 
 // Request interceptor

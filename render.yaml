@@ -1,12 +1,22 @@
-services:
-  # Web service for the application
-  - type: web
-    name: vheer-clone
-    runtime: node
-    region: oregon
+databases:
+  # PostgreSQL database
+  - name: vheer-db
+    databaseName: vheer_production
+    user: vheer_admin
     plan: free
-    buildCommand: npm install && npm run build
-    startCommand: npm start
+    region: oregon
+    postgresMajorVersion: 15
+
+services:
+  # Backend service
+  - type: web
+    name: vheer-api
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node index.js
     envVars:
       - key: NODE_ENV
         value: production
@@ -14,16 +24,45 @@ services:
         fromDatabase:
           name: vheer-db
           property: connectionString
-      - key: JWT_SECRET
-        generateValue: true
-      - key: CLIENT_URL
-        value: https://vheer-clone.onrender.com
       - key: PORT
         value: 5000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FLUX_API_KEY
+        value: 2f58d1ef-d2d1-48f0-8c1f-a7b5525748c0
+      - key: GPT_IMAGE_API_KEY
+        value: b5cfe077850a194e434914eedd7111d5
+      - key: IMGBB_API_KEY
+        value: d5872cba0cfa53b44580045b14466f9c
+      - key: CORS_ORIGIN
+        value: https://vheer-client.onrender.com
+      - key: BASE_URL
+        value: https://vheer-api.onrender.com
+    healthCheckPath: /api/health
+    autoDeploy: true
 
-databases:
-  # PostgreSQL database
-  - name: vheer-db
-    region: oregon
-    plan: free
-    postgresMajorVersion: 15
+  # Frontend service
+  - type: static
+    name: vheer-client
+    buildCommand: cd client && npm install && npm run build
+    staticPublishPath: ./client/dist
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-XSS-Protection
+        value: 1; mode=block
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://vheer-api.onrender.com/api
+      - key: NODE_ENV
+        value: production
+    autoDeploy: true
