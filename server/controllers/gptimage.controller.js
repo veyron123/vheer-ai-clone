@@ -1,164 +1,120 @@
 import axios from 'axios';
+import { uploadToImgbb } from '../utils/imageUpload.js';
 
 const GPT_IMAGE_API_KEY = process.env.GPT_IMAGE_API_KEY || 'b5cfe077850a194e434914eedd7111d5';
 const GPT_IMAGE_API_URL = 'https://api.kie.ai/api/v1/gpt4o-image/generate';
-const IMGBB_API_KEY = process.env.IMGBB_API_KEY || 'd5872cba0cfa53b44580045b14466f9c';
+const POLL_INTERVAL = 3000; // 3 seconds
+const MAX_POLL_TIME = 180000; // 3 minutes
 
-// Generate image with GPT IMAGE 1
+/**
+ * Generate image with GPT IMAGE API
+ */
 export const generateImage = async (req, res) => {
   try {
     const { prompt, input_image, style, aspectRatio = '1:1' } = req.body;
 
-    console.log('GPT IMAGE generation request:', { style, aspectRatio, hasPrompt: !!prompt, hasImage: !!input_image });
-
+    // Validate input
     if (!prompt || !input_image) {
       return res.status(400).json({ 
         error: 'Prompt and input_image are required' 
       });
     }
 
-    // GPT IMAGE requires a public URL, not base64
-    // We need to upload the image somewhere first
-    // For now, we'll use a free image hosting service
+    console.log('GPT IMAGE request:', { style, aspectRatio });
+
+    // Upload image to get public URL
+    const imageUrl = await uploadToImgbb(input_image);
+
+    // Call GPT IMAGE API
+    const taskId = await createGenerationTask(imageUrl, prompt, aspectRatio);
     
-    let imageUrl = input_image;
+    // Poll for result
+    const result = await pollForResult(taskId);
     
-    // If it's base64, we need to upload it to get a URL
-    if (!input_image.startsWith('http')) {
-      // Convert base64 to blob and upload to imgbb
-      try {
-        // Create form data for imgbb
-        const formData = new URLSearchParams();
-        formData.append('key', IMGBB_API_KEY);
-        formData.append('image', input_image);
-        
-        const imgbbResponse = await axios.post('https://api.imgbb.com/1/upload', formData, {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        });
-        
-        if (imgbbResponse.data && imgbbResponse.data.data && imgbbResponse.data.data.url) {
-          imageUrl = imgbbResponse.data.data.url;
-          console.log('Image uploaded to:', imageUrl);
-        } else {
-          throw new Error('Failed to upload image to hosting service');
-        }
-      } catch (uploadError) {
-        console.error('Image upload error:', uploadError);
-        throw new Error('Failed to upload image for processing');
-      }
-    }
-
-    // Make request to GPT IMAGE API
-    const response = await axios.post(GPT_IMAGE_API_URL, {
-      filesUrl: [imageUrl],
-      prompt: prompt,
-      size: aspectRatio,
-      isEnhance: true,
-      uploadCn: false,
-      nVariants: 1,
-      enableFallback: false
-    }, {
-      headers: {
-        'Authorization': `Bearer ${GPT_IMAGE_API_KEY}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    console.log('GPT IMAGE response:', response.data);
-
-    if (response.data && response.data.data && response.data.data.taskId) {
-      // Start polling for result using the taskId with the correct endpoint
-      const result = await pollForResult(response.data.data.taskId);
-      res.json(result);
-    } else if (response.data && response.data.data && response.data.data.images) {
-      // Direct response with images (unlikely with GPT IMAGE)
-      res.json({
-        success: true,
-        image: response.data.data.images[0]
-      });
-    } else {
-      throw new Error('Unexpected response from GPT IMAGE API: ' + JSON.stringify(response.data));
-    }
+    res.json(result);
   } catch (error) {
-    console.error('GPT IMAGE generation error:', error.response?.data || error.message);
-    console.error('Full error:', error);
+    console.error('GPT IMAGE error:', error.message);
     res.status(500).json({ 
       error: 'Failed to generate image',
-      details: error.response?.data || error.message 
+      details: error.message 
     });
   }
 };
 
-// Poll for generation result
+/**
+ * Create generation task with GPT IMAGE API
+ */
+async function createGenerationTask(imageUrl, prompt, aspectRatio) {
+  const response = await axios.post(GPT_IMAGE_API_URL, {
+    filesUrl: [imageUrl],
+    prompt: prompt,
+    size: aspectRatio,
+    isEnhance: true,
+    uploadCn: false,
+    nVariants: 1,
+    enableFallback: false
+  }, {
+    headers: {
+      'Authorization': `Bearer ${GPT_IMAGE_API_KEY}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!response.data?.data?.taskId) {
+    throw new Error('Failed to create generation task');
+  }
+
+  console.log('Task created:', response.data.data.taskId);
+  return response.data.data.taskId;
+}
+
+/**
+ * Poll for generation result
+ */
 async function pollForResult(taskId) {
-  const maxAttempts = 180; // 3 minutes timeout (GPT IMAGE очень медленный)
-  const pollInterval = 3000; // 3 seconds between polls
+  const maxAttempts = Math.floor(MAX_POLL_TIME / POLL_INTERVAL);
   
-  console.log(`Starting to poll for task: ${taskId}`);
-  
-  for (let i = 0; i < maxAttempts; i++) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      // Use the correct endpoint from documentation: /record-info
-      const response = await axios.get(`https://api.kie.ai/api/v1/gpt4o-image/record-info`, {
-        params: { taskId: taskId },
+      const response = await axios.get('https://api.kie.ai/api/v1/gpt4o-image/record-info', {
+        params: { taskId },
         headers: {
           'Authorization': `Bearer ${GPT_IMAGE_API_KEY}`,
           'Content-Type': 'application/json'
         }
       });
       
-      console.log(`Poll attempt ${i + 1}, response:`, response.data);
-      
-      // Check response according to documentation
-      if (response.data && response.data.code === 200 && response.data.data) {
-        const taskData = response.data.data;
-        
-        // Check task status
-        if (taskData.status === 'SUCCESS' && taskData.response && taskData.response.resultUrls) {
-          // Task completed successfully
-          console.log('Task completed successfully!');
-          console.log('Full response data:', JSON.stringify(taskData.response, null, 2));
-          
-          // Try to get the correct image URL
-          let imageUrl = taskData.response.resultUrls[0];
-          
-          // If it's a relative URL, prepend the base URL
-          if (!imageUrl.startsWith('http')) {
-            imageUrl = `https://images.kie.ai${imageUrl}`;
-          }
-          
-          console.log('Final image URL:', imageUrl);
-          
-          return {
-            success: true,
-            image: imageUrl
-          };
-        } else if (taskData.status === 'GENERATING') {
-          // Still generating
-          console.log(`Task still generating... Progress: ${taskData.progress || '0.00'}`);
-        } else if (taskData.status === 'CREATE_TASK_FAILED' || taskData.status === 'GENERATE_FAILED') {
-          // Task failed
-          throw new Error(`Generation failed: ${taskData.errorMessage || taskData.status}`);
-        }
-      } else if (response.data && response.data.code !== 200) {
-        // API error
-        throw new Error(`API error: ${response.data.msg || 'Unknown error'}`);
+      if (response.data?.code !== 200) {
+        throw new Error(`API error: ${response.data?.msg || 'Unknown error'}`);
       }
+      
+      const taskData = response.data.data;
+      
+      // Check task status
+      if (taskData.status === 'SUCCESS' && taskData.response?.resultUrls?.[0]) {
+        console.log('Generation complete!');
+        return {
+          success: true,
+          image: taskData.response.resultUrls[0]
+        };
+      }
+      
+      if (taskData.status === 'CREATE_TASK_FAILED' || taskData.status === 'GENERATE_FAILED') {
+        throw new Error(`Generation failed: ${taskData.errorMessage || taskData.status}`);
+      }
+      
+      // Still generating
+      console.log(`Polling attempt ${attempt}/${maxAttempts}, progress: ${taskData.progress || '0.00'}`);
       
       // Wait before next poll
-      await new Promise(resolve => setTimeout(resolve, pollInterval));
+      await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL));
     } catch (error) {
-      console.error('Polling error:', error.message);
-      // If it's 404, the task might not be ready yet
-      if (error.response && error.response.status === 404) {
-        console.log('Task not found yet, waiting...');
-      } else if (i === maxAttempts - 1) {
+      if (attempt === maxAttempts) {
         throw error;
       }
+      console.log(`Poll error (attempt ${attempt}):`, error.message);
     }
   }
   
-  throw new Error('Generation timeout after 3 minutes. GPT IMAGE is very slow, please try again.');
+  throw new Error('Generation timeout after 3 minutes');
 }
