@@ -7,7 +7,8 @@ import {
   updateProfile, 
   changePassword,
   oauthSuccess,
-  oauthFailure
+  oauthFailure,
+  deleteAccount
 } from '../controllers/auth.controller.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 
@@ -42,5 +43,6 @@ router.get('/failure', oauthFailure);
 router.get('/me', authenticate, getMe);
 router.put('/profile', authenticate, updateProfile);
 router.put('/password', authenticate, changePassword);
+router.delete('/account', authenticate, deleteAccount);
 
 export default router;

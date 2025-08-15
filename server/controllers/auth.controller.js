@@ -272,3 +272,22 @@ export const oauthFailure = (req, res) => {
       : 'http://localhost:5182');
   res.redirect(`${frontendURL}/en/auth/error?message=OAuth authentication failed`);
 };
+
+// Delete Account Handler
+export const deleteAccount = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    
+    // Delete user and all related data (cascade delete will handle relations)
+    await prisma.user.delete({
+      where: { id: userId }
+    });
+    
+    res.json({
+      message: 'Account deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting account:', error);
+    next(new AppError('Failed to delete account', 500));
+  }
+};

@@ -18,6 +18,7 @@ import {
 import api from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import toast from 'react-hot-toast';
+import DangerZone from '../components/profile/DangerZone';
 
 const ProfilePage = () => {
   const { user, logout, updateUser } = useAuthStore();
@@ -397,6 +398,13 @@ const ProfilePage = () => {
             </div>
           )}
         </div>
+
+        {/* Danger Zone - Account Deletion */}
+        {activeTab === 'settings' && (
+          <div className="mt-8">
+            <DangerZone />
+          </div>
+        )}
       </div>
     </div>
   );
