@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getModelCredits, canAffordGeneration } from '../config/pricing.config.js';
 
 const FLUX_API_KEY = process.env.FLUX_API_KEY || '2f58d1ef-d2d1-48f0-8c1f-a7b5525748c0';
 const FLUX_API_URL = process.env.FLUX_API_URL || 'https://api.bfl.ai/v1/flux-kontext-pro';
@@ -17,8 +18,40 @@ console.log('Flux API configuration:', {
 export const generateImage = async (req, res) => {
   try {
     const { prompt, input_image, style, model } = req.body;
+    const userId = req.user?.id;
 
-    console.log('Flux generation request:', { style, model, hasPrompt: !!prompt, hasImage: !!input_image });
+    console.log('Flux generation request:', { style, model, hasPrompt: !!prompt, hasImage: !!input_image, userId });
+
+    // Skip credit checks for testing if user not authenticated
+    if (userId) {
+      // Check credits before processing (only if authenticated)
+      const modelId = model || 'flux-pro';
+      const requiredCredits = getModelCredits(modelId);
+      
+      try {
+        // Make API call to check user credits
+        const creditCheckResponse = await axios.post('http://localhost:5000/api/users/check-credits', {
+          modelId
+        }, {
+          headers: {
+            'Authorization': req.headers.authorization
+          }
+        });
+
+        if (!creditCheckResponse.data.canAfford) {
+          return res.status(400).json({ 
+            error: 'Insufficient credits',
+            required: requiredCredits,
+            available: creditCheckResponse.data.available,
+            modelId
+          });
+        }
+      } catch (creditError) {
+        console.log('Credit check failed, proceeding with generation for testing:', creditError.message);
+      }
+    } else {
+      console.log('User not authenticated, skipping credit checks for testing');
+    }
 
     if (!prompt || !input_image) {
       return res.status(400).json({ 
@@ -47,6 +80,24 @@ export const generateImage = async (req, res) => {
     if (response.data && response.data.id) {
       // Start polling for result
       const result = await pollForResult(response.data.id);
+      
+      // If generation was successful, deduct credits
+      if (result.success) {
+        try {
+          await axios.post('http://localhost:5000/api/users/deduct-credits', {
+            modelId
+          }, {
+            headers: {
+              'Authorization': req.headers.authorization
+            }
+          });
+          console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
+        } catch (creditError) {
+          console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
+          // Still return the image but log the credit error
+        }
+      }
+      
       res.json(result);
     } else {
       throw new Error('No request ID received from Flux API');
@@ -155,6 +206,7 @@ export const generateImageToImage = async (req, res) => {
       control_strength = 0.4,
       model = 'flux-pro' // 'flux-pro' = Kontext Pro, 'flux-max' = Kontext Max
     } = req.body;
+    const userId = req.user?.id;
 
     console.log('Flux Kontext image-to-image request:', { 
       model, 
@@ -162,8 +214,40 @@ export const generateImageToImage = async (req, res) => {
       hasNegative: !!negative_prompt,
       hasImage: !!input_image,
       creative_strength,
-      control_strength
+      control_strength,
+      userId
     });
+
+    // Skip credit checks for testing if user not authenticated
+    if (userId) {
+      // Check credits before processing (only if authenticated)
+      const modelId = model || 'flux-pro';
+      const requiredCredits = getModelCredits(modelId);
+      
+      try {
+        // Make API call to check user credits
+        const creditCheckResponse = await axios.post('http://localhost:5000/api/users/check-credits', {
+          modelId
+        }, {
+          headers: {
+            'Authorization': req.headers.authorization
+          }
+        });
+
+        if (!creditCheckResponse.data.canAfford) {
+          return res.status(400).json({ 
+            error: 'Insufficient credits',
+            required: requiredCredits,
+            available: creditCheckResponse.data.available,
+            modelId
+          });
+        }
+      } catch (creditError) {
+        console.log('Credit check failed, proceeding with generation for testing:', creditError.message);
+      }
+    } else {
+      console.log('User not authenticated, skipping credit checks for testing');
+    }
 
     if (!prompt || !input_image) {
       return res.status(400).json({ 
@@ -210,6 +294,24 @@ export const generateImageToImage = async (req, res) => {
       
       // Start polling for result using the proper polling URL
       const result = await pollForKontextResult(taskId, pollingUrl);
+      
+      // If generation was successful, deduct credits
+      if (result.success) {
+        try {
+          await axios.post('http://localhost:5000/api/users/deduct-credits', {
+            modelId
+          }, {
+            headers: {
+              'Authorization': req.headers.authorization
+            }
+          });
+          console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
+        } catch (creditError) {
+          console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
+          // Still return the image but log the credit error
+        }
+      }
+      
       res.json(result);
     } else {
       throw new Error('No request ID received from Flux Kontext API');

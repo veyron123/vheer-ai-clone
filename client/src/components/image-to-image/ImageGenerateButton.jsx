@@ -1,7 +1,8 @@
 import React from 'react';
 import { Sparkles, Loader2 } from 'lucide-react';
+import PricingDisplay from '../ui/PricingDisplay';
 
-const ImageGenerateButton = ({ onClick, disabled, isGenerating, onClear }) => {
+const ImageGenerateButton = ({ onClick, disabled, isGenerating, onClear, aiModel = 'flux-pro' }) => {
   return (
     <div className="space-y-3">
       <button
@@ -21,6 +22,12 @@ const ImageGenerateButton = ({ onClick, disabled, isGenerating, onClear }) => {
           </>
         )}
       </button>
+      
+      <PricingDisplay 
+        modelId={aiModel} 
+        className="mt-1" 
+        showAffordability={true} 
+      />
       
       {onClear && (
         <button

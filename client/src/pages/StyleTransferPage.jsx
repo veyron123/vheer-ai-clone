@@ -70,6 +70,7 @@ const StyleTransferPage = () => {
                 onImageUpload={handleImageUpload}
                 onImageRemove={handleImageRemove}
                 fileInputRef={fileInputRef}
+                isGenerating={isGenerating}
               />
             </div>
             
@@ -103,17 +104,9 @@ const StyleTransferPage = () => {
                 onClick={handleGenerate}
                 disabled={!uploadedImage}
                 isGenerating={isGenerating}
+                aiModel={aiModel}
               />
               
-              {/* Footer */}
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <p className="text-xs text-gray-500 text-center flex items-center justify-center">
-                <span className="mr-1">🎨</span> Unlimited & Free
-              </p>
-              <p className="text-xs text-gray-400 text-center mt-1">
-                Powered by Vheer
-              </p>
-              </div>
             </div>
           </div>
         </div>

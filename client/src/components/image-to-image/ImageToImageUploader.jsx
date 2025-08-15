@@ -1,5 +1,5 @@
 import React from 'react';
-import { Upload, X, Download, Clock, Clipboard } from 'lucide-react';
+import { Upload, X, Download, Clock, Clipboard, Loader2 } from 'lucide-react';
 
 const ImageToImageUploader = ({
   uploadedImage,
@@ -8,7 +8,8 @@ const ImageToImageUploader = ({
   onImageUpload,
   onImageRemove,
   onPaste,
-  fileInputRef
+  fileInputRef,
+  isGenerating = false
 }) => {
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -146,9 +147,20 @@ const ImageToImageUploader = ({
             </>
           ) : (
             <div className="flex items-center justify-center h-full text-gray-400">
-              <p className="text-center">
-                Generated image will appear here
-              </p>
+              {isGenerating ? (
+                <div className="flex flex-col items-center">
+                  <div className="bg-white/90 rounded-full p-4 shadow-lg mb-3">
+                    <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
+                  </div>
+                  <p className="text-center text-gray-600">
+                    Generating image...
+                  </p>
+                </div>
+              ) : (
+                <p className="text-center">
+                  Generated image will appear here
+                </p>
+              )}
             </div>
           )}
         </div>

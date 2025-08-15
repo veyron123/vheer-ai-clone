@@ -28,14 +28,38 @@ passport.use(new JwtStrategy({
   }
 }));
 
+// Dynamic callback URL based on environment
+const getGoogleCallbackURL = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://colibrrri.com/auth/google/callback';
+  }
+  return 'http://localhost:5000/auth/google/callback';
+};
+
+console.log('Google OAuth configuration:', {
+  clientID: process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Not set',
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET ? 'Set' : 'Not set',
+  callbackURL: getGoogleCallbackURL(),
+  environment: process.env.NODE_ENV
+});
+
+console.log('Full OAuth config (masked):', {
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecretPrefix: process.env.GOOGLE_CLIENT_SECRET ? process.env.GOOGLE_CLIENT_SECRET.substring(0, 10) + '...' : 'Not set',
+  callbackURL: getGoogleCallbackURL()
+});
+
 // Google OAuth Strategy
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:5000/auth/google/callback"
+  callbackURL: getGoogleCallbackURL()
 }, async (accessToken, refreshToken, profile, done) => {
   try {
-    console.log('Google Profile:', profile);
+    console.log('=== Google OAuth Strategy Debug ===');
+    console.log('Access Token:', accessToken ? 'Received' : 'Missing');
+    console.log('Refresh Token:', refreshToken ? 'Received' : 'Missing');
+    console.log('Profile:', profile);
     
     // Check if user already exists with this Google ID
     let user = await prisma.user.findFirst({

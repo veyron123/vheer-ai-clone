@@ -1,13 +1,53 @@
 import axios from 'axios';
+import { getModelCredits } from '../config/pricing.config.js';
 
 const GPT_IMAGE_API_KEY = process.env.GPT_IMAGE_API_KEY || 'b5cfe077850a194e434914eedd7111d5';
-const GPT_IMAGE_API_URL = 'https://api.kie.ai/api/v1/gpt4o-image/generate';
+const GPT_IMAGE_API_URL = process.env.GPT_IMAGE_API_URL || 'https://api.kie.ai/api/v1/gpt4o-image/generate';
 const IMGBB_API_KEY = process.env.IMGBB_API_KEY || 'd5872cba0cfa53b44580045b14466f9c';
+
+console.log('GPT Image API configuration:', {
+  GPT_IMAGE_API_KEY: GPT_IMAGE_API_KEY ? 'Set' : 'Not set',
+  GPT_IMAGE_API_URL,
+  IMGBB_API_KEY: IMGBB_API_KEY ? 'Set' : 'Not set',
+  NODE_ENV: process.env.NODE_ENV
+});
 
 // Generate image with GPT IMAGE 1
 export const generateImage = async (req, res) => {
   try {
     const { prompt, input_image, style, aspectRatio = '1:1' } = req.body;
+    const userId = req.user?.id;
+
+    // Skip credit checks for testing if user not authenticated
+    if (userId) {
+      // Check credits before processing (only if authenticated)
+      const modelId = 'gpt-image';
+      const requiredCredits = getModelCredits(modelId);
+      
+      try {
+        // Make API call to check user credits
+        const creditCheckResponse = await axios.post('http://localhost:5000/api/users/check-credits', {
+          modelId
+        }, {
+          headers: {
+            'Authorization': req.headers.authorization
+          }
+        });
+
+        if (!creditCheckResponse.data.canAfford) {
+          return res.status(400).json({ 
+            error: 'Insufficient credits',
+            required: requiredCredits,
+            available: creditCheckResponse.data.available,
+            modelId
+          });
+        }
+      } catch (creditError) {
+        console.log('Credit check failed, proceeding with generation for testing:', creditError.message);
+      }
+    } else {
+      console.log('User not authenticated, skipping credit checks for testing');
+    }
 
     // Map our aspect ratios to GPT Image supported formats
     // GPT Image only supports: "1:1", "3:2", "2:3"
@@ -48,36 +88,47 @@ export const generateImage = async (req, res) => {
       });
     }
 
-    // GPT IMAGE requires a public URL, not base64
-    // We need to upload the image somewhere first
-    // For now, we'll use a free image hosting service
-    
+    // Try different approaches for image handling
     let imageUrl = input_image;
     
-    // If it's base64, we need to upload it to get a URL
+    // If it's base64, try to upload it to a hosting service
     if (!input_image.startsWith('http')) {
-      // Convert base64 to blob and upload to imgbb
+      // First, try uploading to imgbb (with error handling)
       try {
-        // Create form data for imgbb
+        console.log('Attempting to upload image to ImgBB...');
         const formData = new URLSearchParams();
         formData.append('key', IMGBB_API_KEY);
-        formData.append('image', input_image);
+        // Clean the base64 string by removing data URL prefix if present
+        const cleanBase64 = input_image.replace(/^data:image\/[a-z]+;base64,/, '');
+        formData.append('image', cleanBase64);
         
         const imgbbResponse = await axios.post('https://api.imgbb.com/1/upload', formData, {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
-          }
+          },
+          timeout: 10000 // 10 second timeout
         });
         
         if (imgbbResponse.data && imgbbResponse.data.data && imgbbResponse.data.data.url) {
           imageUrl = imgbbResponse.data.data.url;
-          console.log('Image uploaded to:', imageUrl);
+          console.log('Image successfully uploaded to ImgBB:', imageUrl);
         } else {
-          throw new Error('Failed to upload image to hosting service');
+          throw new Error('Invalid response from ImgBB');
         }
       } catch (uploadError) {
-        console.error('Image upload error:', uploadError);
-        throw new Error('Failed to upload image for processing');
+        console.error('ImgBB upload failed:', uploadError.message);
+        
+        // If ImgBB fails, try direct base64 approach with GPT Image
+        console.log('Trying direct base64 approach...');
+        
+        // Some APIs accept direct base64, try this approach
+        if (input_image.startsWith('data:image')) {
+          imageUrl = input_image;
+        } else {
+          // Add data URL prefix if missing
+          imageUrl = `data:image/jpeg;base64,${input_image}`;
+        }
+        console.log('Using direct base64 approach for GPT Image API');
       }
     }
 
@@ -102,9 +153,43 @@ export const generateImage = async (req, res) => {
     if (response.data && response.data.data && response.data.data.taskId) {
       // Start polling for result using the taskId with the correct endpoint
       const result = await pollForResult(response.data.data.taskId);
+      
+      // If generation was successful, deduct credits
+      if (result.success) {
+        try {
+          await axios.post('http://localhost:5000/api/users/deduct-credits', {
+            modelId
+          }, {
+            headers: {
+              'Authorization': req.headers.authorization
+            }
+          });
+          console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
+        } catch (creditError) {
+          console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
+          // Still return the image but log the credit error
+        }
+      }
+      
       res.json(result);
     } else if (response.data && response.data.data && response.data.data.images) {
       // Direct response with images (unlikely with GPT IMAGE)
+      
+      // Deduct credits for successful generation
+      try {
+        await axios.post('http://localhost:5000/api/users/deduct-credits', {
+          modelId
+        }, {
+          headers: {
+            'Authorization': req.headers.authorization
+          }
+        });
+        console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
+      } catch (creditError) {
+        console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
+        // Still return the image but log the credit error
+      }
+      
       res.json({
         success: true,
         image: response.data.data.images[0]
@@ -205,6 +290,38 @@ export const generateImageToImage = async (req, res) => {
       control_strength = 0.4,
       aspectRatio = '1:1' 
     } = req.body;
+    const userId = req.user?.id;
+
+    // Skip credit checks for testing if user not authenticated
+    if (userId) {
+      // Check credits before processing (only if authenticated)
+      const modelId = 'gpt-image';
+      const requiredCredits = getModelCredits(modelId);
+      
+      try {
+        // Make API call to check user credits
+        const creditCheckResponse = await axios.post('http://localhost:5000/api/users/check-credits', {
+          modelId
+        }, {
+          headers: {
+            'Authorization': req.headers.authorization
+          }
+        });
+
+        if (!creditCheckResponse.data.canAfford) {
+          return res.status(400).json({ 
+            error: 'Insufficient credits',
+            required: requiredCredits,
+            available: creditCheckResponse.data.available,
+            modelId
+          });
+        }
+      } catch (creditError) {
+        console.log('Credit check failed, proceeding with generation for testing:', creditError.message);
+      }
+    } else {
+      console.log('User not authenticated, skipping credit checks for testing');
+    }
 
     // Map our aspect ratios to GPT Image supported formats
     let gptImageSize = '1:1';
@@ -245,26 +362,46 @@ export const generateImageToImage = async (req, res) => {
     // Combine prompts for better results
     const fullPrompt = `${prompt}. ${negative_prompt ? `Avoid: ${negative_prompt}` : ''}`;
 
-    // First, upload the base64 image to imgbb
-    // Remove data:image prefix if present (ImgBB expects clean base64)
-    const cleanBase64 = input_image.replace(/^data:image\/[a-z]+;base64,/, '');
+    // Try different approaches for image handling
+    let imageUrl = input_image;
     
-    const formData = new URLSearchParams();
-    formData.append('key', IMGBB_API_KEY);
-    formData.append('image', cleanBase64);
-    
-    const imgbbResponse = await axios.post('https://api.imgbb.com/1/upload', formData, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+    // If it's base64, try to upload it to a hosting service
+    if (!input_image.startsWith('http')) {
+      try {
+        console.log('Attempting to upload image to ImgBB for image-to-image...');
+        const cleanBase64 = input_image.replace(/^data:image\/[a-z]+;base64,/, '');
+        
+        const formData = new URLSearchParams();
+        formData.append('key', IMGBB_API_KEY);
+        formData.append('image', cleanBase64);
+        
+        const imgbbResponse = await axios.post('https://api.imgbb.com/1/upload', formData, {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          timeout: 10000 // 10 second timeout
+        });
+
+        if (imgbbResponse.data && imgbbResponse.data.data && imgbbResponse.data.data.url) {
+          imageUrl = imgbbResponse.data.data.url;
+          console.log('Image successfully uploaded to ImgBB:', imageUrl);
+        } else {
+          throw new Error('Invalid response from ImgBB');
+        }
+      } catch (uploadError) {
+        console.error('ImgBB upload failed for image-to-image:', uploadError.message);
+        
+        // If ImgBB fails, try direct base64 approach
+        console.log('Trying direct base64 approach for image-to-image...');
+        
+        if (input_image.startsWith('data:image')) {
+          imageUrl = input_image;
+        } else {
+          imageUrl = `data:image/jpeg;base64,${input_image}`;
+        }
+        console.log('Using direct base64 approach for GPT Image API (image-to-image)');
       }
-    });
-
-    if (!imgbbResponse.data || !imgbbResponse.data.data || !imgbbResponse.data.data.url) {
-      throw new Error('Failed to upload image to imgbb');
     }
-
-    const imageUrl = imgbbResponse.data.data.url;
-    console.log('Image uploaded to imgbb:', imageUrl);
 
     // Calculate guidance_scale based on control_strength (range: 1-10)
     // Higher control = higher guidance_scale (more adherence to prompt)
@@ -302,9 +439,43 @@ export const generateImageToImage = async (req, res) => {
     if (response.data && response.data.data && response.data.data.taskId) {
       // Start polling for result using the taskId with the correct endpoint
       const result = await pollForResult(response.data.data.taskId);
+      
+      // If generation was successful, deduct credits
+      if (result.success) {
+        try {
+          await axios.post('http://localhost:5000/api/users/deduct-credits', {
+            modelId
+          }, {
+            headers: {
+              'Authorization': req.headers.authorization
+            }
+          });
+          console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
+        } catch (creditError) {
+          console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
+          // Still return the image but log the credit error
+        }
+      }
+      
       res.json(result);
     } else if (response.data && response.data.data && response.data.data.images) {
       // Direct response with images (unlikely with GPT IMAGE)
+      
+      // Deduct credits for successful generation
+      try {
+        await axios.post('http://localhost:5000/api/users/deduct-credits', {
+          modelId
+        }, {
+          headers: {
+            'Authorization': req.headers.authorization
+          }
+        });
+        console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
+      } catch (creditError) {
+        console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
+        // Still return the image but log the credit error
+      }
+      
       res.json({
         success: true,
         image: response.data.data.images[0]

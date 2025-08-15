@@ -266,10 +266,19 @@ export const oauthSuccess = async (req, res, next) => {
 
 // OAuth Failure Handler
 export const oauthFailure = (req, res) => {
+  console.error('OAuth authentication failed:', {
+    session: req.session,
+    user: req.user,
+    error: req.flash ? req.flash('error') : 'No flash messages',
+    query: req.query,
+    messages: req.session?.messages
+  });
+  
   const frontendURL = process.env.FRONTEND_URL || 
     (process.env.NODE_ENV === 'production' 
       ? 'https://colibrrri.com' 
-      : 'http://localhost:5182');
+      : 'http://localhost:5183'); // Исправлен порт на 5183
+      
   res.redirect(`${frontendURL}/en/auth/error?message=OAuth authentication failed`);
 };
 

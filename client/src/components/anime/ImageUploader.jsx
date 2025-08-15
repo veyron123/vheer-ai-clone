@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Upload, Link2, X, Download } from 'lucide-react';
+import { Upload, Link2, X, Download, Loader2 } from 'lucide-react';
 
 const ImageUploader = ({ 
   uploadedImage, 
@@ -7,7 +7,8 @@ const ImageUploader = ({
   generationTime,
   onImageUpload, 
   onImageRemove,
-  fileInputRef 
+  fileInputRef,
+  isGenerating = false
 }) => {
   const handleClick = () => {
     if (!uploadedImage && !generatedImage) {
@@ -50,8 +51,19 @@ const ImageUploader = ({
           <img 
             src={generatedImage || uploadedImage} 
             alt={generatedImage ? "Generated" : "Uploaded"} 
-            className="max-w-full max-h-96 rounded-lg mx-auto"
+            className={`max-w-full max-h-96 rounded-lg mx-auto transition-all duration-300 ${
+              isGenerating && !generatedImage ? 'blur-sm' : ''
+            }`}
           />
+          
+          {/* Loading overlay with spinning ring */}
+          {isGenerating && !generatedImage && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
+              <div className="bg-white/90 rounded-full p-4 shadow-lg">
+                <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
+              </div>
+            </div>
+          )}
           
           {generatedImage && (
             <>

@@ -89,7 +89,16 @@ export const useImageToImageGeneration = () => {
       }
     } catch (error) {
       console.error('Generation error:', error);
-      toast.error('Failed to generate image. Please try again.');
+      
+      // Check if error is due to insufficient credits
+      if (error.response?.status === 400 && error.response?.data?.error === 'Insufficient credits') {
+        const { required, available } = error.response.data;
+        toast.error(`Недостаточно кредитов! Требуется: ${required}, доступно: ${available}`);
+      } else if (error.response?.status === 401) {
+        toast.error('Необходимо войти в систему для использования AI генераторов');
+      } else {
+        toast.error('Ошибка генерации изображения. Попробуйте ещё раз.');
+      }
     } finally {
       setIsGenerating(false);
     }
