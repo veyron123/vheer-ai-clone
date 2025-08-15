@@ -32,17 +32,10 @@ export const generateImage = async (req, res) => {
     const steps = model === 'flux-max' ? 50 : 28;
     console.log(`Using ${model || 'flux-pro'} model with ${steps} steps`);
 
-    // Make request to Flux API
+    // Make request to Flux API (simplified parameters)
     const response = await axios.post(FLUX_API_URL, {
       prompt,
-      input_image,
-      width: 1024,
-      height: 1024,
-      steps: steps,
-      guidance: 30,
-      safety_tolerance: 6,
-      interval: 1,
-      image_prompt_strength: 0.1
+      input_image
     }, {
       headers: {
         'accept': 'application/json',
