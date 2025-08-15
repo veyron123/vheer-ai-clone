@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { AppError } from '../middleware/error.middleware.js';
+import CreditService from '../services/creditService.js';
 
 const prisma = new PrismaClient();
 
@@ -39,6 +40,8 @@ export const register = async (req, res, next) => {
         username,
         password: hashedPassword,
         fullName,
+        totalCredits: 10, // Initial daily credits
+        lastCreditUpdate: new Date(), // Set current time for daily credits tracking
         subscription: {
           create: {
             plan: 'FREE',
@@ -47,8 +50,8 @@ export const register = async (req, res, next) => {
         },
         credits: {
           create: {
-            amount: 10, // Free credits on signup
-            type: 'BONUS',
+            amount: 10, // Welcome bonus record
+            type: 'WELCOME_BONUS',
             description: 'Welcome bonus'
           }
         }
@@ -101,6 +104,13 @@ export const login = async (req, res, next) => {
     
     const token = generateToken(user.id);
     
+    // Проверить и начислить ежедневные кредиты при входе
+    try {
+      await CreditService.checkAndAddDailyCredits(user.id);
+    } catch (error) {
+      console.log('Daily credits check failed:', error.message);
+    }
+    
     res.json({
       message: 'Login successful',
       user: {
@@ -133,17 +143,34 @@ export const getMe = async (req, res, next) => {
       }
     });
     
-    // Calculate total credits
-    const credits = await prisma.credit.aggregate({
-      where: { userId: req.user.id },
-      _sum: { amount: true }
-    });
-    
-    res.json({
-      ...user,
-      password: undefined,
-      totalCredits: credits._sum.amount || 0
-    });
+    // Проверить и начислить ежедневные кредиты при проверке профиля
+    try {
+      await CreditService.checkAndAddDailyCredits(req.user.id);
+      // Получить обновленные данные пользователя после начисления кредитов
+      const updatedUser = await prisma.user.findUnique({
+        where: { id: req.user.id },
+        include: {
+          subscription: true,
+          _count: {
+            select: {
+              images: true,
+              generations: true
+            }
+          }
+        }
+      });
+      
+      res.json({
+        ...updatedUser,
+        password: undefined
+      });
+    } catch (error) {
+      console.log('Daily credits check failed:', error.message);
+      res.json({
+        ...user,
+        password: undefined
+      });
+    }
   } catch (error) {
     next(error);
   }
@@ -211,6 +238,13 @@ export const oauthSuccess = async (req, res, next) => {
   try {
     const user = req.user;
     const token = generateToken(user.id);
+    
+    // Проверить и начислить ежедневные кредиты при OAuth входе
+    try {
+      await CreditService.checkAndAddDailyCredits(user.id);
+    } catch (error) {
+      console.log('Daily credits check failed for OAuth user:', error.message);
+    }
     
     // Redirect to frontend with token  
     const frontendURL = process.env.FRONTEND_URL || 
