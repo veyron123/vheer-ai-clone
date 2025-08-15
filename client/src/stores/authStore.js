@@ -110,7 +110,7 @@ export const useAuthStore = create(
         const currentDomain = window.location.origin;
         const oauthURL = import.meta.env.MODE === 'development' 
           ? 'http://localhost:5000/auth/google'
-          : `${currentDomain}/auth/google`;
+          : 'https://colibrrri.com/auth/google';
         window.location.href = oauthURL;
       },
 
@@ -119,7 +119,7 @@ export const useAuthStore = create(
         const currentDomain = window.location.origin;
         const oauthURL = import.meta.env.MODE === 'development' 
           ? 'http://localhost:5000/auth/facebook'
-          : `${currentDomain}/auth/facebook`;
+          : 'https://colibrrri.com/auth/facebook';
         window.location.href = oauthURL;
       }
     }),

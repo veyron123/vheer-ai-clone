@@ -1,4 +1,5 @@
 import { fal } from "@fal-ai/client";
+import { getApiUrl } from '../config/api.config';
 
 // Configure API key from environment variable
 fal.config({
@@ -141,7 +142,7 @@ export async function generateWithFlux(imageBase64, style = 'disney', model = 'f
     const prompt = `Transform this photo into ${styleConfig.prefix} style, ${styleConfig.suffix}. Make it look like a professional ${style} animation character portrait.`;
     
     // Use our backend proxy to avoid CORS issues
-    const response = await fetch('http://localhost:5000/api/flux/generate', {
+    const response = await fetch(getApiUrl('/flux/generate'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -210,7 +211,7 @@ export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = '
       const prompt = `Transform this photo into ${styleConfig.prefix} anime style, ${styleConfig.suffix}, high quality anime portrait, masterpiece`;
       
       // Use our backend proxy for GPT IMAGE API
-      const response = await fetch('http://localhost:5000/api/gptimage/generate', {
+      const response = await fetch(getApiUrl('/gptimage/generate'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

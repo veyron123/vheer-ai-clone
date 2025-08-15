@@ -1,4 +1,5 @@
 import { fal } from "@fal-ai/client";
+import { getApiUrl } from '../config/api.config';
 
 // Configure API key from environment variable
 fal.config({
@@ -56,7 +57,7 @@ export async function generateWithFluxImageToImage(imageBase64, positivePrompt, 
     const fullNegative = negativePrompt || "blurry, low quality, distorted, ugly";
     
     // Use our backend proxy to avoid CORS issues
-    const response = await fetch('http://localhost:5000/api/flux/image-to-image', {
+    const response = await fetch(getApiUrl('/flux/image-to-image'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -125,7 +126,7 @@ export async function generateWithMidjourneyImageToImage(imageBase64, positivePr
 
     try {
       // Use our backend proxy for Midjourney API
-      const response = await fetch('http://localhost:5000/api/midjourney/image-to-image', {
+      const response = await fetch(getApiUrl('/midjourney/image-to-image'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -201,7 +202,7 @@ export async function generateWithGPTImageToImage(imageBase64, positivePrompt, n
     const fullPrompt = positivePrompt || "Transform this image with high quality, detailed, professional";
     
     // Use our backend proxy for GPT IMAGE API
-    const response = await fetch('http://localhost:5000/api/gptimage/image-to-image', {
+    const response = await fetch(getApiUrl('/gptimage/image-to-image'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
