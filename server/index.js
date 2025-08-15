@@ -47,7 +47,7 @@ const limiter = rateLimit({
 
 // Middleware
 const corsOrigins = process.env.NODE_ENV === 'production' 
-  ? [process.env.CORS_ORIGIN, 'https://vheer-client.onrender.com', 'https://vheer.ai']
+  ? [process.env.CORS_ORIGIN, 'https://vheer-client.onrender.com', 'https://vheer.ai', 'https://colibrrri.com']
   : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:5176', 'http://localhost:5177', 'http://localhost:5178'];
 
 app.use(cors({

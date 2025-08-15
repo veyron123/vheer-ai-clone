@@ -4,7 +4,7 @@ const isDevelopment = import.meta.env.MODE === 'development';
 export const API_CONFIG = {
   baseURL: import.meta.env.VITE_API_URL || (isDevelopment 
     ? 'http://localhost:5000/api' 
-    : '/api'), // Use relative path for same-domain deployment
+    : 'https://colibrrri.com/api'), // Use production domain for deployed app
   
   timeout: 30000,
   
