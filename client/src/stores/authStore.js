@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import api from '../services/api';
+import { OAUTH_CONFIG } from '../config/api.config';
 
 export const useAuthStore = create(
   persist(
@@ -106,21 +107,11 @@ export const useAuthStore = create(
 
       // OAuth login methods
       loginWithGoogle: () => {
-        // Use current domain for OAuth (same domain for frontend and backend)
-        const currentDomain = window.location.origin;
-        const oauthURL = import.meta.env.MODE === 'development' 
-          ? 'http://localhost:5000/auth/google'
-          : 'https://colibrrri.com/auth/google';
-        window.location.href = oauthURL;
+        window.location.href = OAUTH_CONFIG.googleURL;
       },
 
       loginWithFacebook: () => {
-        // Use current domain for OAuth (same domain for frontend and backend)
-        const currentDomain = window.location.origin;
-        const oauthURL = import.meta.env.MODE === 'development' 
-          ? 'http://localhost:5000/auth/facebook'
-          : 'https://colibrrri.com/auth/facebook';
-        window.location.href = oauthURL;
+        window.location.href = OAUTH_CONFIG.facebookURL;
       }
     }),
     {
