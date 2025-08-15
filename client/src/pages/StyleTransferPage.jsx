@@ -10,6 +10,7 @@ import AspectRatioSelector from '../components/anime/AspectRatioSelector';
 import GenerateButton from '../components/anime/GenerateButton';
 import ExampleGallery from '../components/anime/ExampleGallery';
 import SEO from '../components/SEO';
+import CreditDisplay from '../components/CreditDisplay';
 
 // Constants
 import { ANIME_STYLES } from '../constants/anime.constants';
@@ -76,8 +77,12 @@ const StyleTransferPage = () => {
           </div>
 
           {/* Right Column - Settings */}
-          <div className="bg-white rounded-2xl shadow-sm p-6 h-fit">
-            <StyleSelector 
+          <div className="space-y-4">
+            {/* Credit Display */}
+            <CreditDisplay />
+            
+            <div className="bg-white rounded-2xl shadow-sm p-6 h-fit">
+              <StyleSelector 
               styles={ANIME_STYLES}
               selectedStyle={selectedStyle}
               onStyleChange={setSelectedStyle}
@@ -94,20 +99,21 @@ const StyleTransferPage = () => {
               disabled={aiModel !== 'gpt-image'}
             />
             
-            <GenerateButton
-              onClick={handleGenerate}
-              disabled={!uploadedImage}
-              isGenerating={isGenerating}
-            />
-            
-            {/* Footer */}
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <p className="text-xs text-gray-500 text-center flex items-center justify-center">
+              <GenerateButton
+                onClick={handleGenerate}
+                disabled={!uploadedImage}
+                isGenerating={isGenerating}
+              />
+              
+              {/* Footer */}
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <p className="text-xs text-gray-500 text-center flex items-center justify-center">
                 <span className="mr-1">🎨</span> Unlimited & Free
               </p>
               <p className="text-xs text-gray-400 text-center mt-1">
                 Powered by Vheer
               </p>
+              </div>
             </div>
           </div>
         </div>

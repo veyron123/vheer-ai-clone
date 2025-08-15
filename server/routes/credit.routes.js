@@ -39,6 +39,53 @@ router.post('/claim-daily', authenticate, async (req, res) => {
   }
 });
 
+// Временный endpoint для обновления кредитов существующих пользователей
+router.post('/update-existing-users', authenticate, async (req, res) => {
+  try {
+    // Обновляем текущего пользователя до 100 кредитов если у него меньше
+    const { PrismaClient } = await import('@prisma/client');
+    const prisma = new PrismaClient();
+    
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id }
+    });
+    
+    if (user && user.totalCredits < 100) {
+      const updatedUser = await prisma.user.update({
+        where: { id: req.user.id },
+        data: {
+          totalCredits: 100,
+          lastCreditUpdate: new Date()
+        }
+      });
+      
+      // Записываем в историю
+      await prisma.credit.create({
+        data: {
+          userId: req.user.id,
+          amount: 100 - user.totalCredits,
+          type: 'SYSTEM_UPDATE',
+          description: 'System update to 100 daily credits'
+        }
+      });
+      
+      res.json({
+        message: 'Credits updated successfully',
+        previousCredits: user.totalCredits,
+        newCredits: updatedUser.totalCredits
+      });
+    } else {
+      res.json({
+        message: 'User already has 100 or more credits',
+        currentCredits: user.totalCredits
+      });
+    }
+  } catch (error) {
+    console.error('Error updating user credits:', error);
+    res.status(500).json({ error: 'Failed to update credits' });
+  }
+});
+
 // Административные эндпоинты (только для разработки)
 if (process.env.NODE_ENV === 'development') {
   // Ручной запуск начисления кредитов для всех пользователей
