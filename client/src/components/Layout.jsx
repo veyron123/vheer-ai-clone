@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/authStore';
 import LanguageSwitcher from './LanguageSwitcher';
 import { getLanguageFromPath } from '../i18n/config';
+import '../styles/dropdown.css';
 import { 
   Menu, 
   X, 
@@ -80,23 +81,38 @@ const Layout = ({ children }) => {
                       {user?.totalCredits || 0} Credits
                     </div>
                   </div>
-                  <div className="relative group">
+                  <div className="relative dropdown-trigger">
                     <button className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition">
                       <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white font-medium">
                         {user?.username?.[0]?.toUpperCase() || 'U'}
                       </div>
                     </button>
-                    <div className="absolute right-0 top-full w-48 bg-white rounded-lg shadow-lg py-2 invisible group-hover:visible transition-all duration-200 z-50">
-                      <Link to={createLocalizedLink('/profile')} className="flex items-center space-x-2 px-4 py-2 hover:bg-gray-50 transition-colors">
+                    <div className="dropdown-menu">
+                      <button 
+                        onClick={() => {
+                          navigate(createLocalizedLink('/profile'));
+                        }} 
+                        className="dropdown-item"
+                      >
                         <User className="w-4 h-4" />
                         <span>{t('navigation.profile')}</span>
-                      </Link>
-                      <Link to={createLocalizedLink('/settings')} className="flex items-center space-x-2 px-4 py-2 hover:bg-gray-50 transition-colors">
+                      </button>
+                      <button 
+                        onClick={() => {
+                          navigate(createLocalizedLink('/profile'));
+                          // Можно добавить параметр для автоматического переключения на вкладку settings
+                          setTimeout(() => {
+                            const settingsTab = document.querySelector('[data-tab="settings"]');
+                            if (settingsTab) settingsTab.click();
+                          }, 100);
+                        }} 
+                        className="dropdown-item"
+                      >
                         <Settings className="w-4 h-4" />
                         <span>{t('navigation.settings')}</span>
-                      </Link>
-                      <hr className="my-2" />
-                      <button onClick={handleLogout} className="flex items-center space-x-2 px-4 py-2 hover:bg-gray-50 w-full text-left text-red-600 transition-colors">
+                      </button>
+                      <div className="dropdown-divider" />
+                      <button onClick={handleLogout} className="dropdown-item text-red-600">
                         <LogOut className="w-4 h-4" />
                         <span>{t('navigation.logout')}</span>
                       </button>
