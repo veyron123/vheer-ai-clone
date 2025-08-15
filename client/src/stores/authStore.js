@@ -98,7 +98,7 @@ export const useAuthStore = create(
 
       // OAuth login methods
       loginWithGoogle: () => {
-        // Use current domain for OAuth to avoid redirect to internal domain
+        // Use current domain for OAuth (same domain for frontend and backend)
         const currentDomain = window.location.origin;
         const oauthURL = import.meta.env.MODE === 'development' 
           ? 'http://localhost:5000/auth/google'
@@ -107,7 +107,7 @@ export const useAuthStore = create(
       },
 
       loginWithFacebook: () => {
-        // Use current domain for OAuth to avoid redirect to internal domain
+        // Use current domain for OAuth (same domain for frontend and backend)
         const currentDomain = window.location.origin;
         const oauthURL = import.meta.env.MODE === 'development' 
           ? 'http://localhost:5000/auth/facebook'

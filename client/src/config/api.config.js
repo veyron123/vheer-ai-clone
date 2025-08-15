@@ -4,7 +4,7 @@ const isDevelopment = import.meta.env.MODE === 'development';
 export const API_CONFIG = {
   baseURL: import.meta.env.VITE_API_URL || (isDevelopment 
     ? 'http://localhost:5000/api' 
-    : 'https://vheer-api.onrender.com/api'),
+    : '/api'), // Use relative path for same-domain deployment
   
   timeout: 30000,
   
