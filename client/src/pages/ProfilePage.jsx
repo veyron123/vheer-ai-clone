@@ -401,7 +401,7 @@ const ProfilePage = () => {
 
         {/* Danger Zone - Account Deletion */}
         {activeTab === 'settings' && (
-          <div className="mt-8">
+          <div className="mt-12">
             <DangerZone />
           </div>
         )}
