@@ -69,7 +69,7 @@ passport.use(new GoogleStrategy({
         fullName: profile.displayName,
         avatar: profile.photos[0]?.value,
         emailVerified: true, // Google emails are verified
-        totalCredits: 10, // Initial daily credits
+        totalCredits: 100, // Initial daily credits
         lastCreditUpdate: new Date(), // Set current time for daily credits tracking
         subscription: {
           create: {
@@ -79,7 +79,7 @@ passport.use(new GoogleStrategy({
         },
         credits: {
           create: {
-            amount: 10, // Welcome bonus record
+            amount: 100, // Welcome bonus record
             type: 'WELCOME_BONUS',
             description: 'Welcome bonus for Google signup'
           }
@@ -138,7 +138,7 @@ passport.use(new FacebookStrategy({
         fullName: `${profile.name.givenName} ${profile.name.familyName}`,
         avatar: profile.photos?.[0]?.value,
         emailVerified: !!profile.emails?.[0]?.value,
-        totalCredits: 10, // Initial daily credits
+        totalCredits: 100, // Initial daily credits
         lastCreditUpdate: new Date(), // Set current time for daily credits tracking
         subscription: {
           create: {
@@ -148,7 +148,7 @@ passport.use(new FacebookStrategy({
         },
         credits: {
           create: {
-            amount: 10, // Welcome bonus record
+            amount: 100, // Welcome bonus record
             type: 'WELCOME_BONUS',
             description: 'Welcome bonus for Facebook signup'
           }

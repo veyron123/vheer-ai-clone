@@ -17,7 +17,7 @@ model User {
   bio             String?
   website         String?
   location        String?
-  totalCredits    Int       @default(10)
+  totalCredits    Int       @default(100)
   lastCreditUpdate DateTime  @default(now())
   emailVerified   Boolean   @default(false)
   googleId        String?   @unique

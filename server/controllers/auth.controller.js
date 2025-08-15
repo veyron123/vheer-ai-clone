@@ -40,7 +40,7 @@ export const register = async (req, res, next) => {
         username,
         password: hashedPassword,
         fullName,
-        totalCredits: 10, // Initial daily credits
+        totalCredits: 100, // Initial daily credits
         lastCreditUpdate: new Date(), // Set current time for daily credits tracking
         subscription: {
           create: {
@@ -50,7 +50,7 @@ export const register = async (req, res, next) => {
         },
         credits: {
           create: {
-            amount: 10, // Welcome bonus record
+            amount: 100, // Welcome bonus record
             type: 'WELCOME_BONUS',
             description: 'Welcome bonus'
           }

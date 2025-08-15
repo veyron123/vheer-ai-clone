@@ -35,11 +35,11 @@ class CreditService {
         };
       }
 
-      // Начисляем 10 кредитов
+      // Начисляем 100 кредитов
       const updatedUser = await prisma.user.update({
         where: { id: userId },
         data: {
-          totalCredits: user.totalCredits + 10,
+          totalCredits: user.totalCredits + 100,
           lastCreditUpdate: now
         }
       });
@@ -48,7 +48,7 @@ class CreditService {
       await prisma.credit.create({
         data: {
           userId: userId,
-          amount: 10,
+          amount: 100,
           type: 'DAILY_BONUS',
           description: 'Daily free credits'
         }
@@ -57,7 +57,7 @@ class CreditService {
       return {
         success: true,
         message: 'Daily credits added successfully',
-        creditsAdded: 10,
+        creditsAdded: 100,
         currentCredits: updatedUser.totalCredits,
         nextUpdate: new Date(now.getTime() + 24 * 60 * 60 * 1000)
       };
