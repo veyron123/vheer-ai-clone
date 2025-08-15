@@ -98,11 +98,17 @@ export const useAuthStore = create(
 
       // OAuth login methods
       loginWithGoogle: () => {
-        window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/auth/google`;
+        const baseURL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'development' 
+          ? 'http://localhost:5000' 
+          : 'https://vheer-api.onrender.com');
+        window.location.href = `${baseURL}/auth/google`;
       },
 
       loginWithFacebook: () => {
-        window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/auth/facebook`;
+        const baseURL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'development' 
+          ? 'http://localhost:5000' 
+          : 'https://vheer-api.onrender.com');
+        window.location.href = `${baseURL}/auth/facebook`;
       }
     }),
     {
