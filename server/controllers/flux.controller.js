@@ -1,10 +1,17 @@
 import axios from 'axios';
 
 const FLUX_API_KEY = process.env.FLUX_API_KEY || '2f58d1ef-d2d1-48f0-8c1f-a7b5525748c0';
+const FLUX_API_URL = process.env.FLUX_API_URL || 'https://api.bfl.ai/v1/flux-kontext-pro';
 
 // Flux.1 Kontext models for image editing (image-to-image)
 const FLUX_KONTEXT_PRO_URL = 'https://api.bfl.ai/v1/flux-kontext-pro';
 const FLUX_KONTEXT_MAX_URL = 'https://api.bfl.ai/v1/flux-kontext-max';
+
+console.log('Flux API configuration:', {
+  FLUX_API_KEY: FLUX_API_KEY ? 'Set' : 'Not set',
+  FLUX_API_URL,
+  NODE_ENV: process.env.NODE_ENV
+});
 
 // Generate image with Flux
 export const generateImage = async (req, res) => {
