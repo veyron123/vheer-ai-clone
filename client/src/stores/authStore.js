@@ -98,17 +98,21 @@ export const useAuthStore = create(
 
       // OAuth login methods
       loginWithGoogle: () => {
-        const baseURL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'development' 
-          ? 'http://localhost:5000' 
-          : 'https://vheer-api.onrender.com');
-        window.location.href = `${baseURL}/auth/google`;
+        // Use current domain for OAuth to avoid redirect to internal domain
+        const currentDomain = window.location.origin;
+        const oauthURL = import.meta.env.MODE === 'development' 
+          ? 'http://localhost:5000/auth/google'
+          : `${currentDomain}/auth/google`;
+        window.location.href = oauthURL;
       },
 
       loginWithFacebook: () => {
-        const baseURL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'development' 
-          ? 'http://localhost:5000' 
-          : 'https://vheer-api.onrender.com');
-        window.location.href = `${baseURL}/auth/facebook`;
+        // Use current domain for OAuth to avoid redirect to internal domain
+        const currentDomain = window.location.origin;
+        const oauthURL = import.meta.env.MODE === 'development' 
+          ? 'http://localhost:5000/auth/facebook'
+          : `${currentDomain}/auth/facebook`;
+        window.location.href = oauthURL;
       }
     }),
     {
