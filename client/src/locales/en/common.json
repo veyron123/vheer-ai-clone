@@ -1,0 +1,89 @@
+{
+  "site": {
+    "name": "СolibRRRi",
+    "tagline": "AI Image Generation Platform",
+    "description": "Transform your photos into stunning anime, cartoon and artistic styles using advanced AI models"
+  },
+  "navigation": {
+    "home": "Home",
+    "generate": "Generate",
+    "gallery": "Gallery",
+    "pricing": "Pricing",
+    "profile": "Profile",
+    "settings": "Settings",
+    "login": "Sign In",
+    "register": "Get Started",
+    "logout": "Logout"
+  },
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "download": "Download",
+    "upload": "Upload",
+    "generate": "Generate",
+    "try_again": "Try Again",
+    "get_started": "Get Started",
+    "learn_more": "Learn More",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "continue": "Continue"
+  },
+  "status": {
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "processing": "Processing...",
+    "completed": "Completed",
+    "failed": "Failed",
+    "success": "Success",
+    "error": "Error"
+  },
+  "form": {
+    "required": "This field is required",
+    "email_invalid": "Please enter a valid email",
+    "password_min": "Password must be at least 6 characters",
+    "passwords_no_match": "Passwords do not match"
+  },
+  "units": {
+    "credits": "Credits",
+    "images": "Images", 
+    "generations": "Generations"
+  },
+  "time": {
+    "just_now": "Just now",
+    "minutes_ago": "{{count}} minutes ago",
+    "hours_ago": "{{count}} hours ago",
+    "days_ago": "{{count}} days ago",
+    "weeks_ago": "{{count}} weeks ago"
+  },
+  "languages": {
+    "en": "English",
+    "uk": "Українська"
+  },
+  "footer": {
+    "description": "Create stunning AI-generated images and artwork with our advanced AI tools. Transform your ideas into reality.",
+    "copyright": "© 2025 {{siteName}}. All rights reserved.",
+    "company": {
+      "title": "COMPANY",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy", 
+      "cookies": "Cookie Policy",
+      "contact": "Contact Us"
+    },
+    "resources": {
+      "title": "RESOURCES",
+      "affiliate": "Affiliate",
+      "help": "Help & Support",
+      "blog": "Blog",
+      "reviews": "Reviews"
+    },
+    "tools": {
+      "title": "POPULAR TOOLS",
+      "anime_portrait": "Anime Portrait Generator",
+      "image_to_image": "AI Image to Image Generator",
+      "style_transfer": "AI Style Transfer"
+    }
+  }
+}

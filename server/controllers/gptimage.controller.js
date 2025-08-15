@@ -193,3 +193,131 @@ async function pollForResult(taskId) {
   
   throw new Error('Generation timeout after 3 minutes. GPT IMAGE is very slow, please try again.');
 }
+
+// Generate image-to-image with GPT IMAGE
+export const generateImageToImage = async (req, res) => {
+  try {
+    const { 
+      prompt, 
+      negative_prompt, 
+      input_image, 
+      creative_strength = 0.5,
+      control_strength = 0.4,
+      aspectRatio = '1:1' 
+    } = req.body;
+
+    // Map our aspect ratios to GPT Image supported formats
+    let gptImageSize = '1:1';
+    
+    switch(aspectRatio) {
+      case '1:1':
+        gptImageSize = '1:1';
+        break;
+      case '16:9':
+      case '4:3':
+        gptImageSize = '3:2';
+        break;
+      case '9:16':
+      case '3:4':
+        gptImageSize = '2:3';
+        break;
+      case 'match':
+        gptImageSize = '1:1';
+        break;
+      default:
+        gptImageSize = '1:1';
+    }
+
+    console.log('GPT IMAGE image-to-image request:', { 
+      originalAspectRatio: aspectRatio,
+      mappedSize: gptImageSize, 
+      hasPrompt: !!prompt,
+      hasNegative: !!negative_prompt,
+      hasImage: !!input_image 
+    });
+
+    if (!prompt || !input_image) {
+      return res.status(400).json({ 
+        error: 'Prompt and input_image are required' 
+      });
+    }
+
+    // Combine prompts for better results
+    const fullPrompt = `${prompt}. ${negative_prompt ? `Avoid: ${negative_prompt}` : ''}`;
+
+    // First, upload the base64 image to imgbb
+    // Remove data:image prefix if present (ImgBB expects clean base64)
+    const cleanBase64 = input_image.replace(/^data:image\/[a-z]+;base64,/, '');
+    
+    const formData = new URLSearchParams();
+    formData.append('key', IMGBB_API_KEY);
+    formData.append('image', cleanBase64);
+    
+    const imgbbResponse = await axios.post('https://api.imgbb.com/1/upload', formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+
+    if (!imgbbResponse.data || !imgbbResponse.data.data || !imgbbResponse.data.data.url) {
+      throw new Error('Failed to upload image to imgbb');
+    }
+
+    const imageUrl = imgbbResponse.data.data.url;
+    console.log('Image uploaded to imgbb:', imageUrl);
+
+    // Calculate guidance_scale based on control_strength (range: 1-10)
+    // Higher control = higher guidance_scale (more adherence to prompt)
+    const guidanceScale = 3 + (control_strength * 7); // Range: 3-10
+    
+    // Calculate num_inference_steps based on creative_strength (range: 20-50)
+    // Higher creative = more inference steps (more creative variations)
+    const inferenceSteps = 20 + Math.round(creative_strength * 30); // Range: 20-50
+
+    console.log('GPT Image parameters:', {
+      guidanceScale,
+      inferenceSteps,
+      creative_strength,
+      control_strength
+    });
+
+    // Make request to GPT IMAGE API - same format as anime generator
+    const response = await axios.post(GPT_IMAGE_API_URL, {
+      filesUrl: [imageUrl],
+      prompt: fullPrompt,
+      size: gptImageSize,
+      isEnhance: true,
+      uploadCn: false,
+      nVariants: 1,
+      enableFallback: false
+    }, {
+      headers: {
+        'Authorization': `Bearer ${GPT_IMAGE_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    console.log('GPT IMAGE API response:', response.data);
+
+    if (response.data && response.data.data && response.data.data.taskId) {
+      // Start polling for result using the taskId with the correct endpoint
+      const result = await pollForResult(response.data.data.taskId);
+      res.json(result);
+    } else if (response.data && response.data.data && response.data.data.images) {
+      // Direct response with images (unlikely with GPT IMAGE)
+      res.json({
+        success: true,
+        image: response.data.data.images[0]
+      });
+    } else {
+      throw new Error('Unexpected response from GPT IMAGE API: ' + JSON.stringify(response.data));
+    }
+  } catch (error) {
+    console.error('GPT IMAGE image-to-image generation error:', error.response?.data || error.message);
+    console.error('Full error:', error);
+    res.status(500).json({ 
+      error: 'Failed to generate image',
+      details: error.response?.data || error.message 
+    });
+  }
+};

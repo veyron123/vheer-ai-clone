@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { motion } from 'framer-motion';
 import { 
   User, 
@@ -11,26 +11,68 @@ import {
   Eye,
   EyeOff,
   Trash2,
-  Grid3x3
+  Grid3x3,
+  Save,
+  Loader
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import toast from 'react-hot-toast';
 
 const ProfilePage = () => {
-  const { user, logout } = useAuthStore();
+  const { user, logout, updateUser } = useAuthStore();
   const [activeTab, setActiveTab] = useState('images');
+  const [settingsForm, setSettingsForm] = useState({
+    fullName: '',
+    bio: '',
+    website: '',
+    location: ''
+  });
+
+  // Update form when user data loads
+  React.useEffect(() => {
+    if (user) {
+      setSettingsForm({
+        fullName: user.fullName || '',
+        bio: user.bio || '',
+        website: user.website || '',
+        location: user.location || ''
+      });
+    }
+  }, [user]);
+  const queryClient = useQueryClient();
 
   // Fetch user's images
-  const { data: imagesData, refetch: refetchImages } = useQuery(
+  const { data: imagesData, refetch: refetchImages, isLoading: imagesLoading } = useQuery(
     ['myImages'],
-    () => api.get('/images/my-images').then(res => res.data)
+    () => api.get('/images/my-images').then(res => res.data),
+    {
+      enabled: activeTab === 'images'
+    }
   );
 
   // Fetch user's generation history
-  const { data: generationsData } = useQuery(
+  const { data: generationsData, isLoading: generationsLoading } = useQuery(
     ['myGenerations'],
-    () => api.get('/generate/history').then(res => res.data)
+    () => api.get('/generate/history').then(res => res.data),
+    {
+      enabled: activeTab === 'generations'
+    }
+  );
+
+  // Update user settings mutation
+  const updateSettingsMutation = useMutation(
+    (data) => api.patch('/users/profile', data),
+    {
+      onSuccess: (response) => {
+        toast.success('Настройки сохранены!');
+        updateUser(response.data.user);
+        queryClient.invalidateQueries(['user']);
+      },
+      onError: (error) => {
+        toast.error(error.response?.data?.error || 'Ошибка при сохранении настроек');
+      }
+    }
   );
 
   const handleToggleVisibility = async (imageId, isPublic) => {
@@ -44,15 +86,27 @@ const ProfilePage = () => {
   };
 
   const handleDeleteImage = async (imageId) => {
-    if (!window.confirm('Are you sure you want to delete this image?')) return;
+    if (!window.confirm('Вы уверены, что хотите удалить это изображение?')) return;
     
     try {
       await api.delete(`/images/${imageId}`);
-      toast.success('Image deleted successfully');
+      toast.success('Изображение удалено');
       refetchImages();
     } catch (error) {
-      toast.error('Failed to delete image');
+      toast.error('Ошибка при удалении');
     }
+  };
+
+  const handleSaveSettings = (e) => {
+    e.preventDefault();
+    updateSettingsMutation.mutate(settingsForm);
+  };
+
+  const handleSettingsChange = (field, value) => {
+    setSettingsForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const tabs = [
@@ -115,7 +169,12 @@ const ProfilePage = () => {
           {/* Tab Content */}
           {activeTab === 'images' && (
             <div>
-              {imagesData?.images?.length > 0 ? (
+              {imagesLoading ? (
+                <div className="flex justify-center items-center py-20">
+                  <Loader className="w-8 h-8 animate-spin text-primary-500" />
+                  <span className="ml-2 text-gray-600">Загрузка изображений...</span>
+                </div>
+              ) : imagesData?.images?.length > 0 ? (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {imagesData.images.map((image, index) => (
                     <motion.div
@@ -182,7 +241,12 @@ const ProfilePage = () => {
 
           {activeTab === 'generations' && (
             <div className="space-y-4">
-              {generationsData?.generations?.length > 0 ? (
+              {generationsLoading ? (
+                <div className="flex justify-center items-center py-20">
+                  <Loader className="w-8 h-8 animate-spin text-primary-500" />
+                  <span className="ml-2 text-gray-600">Загрузка истории...</span>
+                </div>
+              ) : generationsData?.generations?.length > 0 ? (
                 generationsData.generations.map((generation) => (
                   <div key={generation.id} className="card p-6">
                     <div className="flex items-start justify-between">
@@ -232,47 +296,104 @@ const ProfilePage = () => {
 
           {activeTab === 'settings' && (
             <div className="card p-8">
-              <h2 className="text-2xl font-bold mb-6">Account Settings</h2>
-              <div className="space-y-6">
+              <h2 className="text-2xl font-bold mb-6">Настройки аккаунта</h2>
+              <form onSubmit={handleSaveSettings} className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="label">Email</label>
+                    <input
+                      type="email"
+                      value={user?.email || ''}
+                      disabled
+                      className="input bg-gray-50"
+                    />
+                    <p className="text-sm text-gray-500 mt-1">Нельзя изменить</p>
+                  </div>
+                  <div>
+                    <label className="label">Username</label>
+                    <input
+                      type="text"
+                      value={user?.username || ''}
+                      disabled
+                      className="input bg-gray-50"
+                    />
+                    <p className="text-sm text-gray-500 mt-1">Нельзя изменить</p>
+                  </div>
+                </div>
+                
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="label">Полное имя</label>
+                    <input
+                      type="text"
+                      value={settingsForm.fullName}
+                      onChange={(e) => handleSettingsChange('fullName', e.target.value)}
+                      className="input"
+                      placeholder="Введите ваше полное имя"
+                    />
+                  </div>
+                  <div>
+                    <label className="label">Местоположение</label>
+                    <input
+                      type="text"
+                      value={settingsForm.location}
+                      onChange={(e) => handleSettingsChange('location', e.target.value)}
+                      className="input"
+                      placeholder="Город, страна"
+                    />
+                  </div>
+                </div>
+                
                 <div>
-                  <label className="label">Email</label>
-                  <input
-                    type="email"
-                    value={user?.email || ''}
-                    disabled
-                    className="input bg-gray-50"
+                  <label className="label">О себе</label>
+                  <textarea
+                    value={settingsForm.bio}
+                    onChange={(e) => handleSettingsChange('bio', e.target.value)}
+                    className="input min-h-[100px] resize-none"
+                    placeholder="Расскажите о себе..."
+                    rows={4}
                   />
                 </div>
+                
                 <div>
-                  <label className="label">Username</label>
+                  <label className="label">Веб-сайт</label>
                   <input
-                    type="text"
-                    value={user?.username || ''}
-                    disabled
-                    className="input bg-gray-50"
-                  />
-                </div>
-                <div>
-                  <label className="label">Full Name</label>
-                  <input
-                    type="text"
-                    defaultValue={user?.fullName || ''}
+                    type="url"
+                    value={settingsForm.website}
+                    onChange={(e) => handleSettingsChange('website', e.target.value)}
                     className="input"
+                    placeholder="https://your-website.com"
                   />
                 </div>
-                <div className="flex space-x-4">
-                  <button className="btn btn-primary">
-                    Save Changes
+                
+                <div className="flex space-x-4 pt-4">
+                  <button 
+                    type="submit"
+                    disabled={updateSettingsMutation.isLoading}
+                    className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {updateSettingsMutation.isLoading ? (
+                      <>
+                        <Loader className="w-4 h-4 mr-2 animate-spin" />
+                        Сохранение...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Сохранить изменения
+                      </>
+                    )}
                   </button>
                   <button
+                    type="button"
                     onClick={logout}
                     className="btn btn-outline text-red-600 border-red-600 hover:bg-red-50"
                   >
                     <LogOut className="w-4 h-4 mr-2" />
-                    Logout
+                    Выйти
                   </button>
                 </div>
-              </div>
+              </form>
             </div>
           )}
         </div>

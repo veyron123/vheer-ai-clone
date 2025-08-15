@@ -1,0 +1,55 @@
+{
+  "title": "Privacy Policy",
+  "effectiveDate": "Effective Date: January 15, 2025",
+  "intro": {
+    "welcome": "At СolibRRRi Technologies (\"we,\" \"our,\" or \"us\"), we are committed to protecting your privacy and personal data. This Privacy Policy explains how we collect, use, store, and protect your information when you use our website СolibRRRi.com and our AI-powered image generation services (collectively, the \"Services\").",
+    "scope": "This Privacy Policy applies to all users of our Services, including visitors who browse our website without creating an account, registered users, and subscribers to our paid services."
+  },
+  "sections": {
+    "dataCollection": {
+      "title": "1. Information We Collect",
+      "content": "We collect different types of information depending on how you interact with our Services:\n\n**Personal Information:**\n• Name and email address when you create an account\n• Payment information when you purchase credits or subscriptions\n• Profile information you choose to provide\n• Communication data when you contact our support team\n\n**Usage Information:**\n• Images you upload for AI processing\n• Text prompts and generation preferences\n• Generated images and their metadata\n• Website usage patterns and preferences\n• Device information, browser type, and IP address\n\n**Technical Data:**\n• Cookies and similar tracking technologies\n• Log files and analytics data\n• Performance and error monitoring data"
+    },
+    "howWeUse": {
+      "title": "2. How We Use Your Information",
+      "content": "We use your information for the following purposes:\n\n**Service Provision:**\n• Process your images through our AI models\n• Generate anime portraits, headshots, and other AI content\n• Maintain and improve our AI algorithms\n• Provide customer support and respond to inquiries\n\n**Account Management:**\n• Create and manage your user account\n• Process payments and manage subscriptions\n• Send service-related notifications and updates\n• Prevent fraud and ensure security\n\n**Service Improvement:**\n• Analyze usage patterns to improve our Services\n• Develop new features and AI models\n• Conduct research and analytics\n• Ensure optimal performance and reliability"
+    },
+    "dataSharing": {
+      "title": "3. Information Sharing and Disclosure",
+      "content": "We do not sell, rent, or trade your personal information to third parties. We may share your information only in the following circumstances:\n\n**Service Providers:**\n• Third-party payment processors for billing\n• Cloud hosting providers for data storage\n• Analytics services for website optimization\n• Customer support platforms\n\n**Legal Requirements:**\n• When required by law or legal process\n• To protect our rights, property, or safety\n• To prevent fraud or illegal activities\n• In connection with a business transfer or merger\n\n**With Your Consent:**\n• When you explicitly authorize us to share information\n• For specific purposes you have approved"
+    },
+    "dataRetention": {
+      "title": "4. Data Retention and Storage",
+      "content": "**Image Processing:**\n• Uploaded images are processed immediately and deleted within 24 hours\n• Generated images are stored temporarily for download\n• We do not permanently store your uploaded photos\n\n**Account Data:**\n• Account information is retained while your account is active\n• Payment records are kept for tax and legal compliance\n• You can request account deletion at any time\n\n**Legal Basis:**\n• Data is stored only as long as necessary for the stated purposes\n• Retention periods comply with applicable laws and regulations"
+    },
+    "security": {
+      "title": "5. Data Security",
+      "content": "We implement industry-standard security measures to protect your information:\n\n**Technical Safeguards:**\n• Encryption in transit and at rest\n• Secure cloud infrastructure with access controls\n• Regular security audits and vulnerability assessments\n• Automated backup and disaster recovery systems\n\n**Operational Security:**\n• Employee training on data protection\n• Limited access to personal data on a need-to-know basis\n• Multi-factor authentication for administrative access\n• Incident response procedures for security breaches\n\n**AI Processing Security:**\n• Secure API endpoints for image processing\n• Isolated processing environments\n• Automatic deletion of processed images"
+    },
+    "userRights": {
+      "title": "6. Your Privacy Rights",
+      "content": "Depending on your location, you may have the following rights regarding your personal data:\n\n**Access and Portability:**\n• Request access to your personal information\n• Receive a copy of your data in a portable format\n• Review how your information is being used\n\n**Correction and Deletion:**\n• Correct inaccurate personal information\n• Request deletion of your personal data\n• Close your account and remove associated data\n\n**Control and Consent:**\n• Withdraw consent for data processing\n• Object to certain types of processing\n• Opt-out of marketing communications\n\n**GDPR Rights (EU Users):**\n• All rights listed above\n• Right to data portability\n• Right to lodge complaints with supervisory authorities"
+    },
+    "cookies": {
+      "title": "7. Cookies and Tracking Technologies",
+      "content": "We use cookies and similar technologies to enhance your experience:\n\n**Essential Cookies:**\n• Required for basic website functionality\n• Session management and security\n• User authentication and preferences\n\n**Analytics Cookies:**\n• Google Analytics for usage statistics\n• Performance monitoring and optimization\n• Error tracking and debugging\n\n**Marketing Cookies:**\n• Advertising and remarketing (with your consent)\n• Social media integration\n• Conversion tracking\n\n**Cookie Management:**\n• You can control cookies through your browser settings\n• Disabling certain cookies may limit functionality\n• We provide cookie preference options where required"
+    },
+    "international": {
+      "title": "8. International Data Transfers",
+      "content": "Our Services are provided globally, and your information may be transferred to and processed in countries other than your residence:\n\n**Transfer Safeguards:**\n• We use appropriate safeguards for international transfers\n• Standard Contractual Clauses for EU data transfers\n• Adequacy decisions where available\n\n**Data Processing Locations:**\n• Primary servers located in secure data centers\n• AI processing may occur in multiple jurisdictions\n• All transfers comply with applicable privacy laws"
+    },
+    "minors": {
+      "title": "9. Children's Privacy",
+      "content": "Our Services are not intended for children under 13 years of age:\n\n**Age Restrictions:**\n• We do not knowingly collect information from children under 13\n• Users must confirm they meet minimum age requirements\n• Parents can request removal of child's information\n\n**Verification:**\n• Account creation requires age confirmation\n• We may verify age for certain features\n• Additional protections for users under 18"
+    },
+    "updates": {
+      "title": "10. Privacy Policy Updates",
+      "content": "We may update this Privacy Policy from time to time:\n\n**Notification Process:**\n• Material changes will be communicated via email or website notice\n• Updated policy will be posted with a new effective date\n• Continued use of Services constitutes acceptance\n\n**Review Recommendations:**\n• We recommend reviewing this policy periodically\n• Significant changes will be highlighted\n• Contact us with questions about updates"
+    },
+    "contact": {
+      "title": "11. Contact Information",
+      "content": "For questions about this Privacy Policy or our data practices, please contact us: support@colibrrri.com"
+    }
+  },
+  "lastUpdated": "Last updated: January 15, 2025"
+}

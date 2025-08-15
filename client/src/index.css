@@ -48,6 +48,27 @@
   .container-custom {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
+  
+  /* Custom slider styles */
+  .slider {
+    @apply cursor-pointer;
+  }
+  
+  .slider::-webkit-slider-thumb {
+    @apply appearance-none w-4 h-4 bg-primary-500 rounded-full cursor-pointer transition-all hover:bg-primary-600;
+  }
+  
+  .slider::-moz-range-thumb {
+    @apply w-4 h-4 bg-primary-500 rounded-full cursor-pointer border-0 transition-all hover:bg-primary-600;
+  }
+  
+  .slider::-webkit-slider-track {
+    @apply bg-gray-200 rounded-lg h-2;
+  }
+  
+  .slider::-moz-range-track {
+    @apply bg-gray-200 rounded-lg h-2;
+  }
 }
 
 @layer utilities {

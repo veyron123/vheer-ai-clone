@@ -18,13 +18,6 @@ const ExampleGallery = () => {
             <div className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs">
               {example.style}
             </div>
-            <div className="absolute top-2 right-2 w-12 h-12 rounded-lg overflow-hidden border-2 border-white shadow-lg">
-              <img 
-                src={example.original} 
-                alt="Original"
-                className="w-full h-full object-cover"
-              />
-            </div>
           </div>
         ))}
       </div>

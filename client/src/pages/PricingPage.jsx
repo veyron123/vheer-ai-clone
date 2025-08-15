@@ -3,6 +3,7 @@ import { useQuery } from 'react-query';
 import { motion } from 'framer-motion';
 import { Check, Sparkles, Zap, Crown, Building } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import api from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 
@@ -63,13 +64,13 @@ const PricingPage = () => {
                   </div>
                 )}
                 
-                <div className={`card p-8 h-full ${isPopular ? 'ring-2 ring-primary-500' : ''}`}>
+                <div className={`card p-8 h-full flex flex-col ${isPopular ? 'ring-2 ring-primary-500' : ''}`}>
                   {/* Plan Icon */}
                   <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${
                     plan.id === 'FREE' ? 'bg-gray-100 text-gray-600' :
                     plan.id === 'BASIC' ? 'bg-blue-100 text-blue-600' :
                     plan.id === 'PRO' ? 'bg-primary-100 text-primary-600' :
-                    'bg-purple-100 text-purple-600'
+                    'bg-primary-100 text-primary-600'
                   }`}>
                     <Icon className="w-6 h-6" />
                   </div>
@@ -96,7 +97,7 @@ const PricingPage = () => {
                   </div>
 
                   {/* Features */}
-                  <ul className="space-y-3 mb-8">
+                  <ul className="space-y-3 mb-8 flex-grow">
                     {plan.features.map((feature, idx) => (
                       <li key={idx} className="flex items-start">
                         <Check className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
@@ -108,7 +109,7 @@ const PricingPage = () => {
                   {/* CTA Button */}
                   <button
                     onClick={() => handleSelectPlan(plan)}
-                    className={`w-full py-3 rounded-lg font-medium transition ${
+                    className={`w-full py-3 rounded-lg font-medium transition mt-auto ${
                       plan.id === 'FREE' 
                         ? 'btn btn-outline'
                         : isPopular

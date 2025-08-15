@@ -8,7 +8,7 @@ import { useAuthStore } from '../stores/authStore';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, isLoading } = useAuthStore();
+  const { login, isLoading, loginWithGoogle, loginWithFacebook } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   
   const {
@@ -38,10 +38,12 @@ const LoginPage = () => {
         <div className="card p-8">
           {/* Logo */}
           <Link to="/" className="flex items-center justify-center space-x-2 mb-8">
-            <div className="w-12 h-12 bg-primary-500 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-7 h-7 text-white" />
-            </div>
-            <span className="text-2xl font-bold">Vheer</span>
+            <img 
+              src="/colibrrri-logo.png" 
+              alt="СolibRRRi Logo" 
+              className="w-12 h-12"
+            />
+            <span className="text-2xl font-bold">СolibRRRi</span>
           </Link>
 
           <h2 className="text-2xl font-bold text-center mb-2">Welcome Back</h2>
@@ -137,15 +139,25 @@ const LoginPage = () => {
           </div>
 
           {/* Social Login */}
-          <div className="grid grid-cols-2 gap-4">
-            <button className="btn btn-outline">
+          <div className="flex justify-center">
+            <button 
+              type="button"
+              onClick={loginWithGoogle}
+              className="btn btn-outline hover:bg-gray-50 w-full max-w-xs"
+            >
               <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5 mr-2" />
-              Google
+              Continue with Google
             </button>
-            <button className="btn btn-outline">
+            {/* Facebook OAuth временно отключен
+            <button 
+              type="button"
+              onClick={loginWithFacebook}
+              className="btn btn-outline hover:bg-gray-50"
+            >
               <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" alt="Facebook" className="w-5 h-5 mr-2" />
               Facebook
             </button>
+            */}
           </div>
 
           {/* Sign Up Link */}

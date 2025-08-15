@@ -1,0 +1,63 @@
+{
+  "title": "Terms and Conditions",
+  "effectiveDate": "Effective Date: January 15, 2025",
+  "intro": {
+    "welcome": "Welcome to СolibRRRi.com, operated by СolibRRRi Technologies (\"we,\" \"our,\" or \"us\"). By accessing or using our website, online tools, applications, or services (collectively, the \"Services\"), you agree to be bound by these Terms and Conditions. Please read them carefully before using our Services. If you are using our Services on behalf of an organization, you are agreeing to these Terms for that organization.",
+    "incorporation": "These Terms incorporate our Privacy Policy and Acceptable Use Policy, which govern how we handle your data and what conduct is permitted while using the Services."
+  },
+  "sections": {
+    "useOfServices": {
+      "title": "1. Use of Services",
+      "content": "We provide AI-powered tools for image generation, anime portrait creation, professional headshot generation, tattoo design, and various AI-powered image editing utilities. Most features are available without sign-up or registration. Some advanced tools and models are available under a paid subscription or credit-based system.\n\nYou must use the Services only for lawful purposes and in accordance with these Terms."
+    },
+    "yourContent": {
+      "title": "2. Your Content & Permissions",
+      "content": "By using our Services, you may upload or generate data such as images, text, prompts, or files (\"Your Content\"). You retain full ownership of Your Content. We do not claim any intellectual property rights over it.\n\nHowever, by using our Services, you grant us a limited, non-exclusive, royalty-free license to process, store, and display Your Content solely for the purpose of providing the Services to you."
+    },
+    "aiGeneration": {
+      "title": "3. AI-Generated Content",
+      "content": "Our Services use artificial intelligence to generate images, including anime portraits, professional headshots, tattoo designs, and other artistic content. The AI-generated content is created based on your inputs and prompts.\n\nYou acknowledge that AI-generated content may not always be perfect and may require refinement. We do not guarantee the accuracy, quality, or suitability of AI-generated content for any particular purpose."
+    },
+    "prohibitedUse": {
+      "title": "4. Prohibited Use",
+      "content": "You agree not to use our Services to:\n\n• Generate content that is illegal, harmful, threatening, abusive, defamatory, or otherwise objectionable\n• Create deepfakes or misleading content of real people without consent\n• Generate content that infringes on intellectual property rights of others\n• Create content that promotes violence, hatred, or discrimination\n• Attempt to reverse engineer or compromise our AI models\n• Use the Services for commercial purposes without proper licensing (where applicable)"
+    },
+    "accountSecurity": {
+      "title": "5. Account and Security",
+      "content": "If you create an account with us, you are responsible for maintaining the security of your account and password. You must notify us immediately of any unauthorized use of your account.\n\nWe reserve the right to suspend or terminate accounts that violate these Terms or engage in suspicious activity."
+    },
+    "paymentTerms": {
+      "title": "6. Payment and Subscription Terms",
+      "content": "Some features of our Services require payment through credits or subscription plans. All payments are processed securely through third-party payment processors.\n\n• Subscription fees are billed in advance on a monthly or annual basis\n• Credits are non-refundable once used\n• We reserve the right to change pricing with 30 days notice\n• Refunds are handled on a case-by-case basis according to our refund policy"
+    },
+    "intellectualProperty": {
+      "title": "7. Intellectual Property",
+      "content": "The Services, including our AI models, algorithms, software, and website design, are protected by copyright, trademark, and other intellectual property laws. You may not copy, modify, distribute, or reverse engineer any part of our Services without written permission.\n\nThe СolibRRRi name and logo are trademarks of СolibRRRi Technologies."
+    },
+    "disclaimers": {
+      "title": "8. Disclaimers and Limitations",
+      "content": "THE SERVICES ARE PROVIDED \"AS IS\" WITHOUT WARRANTIES OF ANY KIND. WE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.\n\nWE ARE NOT LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES ARISING FROM YOUR USE OF THE SERVICES."
+    },
+    "privacy": {
+      "title": "9. Privacy and Data Protection",
+      "content": "We take your privacy seriously. Our Privacy Policy explains how we collect, use, and protect your information. By using our Services, you consent to our data practices as described in the Privacy Policy.\n\n• Uploaded images are processed securely and deleted after generation\n• We do not share your personal data with third parties without consent\n• We comply with GDPR and other applicable privacy laws"
+    },
+    "termination": {
+      "title": "10. Termination",
+      "content": "We may terminate or suspend your access to the Services at any time, with or without cause, with or without notice. Upon termination, your right to use the Services will cease immediately.\n\nYou may stop using the Services at any time. Termination does not relieve you of any obligations that accrued before termination."
+    },
+    "changes": {
+      "title": "11. Changes to Terms",
+      "content": "We reserve the right to modify these Terms at any time. We will notify users of significant changes by posting the updated Terms on our website with a new effective date.\n\nContinued use of the Services after changes constitutes acceptance of the new Terms."
+    },
+    "governing": {
+      "title": "12. Governing Law and Jurisdiction",
+      "content": "These Terms are governed by and construed in accordance with the laws of [Jurisdiction]. Any disputes arising from these Terms or your use of the Services will be resolved in the courts of [Jurisdiction]."
+    },
+    "contact": {
+      "title": "13. Contact Information",
+      "content": "If you have any questions about these Terms, please contact us at:\n\nСolibRRRi Technologies\nEmail: support@colibrrri.com\nWebsite: https://colibrrri.com/contact"
+    }
+  },
+  "lastUpdated": "Last updated: January 15, 2025"
+}

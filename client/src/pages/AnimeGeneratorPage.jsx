@@ -18,7 +18,7 @@ import { ANIME_STYLES } from '../constants/anime.constants';
 import { useImageGeneration } from '../hooks/useImageGeneration';
 
 const AnimeGeneratorPage = () => {
-  const [selectedStyle, setSelectedStyle] = useState('disney');
+  const [selectedStyle, setSelectedStyle] = useState('studio-ghibli');
   const [aiModel, setAiModel] = useState('flux-pro');
   const [aspectRatio, setAspectRatio] = useState('match');
   

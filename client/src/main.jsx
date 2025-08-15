@@ -6,6 +6,7 @@ import { HelmetProvider } from 'react-helmet-async'
 import { Toaster } from 'react-hot-toast'
 import App from './App.jsx'
 import './index.css'
+import './i18n/config.js'
 
 const queryClient = new QueryClient({
   defaultOptions: {

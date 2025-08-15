@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import { getLanguageFromPath } from '../i18n/config';
+import SEOTags from '../components/SEOTags';
 import { 
   Sparkles, 
   Zap, 
@@ -22,12 +25,22 @@ const HomePage = () => {
   const [currentFeature, setCurrentFeature] = useState(1);
   const [openFaq, setOpenFaq] = useState(null);
   const [activeCategory, setActiveCategory] = useState('anime');
+  const { t } = useTranslation('home');
+  const location = useLocation();
+  
+  // Get current language from path
+  const currentLang = getLanguageFromPath(location.pathname) || 'en';
+
+  // Helper function to create localized links
+  const createLocalizedLink = (path) => {
+    return `/${currentLang}${path}`;
+  };
 
   const aiFeatures = [
     {
       id: 1,
-      title: 'Anime Portrait Generator',
-      description: 'Turn selfies into stunning anime artwork instantly. Pick your favorite style and watch AI bring your character to life.',
+      title: t('features.anime_generator.title'),
+      description: t('features.anime_generator.description'),
       image: '/anime-wedding.jpg',
       icon: <Wand2 className="w-5 h-5" />,
       color: 'from-pink-400 to-pink-600',
@@ -35,17 +48,17 @@ const HomePage = () => {
     },
     {
       id: 2,
-      title: 'AI Image to Image Generator',
-      description: 'Reimagine any photo with AI magic. Keep facial features intact while exploring endless creative possibilities.',
+      title: t('features.image_to_image.title'),
+      description: t('features.image_to_image.description'),
       image: '/image-to-image.webp',
       icon: <Image className="w-5 h-5" />,
       color: 'from-yellow-400 to-orange-500',
-      link: '/generate'
+      link: '/image-to-image-generator'
     },
     {
       id: 3,
-      title: 'AI Style Transfer',
-      description: 'Blend art movements with your photos. From Van Gogh brushstrokes to futuristic cyberpunk aesthetics in seconds.',
+      title: t('features.style_transfer.title'),
+      description: t('features.style_transfer.description'),
       image: '/style-transfer.webp',
       icon: <Brush className="w-5 h-5" />,
       color: 'from-blue-400 to-cyan-500',
@@ -96,24 +109,16 @@ const HomePage = () => {
   ];
 
   const galleryCategories = {
-    'digital': {
-      name: 'Digital Avatar',
-      images: [
-        'https://images.unsplash.com/photo-1636622433525-127afdf3662d?w=400&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1635322966219-b75ed372eb01?w=400&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1633177317976-3f9bc45e1d1d?w=400&h=500&fit=crop'
-      ]
-    },
     'anime': {
-      name: 'Anime & Manga',
+      name: t('categories.anime_manga'),
       images: [
-        'https://images.unsplash.com/photo-1578662996442-48f60103fc27?w=400&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=400&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1578632292335-df3abbb0d586?w=400&h=500&fit=crop'
+        '/il_794xN.6879206739_46as.avif',
+        '/il_794xN.6879206749_a1eo (1).avif',
+        '/il_794xN.6831231318_lw9v.webp'
       ]
     },
     'tattoo': {
-      name: 'Tattoo Design',
+      name: t('categories.tattoo_design'),
       images: [
         'https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?w=400&h=500&fit=crop',
         'https://images.unsplash.com/photo-1567701554261-fcc289c03a36?w=400&h=500&fit=crop',
@@ -121,7 +126,7 @@ const HomePage = () => {
       ]
     },
     'product': {
-      name: 'Product Photo',
+      name: t('categories.product_photo'),
       images: [
         'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=500&fit=crop',
         'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=500&fit=crop',
@@ -129,7 +134,7 @@ const HomePage = () => {
       ]
     },
     'wallpaper': {
-      name: 'Wallpaper',
+      name: t('categories.wallpaper'),
       images: [
         'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=500&fit=crop',
         'https://images.unsplash.com/photo-1620121692029-d088224ddc74?w=400&h=500&fit=crop',
@@ -146,48 +151,7 @@ const HomePage = () => {
     setCurrentFeature((prev) => (prev === 1 ? 3 : prev - 1));
   };
 
-  const faqs = [
-    {
-      question: "How Does the Anime Portrait Generator Work?",
-      answer: "Our anime portrait generator uses advanced AI algorithms to transform your photos into anime-style artwork. Simply upload your photo, select your preferred style, and our AI will analyze facial features, expressions, and characteristics to create a unique anime version while maintaining your identity."
-    },
-    {
-      question: "Do I Need Design Skills to Create AI Anime Portraits?",
-      answer: "No design skills are required! Our user-friendly interface makes it easy for anyone to create professional-quality anime portraits. Just upload your photo, choose from our preset styles or customize your preferences, and let the AI do the work for you."
-    },
-    {
-      question: "What is an AI Headshot Generator?",
-      answer: "An AI headshot generator is a tool that creates professional-looking portrait photos using artificial intelligence. It can transform casual photos into polished headshots suitable for LinkedIn profiles, resumes, or professional portfolios, all without the need for a photo studio."
-    },
-    {
-      question: "What Can I Create with an AI Headshot Generator?",
-      answer: "You can create professional business headshots, creative portraits for social media, avatar images for gaming profiles, artistic interpretations of your photos, and customized profile pictures for various platforms. The possibilities are endless with different styles and customization options."
-    },
-    {
-      question: "What Type of Photos Work Best for the AI Headshot Generator?",
-      answer: "Clear, front-facing photos with good lighting work best. The ideal photo should show your face clearly with minimal obstructions, have even lighting without harsh shadows, be in focus and high resolution, and preferably have a simple background for best results."
-    },
-    {
-      question: "Is Your AI Tattoo Generator Free to Use?",
-      answer: "Yes! Our basic AI tattoo generator is completely free to use. You can create unlimited tattoo designs, explore various styles, and download your creations without any charges. Premium features are available for users who want advanced customization options."
-    },
-    {
-      question: "Can I Design a Custom Tattoo with the AI Tattoo Generator?",
-      answer: "Absolutely! Our AI tattoo generator allows full customization. You can specify design elements, choose artistic styles, adjust size and complexity, combine multiple concepts, and even upload reference images to guide the AI in creating your perfect tattoo design."
-    },
-    {
-      question: "What is Vheer Text to Image?",
-      answer: "Vheer Text to Image is our flagship feature that converts written descriptions into stunning visual artwork. Using state-of-the-art AI models, it interprets your text prompts and generates unique, high-quality images that match your vision, from realistic photos to abstract art."
-    },
-    {
-      question: "What Makes Vheer Text to Image Generator Different?",
-      answer: "Vheer stands out with its intuitive interface, diverse style options, fast generation speed, high-resolution outputs, and unlimited free generations. We also offer advanced features like style mixing, prompt enhancement, and batch generation for power users."
-    },
-    {
-      question: "How Does Vheer Ensure My Data Privacy and Security?",
-      answer: "We take privacy seriously. All uploaded images are encrypted during transmission, processed securely on our servers, automatically deleted after processing, never shared with third parties, and you retain full ownership of all generated content. We comply with GDPR and other data protection regulations."
-    }
-  ];
+  const faqs = t('faq.questions', { returnObjects: true }) || [];
 
   const toggleFaq = (index) => {
     setOpenFaq(openFaq === index ? null : index);
@@ -195,6 +159,11 @@ const HomePage = () => {
 
   return (
     <div>
+      <SEOTags
+        title={t('hero.title')}
+        description={t('hero.subtitle')}
+        keywords="AI image generator, free online AI art, photo to anime, cartoon maker, artificial intelligence"
+      />
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-b from-gray-50 to-white py-16 lg:py-24">
         <div className="container-custom">
@@ -206,9 +175,7 @@ const HomePage = () => {
               transition={{ duration: 0.5 }}
               className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6"
             >
-              Free Online <span className="text-gradient">AI Image</span>
-              <br />
-              Generator
+{t('hero.title')}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -216,8 +183,7 @@ const HomePage = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto"
             >
-              Convert simple text or ordinary photos into breathtaking masterpieces with our free
-              online AI image generators. Instantly generate AI artworks at your fingertips like a pro!
+{t('hero.subtitle')}
             </motion.p>
           </div>
 
@@ -232,7 +198,7 @@ const HomePage = () => {
                   transition={{ duration: 0.5, delay: index * 0.15 }}
                   className="group relative"
                 >
-                  <Link to={feature.link} className="block">
+                  <Link to={createLocalizedLink(feature.link)} className="block">
                     <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden">
                       {/* Badge */}
                       <div className={`absolute top-4 right-4 z-10 bg-gradient-to-r ${feature.color} text-white px-3 py-1 rounded-full flex items-center gap-1`}>
@@ -260,7 +226,7 @@ const HomePage = () => {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           <div className="absolute bottom-4 left-4 right-4">
                             <div className="flex items-center justify-between text-white">
-                              <span className="text-sm font-medium">Try Now</span>
+                              <span className="text-sm font-medium">{t('buttons.try_now')}</span>
                               <ArrowRight className="w-5 h-5" />
                             </div>
                           </div>
@@ -318,12 +284,12 @@ const HomePage = () => {
             transition={{ duration: 0.5, delay: 0.6 }}
             className="flex flex-col sm:flex-row gap-4 justify-center mt-12"
           >
-            <Link to="/generate" className="btn btn-primary text-lg px-8 py-4">
+            <Link to={createLocalizedLink('/generate')} className="btn btn-primary text-lg px-8 py-4">
               <Sparkles className="w-5 h-5 mr-2" />
-              Start Creating for Free
+              {t('buttons.start_creating')}
             </Link>
-            <Link to="/gallery" className="btn btn-outline text-lg px-8 py-4">
-              Explore Gallery
+            <Link to={createLocalizedLink('/gallery')} className="btn btn-outline text-lg px-8 py-4">
+              {t('buttons.explore_gallery')}
               <ArrowRight className="w-5 h-5 ml-2" />
             </Link>
           </motion.div>
@@ -340,9 +306,9 @@ const HomePage = () => {
               transition={{ duration: 0.5 }}
               className="text-4xl md:text-5xl font-bold mb-4"
             >
-              The Magic Of AI Image Generation
+              {t('sections.magic_title')}
               <br />
-              For Everyone
+              {t('sections.magic_subtitle')}
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -350,10 +316,7 @@ const HomePage = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-lg text-gray-600 max-w-4xl mx-auto leading-relaxed"
             >
-              Unleash your creativity with AI image generation technology on Vheer! Create stunning visuals in seconds by simply
-              describing what you want or customizing your preference. Whether you're designing unique anime avatars,
-              enhancing existing photos, or generating realistic scenes, our generative AI can bring your ideas to life. With AI image
-              generation, everyone has the power to produce high-quality, original images for any project or purpose.
+              {t('sections.magic_description')}
             </motion.p>
           </div>
 
@@ -368,23 +331,19 @@ const HomePage = () => {
               {/* Text Content */}
               <div className="order-2 lg:order-1">
                 <h3 className="text-3xl md:text-4xl font-bold mb-6 text-gray-800">
-                  100% Free Photo to Anime Converter
+                  {t('sections.anime_converter.title')}
                 </h3>
                 <p className="text-gray-600 leading-relaxed mb-6">
-                  Transform your selfie or profile picture into anime-style art for free with our
-                  anime portrait generator. Simply upload your photo, add a few prompts to
-                  describe your preferences, and let our AI art generator work its magic.
+                  {t('sections.anime_converter.description1')}
                 </p>
                 <p className="text-gray-600 leading-relaxed mb-8">
-                  Whether you want a Chibi, Waifu, Classic, Shonen, Fantasy, Cyberpunk,
-                  Gothic, Realistic, Historical, or Romantic anime portrait, our tool brings your
-                  vision to life with vibrant, personalized anime art—no hidden fees, no limits.
+                  {t('sections.anime_converter.description2')}
                 </p>
                 <Link 
-                  to="/anime-generator" 
+                  to={createLocalizedLink('/anime-generator')} 
                   className="btn btn-primary inline-flex items-center text-lg"
                 >
-                  Try Anime Converter
+                  {t('buttons.try_anime_converter')}
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Link>
               </div>
@@ -395,33 +354,13 @@ const HomePage = () => {
                   {/* Main Container with gradient background */}
                   <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-purple-400 via-pink-300 to-blue-300 p-1">
                     <div className="bg-white rounded-3xl overflow-hidden">
-                      <div className="grid grid-cols-2 gap-0">
-                        {/* Left Anime Image */}
-                        <div className="relative aspect-[3/4] bg-gradient-to-br from-purple-200 to-pink-200">
-                          <img 
-                            src="https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=400&h=500&fit=crop"
-                            alt="Anime style portrait 1"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        
-                        {/* Right Anime Image */}
-                        <div className="relative aspect-[3/4] bg-gradient-to-br from-blue-200 to-purple-200">
-                          <img 
-                            src="https://images.unsplash.com/photo-1578662996442-48f60103fc27?w=400&h=500&fit=crop"
-                            alt="Anime style portrait 2"
-                            className="w-full h-full object-cover"
-                          />
-                          
-                          {/* Small Original Photo Overlay */}
-                          <div className="absolute bottom-4 right-4 w-20 h-20 rounded-lg overflow-hidden border-2 border-white shadow-lg">
-                            <img 
-                              src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop"
-                              alt="Original photo"
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        </div>
+                      {/* Single Anime Transformation Image */}
+                      <div className="relative aspect-[4/3] bg-gradient-to-br from-purple-100 to-pink-100">
+                        <img 
+                          src="/Screenshot (59).png"
+                          alt="Transform your photo into Ghibli masterpiece"
+                          className="w-full h-full object-contain"
+                        />
                       </div>
                     </div>
                   </div>
@@ -446,35 +385,15 @@ const HomePage = () => {
               <div className="order-2 lg:order-1">
                 <div className="relative">
                   {/* Main Container */}
-                  <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 p-1">
+                  <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-blue-100 to-purple-200 p-1">
                     <div className="bg-white rounded-3xl overflow-hidden">
-                      <div className="grid grid-cols-2 gap-0">
-                        {/* Left Professional Headshot */}
-                        <div className="relative aspect-[3/4] bg-gradient-to-br from-gray-50 to-gray-100">
-                          <img 
-                            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop"
-                            alt="Professional headshot in suit"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        
-                        {/* Right Professional Headshot */}
-                        <div className="relative aspect-[3/4] bg-gradient-to-br from-green-50 to-green-100">
-                          <img 
-                            src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=500&fit=crop"
-                            alt="Professional headshot casual"
-                            className="w-full h-full object-cover"
-                          />
-                          
-                          {/* Small Original Photo Overlay */}
-                          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-20 h-20 rounded-lg overflow-hidden border-3 border-white shadow-xl">
-                            <img 
-                              src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop"
-                              alt="Original photo"
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        </div>
+                      {/* Single Image to Image Transformation */}
+                      <div className="relative aspect-[4/3] bg-gradient-to-br from-blue-50 to-purple-100">
+                        <img 
+                          src="/il_794xN.6989129759_igne.webp"
+                          alt="AI Image to Image transformation example"
+                          className="w-full h-full object-contain"
+                        />
                       </div>
                     </div>
                   </div>
@@ -488,25 +407,19 @@ const HomePage = () => {
               {/* Text Content */}
               <div className="order-1 lg:order-2">
                 <h3 className="text-3xl md:text-4xl font-bold mb-6 text-gray-800">
-                  Professional Headshots for Personal or Brand Use
+                  {t('sections.headshots.title')}
                 </h3>
                 <p className="text-gray-600 leading-relaxed mb-6">
-                  Want to look more professional and attractive on your social media? Our AI-powered 
-                  headshot generator lets you transform your photo into a polished, business-ready 
-                  portrait in just a few steps. Get free AI to generate headshots for your LinkedIn, 
-                  INS, FB, or website profile.
+                  {t('sections.headshots.description1')}
                 </p>
                 <p className="text-gray-600 leading-relaxed mb-8">
-                  Don't worry about any imperfections in your original photo; we will replace it with a 
-                  clean background, perfect lights, a cool hairstyle, and confident facial features. 
-                  With customizable features and instant results, achieving a standout professional 
-                  image has never been easier.
+                  {t('sections.headshots.description2')}
                 </p>
                 <Link 
-                  to="/generate" 
+                  to={createLocalizedLink('/image-to-image-generator')} 
                   className="btn btn-primary inline-flex items-center text-lg"
                 >
-                  Create Professional Headshot
+                  {t('buttons.create_headshot')}
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Link>
               </div>
@@ -524,26 +437,19 @@ const HomePage = () => {
               {/* Text Content */}
               <div className="order-2 lg:order-1">
                 <h3 className="text-3xl md:text-4xl font-bold mb-6 text-gray-800">
-                  Visualize Your Body Art with AI Tattoo Generator
+                  {t('sections.tattoo.title')}
                 </h3>
                 <p className="text-gray-600 leading-relaxed mb-6">
-                  Unleash your creativity and design custom tattoos like never before with our AI 
-                  Tattoo Generator. This powerful, free tool allows you to transform your ideas 
-                  into striking body art - from intricate symbols to large, detailed designs.
+                  {t('sections.tattoo.description1')}
                 </p>
                 <p className="text-gray-600 leading-relaxed mb-8">
-                  Whether you're envisioning a traditional wolf tattoo, a delicate butterfly, or a 
-                  timeless rose, our AI image generator can bring your vision to life with ease. 
-                  You can customize your tattoo for any body part — whether it's your forearm, 
-                  wrist, finger, or spine — and experiment with different styles and themes to 
-                  create something truly unique. With the AI Tattoo Generator, designing your 
-                  perfect tattoo has never been more effortless or exciting!
+                  {t('sections.tattoo.description2')}
                 </p>
                 <Link 
-                  to="/generate" 
+                  to={createLocalizedLink('/style-transfer')} 
                   className="btn btn-primary inline-flex items-center text-lg"
                 >
-                  Design Your Tattoo
+                  {t('buttons.design_tattoo')}
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Link>
               </div>
@@ -552,44 +458,15 @@ const HomePage = () => {
               <div className="order-1 lg:order-2">
                 <div className="relative">
                   {/* Main Container */}
-                  <div className="relative rounded-3xl overflow-hidden p-1">
-                    <div className="rounded-3xl overflow-hidden">
-                      <div className="grid grid-cols-2 gap-2">
-                        {/* Top Left - Whale Tattoo */}
-                        <div className="relative aspect-[4/3] bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl overflow-hidden">
-                          <img 
-                            src="https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?w=400&h=300&fit=crop"
-                            alt="Whale tattoo design"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        
-                        {/* Top Right - Heart Tattoo */}
-                        <div className="relative aspect-[4/3] bg-gradient-to-br from-red-50 to-pink-50 rounded-2xl overflow-hidden">
-                          <img 
-                            src="https://images.unsplash.com/photo-1568515045052-f9a854d70bfd?w=400&h=300&fit=crop"
-                            alt="Anatomical heart tattoo"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-
-                        {/* Bottom Left - Rose Tattoo */}
-                        <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden">
-                          <img 
-                            src="https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=400&h=300&fit=crop"
-                            alt="Rose tattoo design"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-
-                        {/* Bottom Right - Lion Tattoo */}
-                        <div className="relative aspect-[4/3] bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl overflow-hidden">
-                          <img 
-                            src="https://images.unsplash.com/photo-1567701554261-fcc289c03a36?w=400&h=300&fit=crop"
-                            alt="Lion tattoo design"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
+                  <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-purple-100 to-orange-200 p-1">
+                    <div className="bg-white rounded-3xl overflow-hidden">
+                      {/* Single Style Transfer Example */}
+                      <div className="relative aspect-[4/3] bg-gradient-to-br from-purple-50 to-orange-100">
+                        <img 
+                          src="/image-to-image-ai-generator.avif"
+                          alt="AI Style Transfer artistic transformation example"
+                          className="w-full h-full object-contain"
+                        />
                       </div>
                     </div>
                   </div>
@@ -614,7 +491,7 @@ const HomePage = () => {
               transition={{ duration: 0.5 }}
               className="text-4xl md:text-5xl font-bold mb-4"
             >
-              Preview What's Possible With AI-Generated Images
+              {t('sections.gallery_title')}
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -622,8 +499,7 @@ const HomePage = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-lg text-gray-600 max-w-3xl mx-auto"
             >
-              Turn your ideas into stunning visuals with our generative AI. Create amazing headshots, tattoo designs, anime art, and 
-              more in seconds. Just enter a prompt, customize with ease, and browse a world of AI-crafted styles.
+              {t('sections.gallery_description')}
             </motion.p>
           </div>
 
@@ -670,7 +546,7 @@ const HomePage = () => {
                     <img 
                       src={image} 
                       alt={`${galleryCategories[activeCategory].name} example ${index + 1}`}
-                      className="w-full h-[400px] object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="w-full aspect-square object-contain group-hover:scale-110 transition-transform duration-500"
                     />
                     
                     {/* Hover Overlay */}
@@ -680,10 +556,10 @@ const HomePage = () => {
                         <div className="flex items-center justify-between">
                           <span className="text-white/80 text-sm">AI Generated</span>
                           <Link 
-                            to={activeCategory === 'anime' ? '/anime-generator' : '/generate'} 
+                            to={activeCategory === 'anime' ? createLocalizedLink('/anime-generator') : createLocalizedLink('/generate')} 
                             className="text-white bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm hover:bg-white/30 transition-colors"
                           >
-                            Try Now →
+                            {t('buttons.try_now')} →
                           </Link>
                         </div>
                       </div>
@@ -702,11 +578,11 @@ const HomePage = () => {
             className="text-center mt-12"
           >
             <Link 
-              to="/gallery" 
+              to={createLocalizedLink('/gallery')} 
               className="btn btn-primary inline-flex items-center text-lg px-8 py-4"
             >
               <Sparkles className="w-5 h-5 mr-2" />
-              Explore Full Gallery
+              {t('buttons.explore_full_gallery')}
             </Link>
           </motion.div>
         </div>
@@ -716,7 +592,7 @@ const HomePage = () => {
       {/* <section className="py-20 bg-gray-50">
         <div className="container-custom">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Why Choose Vheer?</h2>
+            <h2 className="text-4xl font-bold mb-4">Why Choose СolibRRRi?</h2>
             <p className="text-xl text-gray-600">Powerful features to bring your imagination to life</p>
           </div>
           
@@ -795,7 +671,7 @@ const HomePage = () => {
                 transition={{ duration: 0.5 }}
                 className="text-4xl font-bold mb-4"
               >
-                Frequently Asked Questions
+                {t('faq.title')}
               </motion.h2>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -803,7 +679,7 @@ const HomePage = () => {
                 transition={{ duration: 0.5, delay: 0.1 }}
                 className="text-xl text-gray-600"
               >
-                Get Answers to Your Questions About Vheer
+                {t('faq.subtitle')}
               </motion.p>
             </div>
 
@@ -858,23 +734,23 @@ const HomePage = () => {
               ))}
             </motion.div>
 
-            <motion.div
+            {/* <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.6 }}
               className="text-center mt-12"
             >
               <p className="text-gray-600 mb-4">
-                Still have questions? We're here to help!
+                {t('faq.support.text')}
               </p>
               <Link 
-                to="/contact" 
+                to={createLocalizedLink('/contact')} 
                 className="btn btn-outline inline-flex items-center"
               >
-                Contact Support
+                {t('faq.support.button')}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Link>
-            </motion.div>
+            </motion.div> */}
           </div>
         </div>
       </section>
@@ -883,13 +759,13 @@ const HomePage = () => {
       <section className="py-20 bg-gradient-to-r from-primary-500 to-primary-600">
         <div className="container-custom text-center">
           <h2 className="text-4xl font-bold text-white mb-4">
-            Ready to Create Amazing Art?
+            {t('cta.title')}
           </h2>
           <p className="text-xl text-white/90 mb-8">
-            Join thousands of creators using Vheer to bring their ideas to life
+            {t('cta.subtitle')}
           </p>
-          <Link to="/register" className="btn bg-white text-primary-600 hover:bg-gray-100 text-lg px-8 py-4">
-            Get Started for Free
+          <Link to={createLocalizedLink('/register')} className="btn bg-white text-primary-600 hover:bg-gray-100 text-lg px-8 py-4">
+            {t('cta.button')}
             <Sparkles className="w-5 h-5 ml-2" />
           </Link>
         </div>

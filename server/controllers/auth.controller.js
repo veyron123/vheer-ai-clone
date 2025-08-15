@@ -205,3 +205,30 @@ export const changePassword = async (req, res, next) => {
     next(error);
   }
 };
+
+// OAuth Success Handler
+export const oauthSuccess = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const token = generateToken(user.id);
+    
+    // Redirect to frontend with token  
+    const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5182';
+    res.redirect(`${frontendURL}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      fullName: user.fullName,
+      avatar: user.avatar,
+      subscription: user.subscription
+    }))}`);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// OAuth Failure Handler
+export const oauthFailure = (req, res) => {
+  const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5178';
+  res.redirect(`${frontendURL}/auth/error?message=OAuth authentication failed`);
+};

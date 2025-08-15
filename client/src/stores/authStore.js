@@ -82,6 +82,27 @@ export const useAuthStore = create(
         } catch (error) {
           get().logout();
         }
+      },
+
+      // Set authentication data (for OAuth)
+      setAuthData: (user, token) => {
+        set({
+          user,
+          token,
+          isAuthenticated: true,
+          isLoading: false
+        });
+        
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      },
+
+      // OAuth login methods
+      loginWithGoogle: () => {
+        window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/auth/google`;
+      },
+
+      loginWithFacebook: () => {
+        window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/auth/facebook`;
       }
     }),
     {

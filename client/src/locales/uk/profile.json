@@ -1,0 +1,67 @@
+{
+  "tabs": {
+    "images": "Мої зображення",
+    "generations": "Історія генерацій",
+    "settings": "Налаштування"
+  },
+  "images": {
+    "title": "Мої зображення",
+    "empty_title": "Поки немає зображень",
+    "empty_description": "Почніть генерувати, щоб побачити ваші творіння тут",
+    "loading": "Завантаження зображень...",
+    "actions": {
+      "make_public": "Зробити публічним",
+      "make_private": "Зробити приватним",
+      "download": "Завантажити",
+      "delete": "Видалити"
+    },
+    "delete_confirm": "Ви впевнені, що хочете видалити це зображення?",
+    "visibility_success": "Зображення {{action}} успішно",
+    "delete_success": "Зображення видалено успішно",
+    "error": "Помилка оновлення зображення"
+  },
+  "generations": {
+    "title": "Історія генерацій",
+    "empty_title": "Немає історії генерацій",
+    "empty_description": "Ваша історія генерацій з'явиться тут",
+    "loading": "Завантаження історії...",
+    "status": {
+      "completed": "Завершено",
+      "failed": "Помилка",
+      "processing": "Обробка"
+    },
+    "details": {
+      "images_count": "{{count}} зображень",
+      "credits_used": "{{count}} кредитів"
+    }
+  },
+  "settings": {
+    "title": "Налаштування акаунту",
+    "form": {
+      "email": "Електронна пошта",
+      "email_note": "Не можна змінити",
+      "username": "Ім'я користувача",
+      "username_note": "Не можна змінити",
+      "full_name": "Повне ім'я",
+      "full_name_placeholder": "Введіть ваше повне ім'я",
+      "location": "Місцезнаходження",
+      "location_placeholder": "Місто, Країна",
+      "bio": "Про себе",
+      "bio_placeholder": "Розкажіть про себе...",
+      "website": "Веб-сайт",
+      "website_placeholder": "https://ваш-сайт.com"
+    },
+    "buttons": {
+      "save": "Зберегти зміни",
+      "saving": "Збереження...",
+      "logout": "Вийти"
+    },
+    "messages": {
+      "save_success": "Налаштування збережено успішно!",
+      "save_error": "Помилка збереження налаштувань"
+    }
+  },
+  "header": {
+    "plan": "План {{plan}}"
+  }
+}

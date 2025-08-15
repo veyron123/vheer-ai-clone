@@ -1,0 +1,139 @@
+{
+  "hero": {
+    "title": "Free AI Image Generator",
+    "subtitle": "Transform your photos into stunning anime, cartoon and artistic styles using advanced AI models"
+  },
+  "features": {
+    "anime_generator": {
+      "title": "Anime Portrait Generator",
+      "description": "Turn selfies into stunning anime artwork instantly. Pick your favorite style and watch AI bring your character to life."
+    },
+    "image_to_image": {
+      "title": "AI Image to Image Generator", 
+      "description": "Reimagine any photo with AI magic. Keep facial features intact while exploring endless creative possibilities."
+    },
+    "style_transfer": {
+      "title": "AI Style Transfer",
+      "description": "Blend art movements with your photos. From Van Gogh brushstrokes to futuristic cyberpunk aesthetics in seconds."
+    }
+  },
+  "sections": {
+    "magic_title": "The Magic Of AI Image Generation",
+    "magic_subtitle": "For Everyone",
+    "magic_description": "Unleash your creativity with AI image generation technology on СolibRRRi! Create stunning visuals in seconds by simply describing what you want or customizing your preference. Whether you're designing unique anime avatars, enhancing existing photos, or generating realistic scenes, our generative AI can bring your ideas to life. With AI image generation, everyone has the power to produce high-quality, original images for any project or purpose.",
+    
+    "anime_converter": {
+      "title": "100% Free Photo to Anime Converter",
+      "description1": "Transform your selfie or profile picture into anime-style art for free with our anime portrait generator. Simply upload your photo, add a few prompts to describe your preferences, and let our AI art generator work its magic.",
+      "description2": "Whether you want a Chibi, Waifu, Classic, Shonen, Fantasy, Cyberpunk, Gothic, Realistic, Historical, or Romantic anime portrait, our tool brings your vision to life with vibrant, personalized anime art—no hidden fees, no limits."
+    },
+
+    "headshots": {
+      "title": "Image to Image Generator with AI Precision",
+      "description1": "Transform any image into stunning new visuals with our AI-powered image to image generator. Upload your photo and watch as our advanced AI creates amazing variations while preserving the essence of your original image. Perfect for artistic transformations, style transfers, and creative exploration.",
+      "description2": "Our AI image-to-image generator delivers high-quality, creative results that maintain visual coherence and artistic appeal. From style transfers to complete transformations, explore endless possibilities with professional-grade AI technology."
+    },
+
+    "tattoo": {
+      "title": "Transform Any Image with AI Style Transfer",
+      "description1": "Discover the magic of artistic transformation with our AI Style Transfer technology. Upload any photo and watch as our advanced AI applies the visual style of famous artworks, paintings, or artistic movements to create stunning, unique variations of your original image.",
+      "description2": "From Van Gogh's swirling brushstrokes to Picasso's cubist interpretations, from watercolor paintings to oil masterpieces - our AI can transform your photos into any artistic style you can imagine. Perfect for creating personalized artwork, unique social media content, or exploring artistic expression without any drawing skills required."
+    },
+
+    "gallery_title": "Preview What's Possible With AI-Generated Images",
+    "gallery_description": "Turn your ideas into stunning visuals with our generative AI. Create amazing headshots, tattoo designs, anime art, and more in seconds. Just enter a prompt, customize with ease, and browse a world of AI-crafted styles."
+  },
+
+  "buttons": {
+    "start_creating": "Start Creating for Free",
+    "explore_gallery": "Explore Gallery",
+    "try_anime_converter": "Try Anime Converter",
+    "create_headshot": "Generate Image Variations", 
+    "design_tattoo": "Apply Style Transfer",
+    "explore_full_gallery": "Explore Full Gallery",
+    "try_now": "Try Now"
+  },
+
+  "categories": {
+    "anime_manga": "Anime & Manga", 
+    "tattoo_design": "Tattoo Design",
+    "product_photo": "Product Photo",
+    "wallpaper": "Wallpaper"
+  },
+
+  "features_list": {
+    "lightning_fast": {
+      "title": "Lightning Fast",
+      "description": "Generate stunning images in seconds with our optimized AI models"
+    },
+    "multiple_styles": {
+      "title": "Multiple Styles", 
+      "description": "Choose from various artistic styles and models for unique creations"
+    },
+    "community_gallery": {
+      "title": "Community Gallery",
+      "description": "Share your creations and get inspired by other artists"  
+    },
+    "safe_private": {
+      "title": "Safe & Private",
+      "description": "Your data and creations are secure with enterprise-grade protection"
+    }
+  },
+
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Get Answers to Your Questions About СolibRRRi",
+    "questions": [
+      {
+        "question": "How Does the Anime Portrait Generator Work?",
+        "answer": "Our anime portrait generator uses advanced AI algorithms to transform your photos into anime-style artwork. Simply upload your photo, select your preferred style, and our AI will analyze facial features, expressions, and characteristics to create a unique anime version while maintaining your identity."
+      },
+      {
+        "question": "Do I Need Design Skills to Create AI Anime Portraits?",
+        "answer": "No design skills are required! Our user-friendly interface makes it easy for anyone to create professional-quality anime portraits. Just upload your photo, choose from our preset styles or customize your preferences, and let the AI do the work for you."
+      },
+      {
+        "question": "What is an AI Headshot Generator?",
+        "answer": "An AI headshot generator is a tool that creates professional-looking portrait photos using artificial intelligence. It can transform casual photos into polished headshots suitable for LinkedIn profiles, resumes, or professional portfolios, all without the need for a photo studio."
+      },
+      {
+        "question": "What Can I Create with an AI Headshot Generator?",
+        "answer": "You can create professional business headshots, creative portraits for social media, avatar images for gaming profiles, artistic interpretations of your photos, and customized profile pictures for various platforms. The possibilities are endless with different styles and customization options."
+      },
+      {
+        "question": "What Type of Photos Work Best for the AI Headshot Generator?",
+        "answer": "Clear, front-facing photos with good lighting work best. The ideal photo should show your face clearly with minimal obstructions, have even lighting without harsh shadows, be in focus and high resolution, and preferably have a simple background for best results."
+      },
+      {
+        "question": "Is Your AI Tattoo Generator Free to Use?",
+        "answer": "Yes! Our basic AI tattoo generator is completely free to use. You can create unlimited tattoo designs, explore various styles, and download your creations without any charges. Premium features are available for users who want advanced customization options."
+      },
+      {
+        "question": "Can I Design a Custom Tattoo with the AI Tattoo Generator?",
+        "answer": "Absolutely! Our AI tattoo generator allows full customization. You can specify design elements, choose artistic styles, adjust size and complexity, combine multiple concepts, and even upload reference images to guide the AI in creating your perfect tattoo design."
+      },
+      {
+        "question": "What is СolibRRRi Text to Image?",
+        "answer": "СolibRRRi Text to Image is our flagship feature that converts written descriptions into stunning visual artwork. Using state-of-the-art AI models, it interprets your text prompts and generates unique, high-quality images that match your vision, from realistic photos to abstract art."
+      },
+      {
+        "question": "What Makes СolibRRRi Text to Image Generator Different?",
+        "answer": "СolibRRRi stands out with its intuitive interface, diverse style options, fast generation speed, high-resolution outputs, and unlimited free generations. We also offer advanced features like style mixing, prompt enhancement, and batch generation for power users."
+      },
+      {
+        "question": "How Does СolibRRRi Ensure My Data Privacy and Security?",
+        "answer": "We take privacy seriously. All uploaded images are encrypted during transmission, processed securely on our servers, automatically deleted after processing, never shared with third parties, and you retain full ownership of all generated content. We comply with GDPR and other data protection regulations."
+      }
+    ],
+    "support": {
+      "text": "Still have questions? We're here to help!",
+      "button": "Contact Support"
+    }
+  },
+
+  "cta": {
+    "title": "Ready to Create Amazing Art?",
+    "subtitle": "Join thousands of creators using СolibRRRi to bring their ideas to life",
+    "button": "Get Started for Free"
+  }
+}

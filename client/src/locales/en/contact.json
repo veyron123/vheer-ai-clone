@@ -1,0 +1,143 @@
+{
+  "title": "Contact Us",
+  "subtitle": "Get in touch with our team",
+  "description": "Have questions, feedback, or need support? We're here to help! Reach out to us through any of the methods below.",
+  
+  "hero": {
+    "title": "We're Here to Help",
+    "subtitle": "Get in touch with the СolibRRRi team",
+    "description": "Whether you have questions about our AI image generation tools, need technical support, or want to share feedback, we'd love to hear from you."
+  },
+
+  "contact_methods": {
+    "title": "Contact Methods",
+    "email": {
+      "title": "Email Support",
+      "description": "Send us an email and we'll get back to you within 24 hours",
+      "address": "support@colibrrri.com",
+      "button": "Send Email"
+    },
+    "business": {
+      "title": "Business Inquiries",
+      "description": "For partnerships, collaborations, and business opportunities",
+      "address": "business@colibrrri.com",
+      "button": "Contact Business Team"
+    },
+    "privacy": {
+      "title": "Privacy & Data",
+      "description": "Questions about privacy policy, data handling, or GDPR requests",
+      "address": "privacy@colibrrri.com", 
+      "button": "Privacy Inquiries"
+    }
+  },
+
+  "contact_form": {
+    "title": "Send us a Message",
+    "description": "Fill out the form below and we'll respond as soon as possible",
+    "fields": {
+      "name": {
+        "label": "Full Name",
+        "placeholder": "Enter your full name",
+        "required": "Name is required"
+      },
+      "email": {
+        "label": "Email Address",
+        "placeholder": "Enter your email address",
+        "required": "Email is required",
+        "invalid": "Please enter a valid email address"
+      },
+      "subject": {
+        "label": "Subject",
+        "placeholder": "What is this about?",
+        "required": "Subject is required"
+      },
+      "category": {
+        "label": "Category",
+        "placeholder": "Select a category",
+        "options": {
+          "support": "Technical Support",
+          "billing": "Billing & Subscriptions",
+          "feature": "Feature Request",
+          "bug": "Bug Report",
+          "partnership": "Partnership",
+          "other": "Other"
+        }
+      },
+      "message": {
+        "label": "Message",
+        "placeholder": "Tell us more about your inquiry...",
+        "required": "Message is required",
+        "min_length": "Message must be at least 10 characters"
+      },
+      "attachments": {
+        "label": "Attachments (optional)",
+        "description": "Upload screenshots or relevant files (max 10MB)",
+        "button": "Choose Files"
+      }
+    },
+    "submit": "Send Message",
+    "sending": "Sending...",
+    "success": {
+      "title": "Message Sent Successfully!",
+      "description": "Thank you for contacting us. We've received your message and will get back to you within 24 hours."
+    },
+    "error": {
+      "title": "Something went wrong",
+      "description": "We couldn't send your message. Please try again or contact us directly at support@colibrrri.com"
+    }
+  },
+
+  "faq": {
+    "title": "Quick Answers",
+    "subtitle": "Check our FAQ for immediate help",
+    "link": "View Full FAQ",
+    "common_questions": [
+      {
+        "question": "How long does it take to generate images?",
+        "answer": "Most images are generated within 10-30 seconds, depending on complexity and current server load."
+      },
+      {
+        "question": "What image formats do you support?",
+        "answer": "We support JPG, PNG, and WebP formats for both input and output images."
+      },
+      {
+        "question": "Is there a limit to how many images I can generate?",
+        "answer": "Free users can generate up to 10 images per day. Premium subscribers have unlimited generations."
+      },
+      {
+        "question": "Can I use generated images commercially?",
+        "answer": "Yes! All images generated with СolibRRRi can be used for commercial purposes without attribution required."
+      }
+    ]
+  },
+
+  "office_info": {
+    "title": "Office Information",
+    "address": {
+      "title": "Headquarters",
+      "lines": [
+        "СolibRRRi Technologies",
+        "123 AI Innovation Drive",
+        "Tech City, TC 12345",
+        "United States"
+      ]
+    },
+    "hours": {
+      "title": "Support Hours",
+      "weekdays": "Monday - Friday: 9:00 AM - 6:00 PM (UTC)",
+      "weekend": "Saturday - Sunday: 10:00 AM - 4:00 PM (UTC)",
+      "note": "We aim to respond to all inquiries within 24 hours"
+    }
+  },
+
+  "social": {
+    "title": "Follow Us",
+    "description": "Stay updated with the latest features and community creations",
+    "platforms": {
+      "twitter": "Twitter",
+      "discord": "Discord Community",
+      "instagram": "Instagram",
+      "youtube": "YouTube"
+    }
+  }
+}

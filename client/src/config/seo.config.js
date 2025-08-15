@@ -1,25 +1,25 @@
 export const SEO_CONFIG = {
   site: {
-    name: 'Vheer AI',
-    url: 'https://vheer.ai',
-    logo: 'https://vheer.ai/logo.svg',
+    name: 'СolibRRRi AI',
+    url: 'https://colibrrri.ai',
+    logo: 'https://colibrrri.ai/logo.svg',
     favicon: '/favicon.ico',
     themeColor: '#6366f1',
     locale: 'en_US',
-    twitter: '@vheerai',
+    twitter: '@colibrrri',
   },
   
   defaults: {
-    title: 'Vheer AI - Transform Photos into Stunning Anime Art | Free AI Image Generator',
-    titleTemplate: '%s | Vheer AI',
+    title: 'СolibRRRi AI - Transform Photos into Stunning Anime Art | Free AI Image Generator',
+    titleTemplate: '%s | СolibRRRi AI',
     description: 'Transform your photos into amazing anime, cartoon and artistic styles using advanced AI models. Support for Disney, Pixar, Manga styles and more. Try Flux Pro, Flux Max, and GPT Image generators for free!',
     keywords: 'AI image generator, anime converter, photo to anime, cartoon filter, Disney style, Pixar style, manga creator, AI art generator, Flux Pro, GPT Image, free image generator',
-    image: 'https://vheer.ai/og-image.jpg',
+    image: 'https://colibrrri.ai/og-image.jpg',
   },
   
   pages: {
     home: {
-      title: 'Vheer AI - Transform Photos into Stunning Anime Art',
+      title: 'СolibRRRi AI - Transform Photos into Stunning Anime Art',
       description: 'Create amazing anime and cartoon art from your photos using advanced AI. Free to try with multiple artistic styles including Disney, Pixar, and Manga.',
       keywords: 'AI image generator, photo transformation, anime art creator, cartoon maker',
     },
@@ -40,12 +40,12 @@ export const SEO_CONFIG = {
     },
     login: {
       title: 'Login to Your Account',
-      description: 'Access your Vheer AI account to continue creating amazing AI-generated artwork.',
+      description: 'Access your СolibRRRi AI account to continue creating amazing AI-generated artwork.',
       keywords: 'login, sign in, account access',
     },
     register: {
       title: 'Create Your Free Account',
-      description: 'Sign up for Vheer AI and start transforming your photos into stunning anime and cartoon art.',
+      description: 'Sign up for СolibRRRi AI and start transforming your photos into stunning anime and cartoon art.',
       keywords: 'sign up, register, create account, free account',
     },
   },
@@ -53,8 +53,8 @@ export const SEO_CONFIG = {
   social: {
     twitter: {
       card: 'summary_large_image',
-      site: '@vheerai',
-      creator: '@vheerai',
+      site: '@colibrrri',
+      creator: '@colibrrri',
     },
     facebook: {
       appId: '',
@@ -65,13 +65,13 @@ export const SEO_CONFIG = {
     organization: {
       '@context': 'https://schema.org',
       '@type': 'Organization',
-      name: 'Vheer AI',
-      url: 'https://vheer.ai',
-      logo: 'https://vheer.ai/logo.svg',
+      name: 'СolibRRRi AI',
+      url: 'https://colibrrri.ai',
+      logo: 'https://colibrrri.ai/logo.svg',
       sameAs: [
-        'https://twitter.com/vheerai',
-        'https://facebook.com/vheerai',
-        'https://instagram.com/vheerai',
+        'https://twitter.com/colibrrri',
+        'https://facebook.com/colibrrri',
+        'https://instagram.com/colibrrri',
       ],
     },
   },
