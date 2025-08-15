@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getLanguageFromPath, addLanguageToPath } from '../i18n/config';
+import { useAuthStore } from '../stores/authStore';
 
 // Import pages
 import HomePage from '../pages/HomePage';
@@ -59,6 +60,18 @@ const LocalizedRoutes = () => {
   );
 };
 
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  const currentLang = getLanguageFromPath(window.location.pathname) || 'en';
+  
+  if (!isAuthenticated) {
+    return <Navigate to={`/${currentLang}/login`} replace />;
+  }
+  
+  return children;
+};
+
 const LanguageRoutes = () => {
   return (
     <Routes>
@@ -78,7 +91,11 @@ const LanguageRoutes = () => {
       <Route path="/auth/callback" element={<AuthCallback />} />
       
       {/* Protected routes */}
-      <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          <ProfilePage />
+        </ProtectedRoute>
+      } />
       
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />

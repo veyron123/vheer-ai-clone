@@ -73,13 +73,21 @@ export const useAuthStore = create(
       
       checkAuth: async () => {
         const token = get().token;
-        if (!token) return;
+        if (!token) {
+          set({ isAuthenticated: false, user: null });
+          return;
+        }
         
         try {
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           const response = await api.get('/auth/me');
-          set({ user: response.data });
+          set({ 
+            user: response.data, 
+            isAuthenticated: true,
+            totalCredits: response.data.totalCredits 
+          });
         } catch (error) {
+          console.error('Auth check failed:', error);
           get().logout();
         }
       },
@@ -121,7 +129,13 @@ export const useAuthStore = create(
         user: state.user, 
         token: state.token,
         isAuthenticated: state.isAuthenticated 
-      })
+      }),
+      onRehydrateStorage: () => (state) => {
+        // Set token in axios headers on store rehydration
+        if (state?.token) {
+          api.defaults.headers.common['Authorization'] = `Bearer ${state.token}`;
+        }
+      }
     }
   )
 );
