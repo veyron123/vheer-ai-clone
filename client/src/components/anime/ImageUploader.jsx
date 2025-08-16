@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import { Upload, Link2, X, Download, Loader2 } from 'lucide-react';
+import { Upload, Link2, X, Download, Loader2, ZoomIn } from 'lucide-react';
+import { downloadImageWithProxy, viewImage } from '../../utils/downloadUtils';
 
 const ImageUploader = ({ 
   uploadedImage, 
@@ -25,6 +26,18 @@ const ImageUploader = ({
 
   const handleDragOver = (e) => {
     e.preventDefault();
+  };
+
+  const handleDownload = () => {
+    if (generatedImage) {
+      downloadImageWithProxy(generatedImage, 'anime-portrait.png');
+    }
+  };
+
+  const handleView = () => {
+    if (generatedImage) {
+      viewImage(generatedImage);
+    }
   };
 
   const handleFileChange = (e) => {
@@ -84,17 +97,32 @@ const ImageUploader = ({
                 </div>
               )}
               
-              <a
-                href={generatedImage}
-                download="anime-portrait.png"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="absolute bottom-2 right-2 bg-white text-black px-3 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors flex items-center gap-2 shadow-lg"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Download className="w-4 h-4" />
-                Download
-              </a>
+              {/* Action buttons container */}
+              <div className="absolute bottom-2 right-2 flex gap-2">
+                {/* View Image Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleView();
+                  }}
+                  className="bg-white text-black p-2 rounded-lg font-medium hover:bg-gray-100 transition-colors shadow-lg"
+                  title="View Image"
+                >
+                  <ZoomIn className="w-4 h-4" />
+                </button>
+
+                {/* Download Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDownload();
+                  }}
+                  className="bg-white text-black px-3 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors flex items-center gap-2 shadow-lg"
+                >
+                  <Download className="w-4 h-4" />
+                  Download
+                </button>
+              </div>
             </>
           )}
           

@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { downloadAndSaveImage, generateThumbnail, shouldSaveImageForUser, deleteImageFiles } from '../utils/imageStorage.js';
+import { getStorageProvider } from '../utils/storageProvider.js';
 
 const prisma = new PrismaClient();
 
@@ -22,23 +23,30 @@ export async function saveGeneratedImage(imageData, user, generation) {
 
     const { url: imageUrl, width = 1024, height = 1024 } = imageData;
     
-    // Download and save the image (Cloudinary for production, local for dev)
-    const { localPath, filename, cloudinaryId } = await downloadAndSaveImage(imageUrl, 'generated');
+    // Use StorageProvider for consistent handling
+    const storageProvider = getStorageProvider();
+    
+    // Upload image using universal storage provider
+    console.log('🔄 Uploading image to storage provider...');
+    const uploadResult = await storageProvider.uploadImage(imageUrl, 'generated');
     
     // Generate thumbnail
-    const thumbnailPath = await generateThumbnail(localPath);
+    console.log('🔄 Generating thumbnail...');
+    const thumbnailResult = await storageProvider.generateThumbnail(uploadResult.url);
     
-    // Save to database with proper URLs
-    const serverUrl = process.env.SERVER_URL || 'http://localhost:5000';
-    const finalImageUrl = localPath.startsWith('http') ? localPath : `${serverUrl}/${localPath}`;
-    const finalThumbUrl = thumbnailPath.startsWith('http') ? thumbnailPath : `${serverUrl}/${thumbnailPath}`;
+    console.log('✅ Upload complete:', {
+      imageUrl: uploadResult.url,
+      thumbnailUrl: thumbnailResult.url,
+      cloudPath: uploadResult.path
+    });
     
+    // Save to database with cloudPath for deletion capability
     const savedImage = await prisma.image.create({
       data: {
         userId: user.id,
         generationId: generation.id,
-        url: finalImageUrl,
-        thumbnailUrl: finalThumbUrl,
+        url: uploadResult.url,
+        thumbnailUrl: thumbnailResult.url,
         prompt: generation.prompt,
         negativePrompt: generation.negativePrompt,
         model: generation.model,
@@ -47,14 +55,16 @@ export async function saveGeneratedImage(imageData, user, generation) {
         height: parseInt(height),
         isPublic: false, // Default to private
         likes: 0,
-        views: 0
+        views: 0,
+        // CRITICAL: Store cloud path for deletion and "My Images" filtering
+        cloudPath: uploadResult.path
       }
     });
 
-    console.log('Image saved successfully:', savedImage.id);
+    console.log('✅ Image saved to database with cloudPath:', savedImage.id, 'cloudPath:', uploadResult.path);
     return savedImage;
   } catch (error) {
-    console.error('Error saving generated image:', error);
+    console.error('❌ Error saving generated image:', error);
     throw error;
   }
 }
@@ -70,8 +80,22 @@ export const getMyImages = async (req, res) => {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
+    // Check if user should have access to "My Images"
+    if (!shouldSaveImageForUser(req.user)) {
+      return res.json({ 
+        success: true,
+        images: [],
+        total: 0,
+        message: 'Upgrade to a paid plan to save images permanently'
+      });
+    }
+
     const images = await prisma.image.findMany({
-      where: { userId },
+      where: { 
+        userId,
+        // Only show images that were actually saved to storage (have cloudPath)
+        cloudPath: { not: null }
+      },
       orderBy: { createdAt: 'desc' },
       include: {
         generation: {
@@ -235,6 +259,48 @@ export const getPublicImages = async (req, res) => {
     console.error('Error fetching public images:', error);
     res.status(500).json({ 
       error: 'Failed to fetch public images',
+      message: error.message 
+    });
+  }
+};
+
+/**
+ * Download image proxy to handle CORS issues
+ */
+export const downloadImageProxy = async (req, res) => {
+  try {
+    const { imageUrl } = req.body;
+    
+    if (!imageUrl) {
+      return res.status(400).json({ error: 'Image URL is required' });
+    }
+
+    console.log('Downloading image via proxy:', imageUrl);
+
+    // Import axios dynamically
+    const axios = (await import('axios')).default;
+    
+    // Fetch the image
+    const response = await axios({
+      method: 'GET',
+      url: imageUrl,
+      responseType: 'stream',
+      timeout: 30000
+    });
+
+    // Set headers for download
+    const filename = `image-${Date.now()}.png`;
+    res.setHeader('Content-Type', response.headers['content-type'] || 'image/png');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', response.headers['content-length']);
+
+    // Pipe the image stream to response
+    response.data.pipe(res);
+
+  } catch (error) {
+    console.error('Download proxy error:', error.message);
+    res.status(500).json({ 
+      error: 'Failed to download image',
       message: error.message 
     });
   }

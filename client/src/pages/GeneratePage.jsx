@@ -71,6 +71,48 @@ const GeneratePage = () => {
     });
   };
 
+  const downloadImage = async (imageUrl, filename = 'generated-image.png') => {
+    try {
+      // Use backend proxy for downloading
+      const response = await fetch('/api/images/download', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imageUrl: imageUrl
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Download failed');
+      }
+
+      // Get the blob from response
+      const blob = await response.blob();
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download failed:', error);
+      // Fallback to opening in new tab
+      window.open(imageUrl, '_blank');
+    }
+  };
+
+  const viewImage = (imageUrl) => {
+    window.open(imageUrl, '_blank', 'noopener,noreferrer');
+  };
+
   const promptSuggestions = [
     "A serene Japanese garden with cherry blossoms",
     "Cyberpunk city at night with neon lights",
@@ -298,11 +340,19 @@ const GeneratePage = () => {
                           className="w-full rounded-lg"
                         />
                         <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition">
-                          <button className="p-2 bg-white rounded-lg shadow hover:shadow-lg transition">
-                            <Download className="w-5 h-5" />
-                          </button>
-                          <button className="p-2 bg-white rounded-lg shadow hover:shadow-lg transition">
+                          <button 
+                            onClick={() => viewImage(image.url)}
+                            className="p-2 bg-white rounded-lg shadow hover:shadow-lg transition"
+                            title="View Image"
+                          >
                             <Eye className="w-5 h-5" />
+                          </button>
+                          <button 
+                            onClick={() => downloadImage(image.url, `generated-image-${index + 1}.png`)}
+                            className="p-2 bg-white rounded-lg shadow hover:shadow-lg transition"
+                            title="Download Image"
+                          >
+                            <Download className="w-5 h-5" />
                           </button>
                         </div>
                       </motion.div>

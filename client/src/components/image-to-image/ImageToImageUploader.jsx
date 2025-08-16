@@ -1,5 +1,6 @@
 import React from 'react';
-import { Upload, X, Download, Clock, Clipboard, Loader2 } from 'lucide-react';
+import { Upload, X, Download, Clock, Clipboard, Loader2, ZoomIn } from 'lucide-react';
+import { downloadImageWithProxy, viewImage } from '../../utils/downloadUtils';
 
 const ImageToImageUploader = ({
   uploadedImage,
@@ -49,14 +50,15 @@ const ImageToImageUploader = ({
     };
   }, [onPaste]);
 
-  const downloadImage = () => {
+  const handleDownload = () => {
     if (generatedImage) {
-      const link = document.createElement('a');
-      link.href = generatedImage;
-      link.download = 'generated-image.jpg';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      downloadImageWithProxy(generatedImage, 'generated-image.jpg');
+    }
+  };
+
+  const handleView = () => {
+    if (generatedImage) {
+      viewImage(generatedImage);
     }
   };
 
@@ -139,9 +141,20 @@ const ImageToImageUploader = ({
                 alt="Generated" 
                 className="w-full h-full object-contain"
               />
+              {/* View Image Button */}
               <button
-                onClick={downloadImage}
+                onClick={handleView}
+                className="absolute bottom-3 right-16 p-2 bg-white text-gray-700 rounded-full hover:bg-gray-100 transition-colors shadow-lg border border-gray-200"
+                title="View Image"
+              >
+                <ZoomIn className="w-4 h-4" />
+              </button>
+
+              {/* Download Button */}
+              <button
+                onClick={handleDownload}
                 className="absolute bottom-3 right-3 p-2 bg-primary-500 text-white rounded-full hover:bg-primary-600 transition-colors shadow-lg"
+                title="Download Image"
               >
                 <Download className="w-4 h-4" />
               </button>

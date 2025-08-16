@@ -62,6 +62,7 @@ model Image {
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   url             String
   thumbnailUrl    String?
+  cloudPath       String?   // Path for cloud storage deletion (Cloudinary public_id, S3 key, etc.)
   prompt          String
   negativePrompt  String?
   model           String

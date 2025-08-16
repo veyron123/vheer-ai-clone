@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { getLanguageFromPath } from '../i18n/config';
+import { useAuthStore } from '../stores/authStore';
 import SEOTags from '../components/SEOTags';
 import { 
   Sparkles, 
@@ -27,6 +28,7 @@ const HomePage = () => {
   const [activeCategory, setActiveCategory] = useState('anime');
   const { t } = useTranslation('home');
   const location = useLocation();
+  const { isAuthenticated } = useAuthStore();
   
   // Get current language from path
   const currentLang = getLanguageFromPath(location.pathname) || 'en';
@@ -277,20 +279,16 @@ const HomePage = () => {
             </button>
           </div>
 
-          {/* CTA Buttons */}
+          {/* CTA Button */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center mt-12"
+            className="flex justify-center mt-12"
           >
             <Link to={createLocalizedLink('/generate')} className="btn btn-primary text-lg px-8 py-4">
               <Sparkles className="w-5 h-5 mr-2" />
               {t('buttons.start_creating')}
-            </Link>
-            <Link to={createLocalizedLink('/gallery')} className="btn btn-outline text-lg px-8 py-4">
-              {t('buttons.explore_gallery')}
-              <ArrowRight className="w-5 h-5 ml-2" />
             </Link>
           </motion.div>
         </div>
@@ -570,21 +568,6 @@ const HomePage = () => {
             </div>
           </motion.div>
 
-          {/* CTA Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="text-center mt-12"
-          >
-            <Link 
-              to={createLocalizedLink('/gallery')} 
-              className="btn btn-primary inline-flex items-center text-lg px-8 py-4"
-            >
-              <Sparkles className="w-5 h-5 mr-2" />
-              {t('buttons.explore_full_gallery')}
-            </Link>
-          </motion.div>
         </div>
       </section>
 
@@ -755,21 +738,23 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary-500 to-primary-600">
-        <div className="container-custom text-center">
-          <h2 className="text-4xl font-bold text-white mb-4">
-            {t('cta.title')}
-          </h2>
-          <p className="text-xl text-white/90 mb-8">
-            {t('cta.subtitle')}
-          </p>
-          <Link to={createLocalizedLink('/register')} className="btn bg-white text-primary-600 hover:bg-gray-100 text-lg px-8 py-4">
-            {t('cta.button')}
-            <Sparkles className="w-5 h-5 ml-2" />
-          </Link>
-        </div>
-      </section>
+      {/* CTA Section - Show only for non-authenticated users */}
+      {!isAuthenticated && (
+        <section className="py-20 bg-gradient-to-r from-primary-500 to-primary-600">
+          <div className="container-custom text-center">
+            <h2 className="text-4xl font-bold text-white mb-4">
+              {t('cta.title')}
+            </h2>
+            <p className="text-xl text-white/90 mb-8">
+              {t('cta.subtitle')}
+            </p>
+            <Link to={createLocalizedLink('/register')} className="btn bg-white text-primary-600 hover:bg-gray-100 text-lg px-8 py-4">
+              {t('cta.button')}
+              <Sparkles className="w-5 h-5 ml-2" />
+            </Link>
+          </div>
+        </section>
+      )}
     </div>
   );
 };

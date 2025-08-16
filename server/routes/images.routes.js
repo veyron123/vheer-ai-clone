@@ -3,7 +3,8 @@ import {
   getMyImages, 
   updateImageVisibility, 
   deleteImage, 
-  getPublicImages 
+  getPublicImages,
+  downloadImageProxy
 } from '../controllers/images.controller.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 
@@ -20,5 +21,8 @@ router.delete('/:imageId', authenticate, deleteImage);
 
 // Get public images gallery (no authentication required)
 router.get('/public', getPublicImages);
+
+// Download image proxy (no authentication required)
+router.post('/download', downloadImageProxy);
 
 export default router;

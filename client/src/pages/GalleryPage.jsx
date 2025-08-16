@@ -12,6 +12,7 @@ import {
   Loader2
 } from 'lucide-react';
 import api from '../services/api';
+import { downloadImageWithProxy, viewImage } from '../utils/downloadUtils';
 
 const GalleryPage = () => {
   const [selectedStyle, setSelectedStyle] = useState('');
@@ -50,6 +51,8 @@ const GalleryPage = () => {
     api.get('/generate/models').then(res => res.data)
   );
 
+  // Remove old download functions since we're using downloadUtils
+
   const ImageCard = ({ image, index }) => {
     const [isHovered, setIsHovered] = useState(false);
 
@@ -87,7 +90,18 @@ const GalleryPage = () => {
               <button className="p-2 bg-white/20 backdrop-blur rounded-lg hover:bg-white/30 transition">
                 <Heart className="w-4 h-4 text-white" />
               </button>
-              <button className="p-2 bg-white/20 backdrop-blur rounded-lg hover:bg-white/30 transition">
+              <button 
+                onClick={() => viewImage(image.url)}
+                className="p-2 bg-white/20 backdrop-blur rounded-lg hover:bg-white/30 transition"
+                title="View Image"
+              >
+                <Eye className="w-4 h-4 text-white" />
+              </button>
+              <button 
+                onClick={() => downloadImageWithProxy(image.url, `gallery-${image.id}.png`)}
+                className="p-2 bg-white/20 backdrop-blur rounded-lg hover:bg-white/30 transition"
+                title="Download Image"
+              >
                 <Download className="w-4 h-4 text-white" />
               </button>
             </div>

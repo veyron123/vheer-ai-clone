@@ -1,0 +1,214 @@
+/* Professional Hummingbird Animations */
+@keyframes sophisticatedFloat {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px) rotate(0deg);
+    filter: drop-shadow(0 2px 8px rgba(59, 130, 246, 0.15));
+  }
+  33% {
+    transform: translateY(-2px) translateX(1px) rotate(1deg);
+    filter: drop-shadow(0 4px 12px rgba(147, 51, 234, 0.2));
+  }
+  66% {
+    transform: translateY(-1px) translateX(-1px) rotate(-0.5deg);
+    filter: drop-shadow(0 3px 10px rgba(236, 72, 153, 0.18));
+  }
+}
+
+@keyframes professionalHover {
+  0% {
+    transform: scale(1) rotateY(0deg) rotateX(0deg);
+    filter: brightness(1) drop-shadow(0 2px 8px rgba(59, 130, 246, 0.15));
+  }
+  25% {
+    transform: scale(1.05) rotateY(-8deg) rotateX(2deg);
+    filter: brightness(1.1) drop-shadow(0 6px 20px rgba(59, 130, 246, 0.3));
+  }
+  50% {
+    transform: scale(1.08) rotateY(0deg) rotateX(0deg);
+    filter: brightness(1.15) drop-shadow(0 8px 25px rgba(147, 51, 234, 0.35));
+  }
+  75% {
+    transform: scale(1.05) rotateY(8deg) rotateX(-2deg);
+    filter: brightness(1.1) drop-shadow(0 6px 20px rgba(236, 72, 153, 0.3));
+  }
+  100% {
+    transform: scale(1.1) rotateY(0deg) rotateX(0deg);
+    filter: brightness(1.2) drop-shadow(0 10px 30px rgba(59, 130, 246, 0.4));
+  }
+}
+
+@keyframes elegantEntrance {
+  0% {
+    transform: scale(0.3) translateY(40px) rotate(-20deg);
+    opacity: 0;
+    filter: blur(8px) brightness(0.5);
+  }
+  25% {
+    transform: scale(0.7) translateY(20px) rotate(-10deg);
+    opacity: 0.4;
+    filter: blur(4px) brightness(0.7);
+  }
+  50% {
+    transform: scale(1.1) translateY(-5px) rotate(5deg);
+    opacity: 0.8;
+    filter: blur(1px) brightness(1.1);
+  }
+  75% {
+    transform: scale(0.95) translateY(2px) rotate(-2deg);
+    opacity: 0.95;
+    filter: blur(0px) brightness(1.05);
+  }
+  100% {
+    transform: scale(1) translateY(0) rotate(0deg);
+    opacity: 1;
+    filter: blur(0px) brightness(1);
+  }
+}
+
+
+@keyframes breathingGlow {
+  0%, 100% {
+    filter: drop-shadow(0 2px 8px rgba(59, 130, 246, 0.1));
+  }
+  50% {
+    filter: drop-shadow(0 4px 16px rgba(147, 51, 234, 0.15));
+  }
+}
+
+/* Professional Container */
+.animated-logo-container {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform-origin: center;
+  perspective: 1000px;
+}
+
+.animated-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Professional entrance animation */
+.animated-logo.initial-animation {
+  animation: elegantEntrance 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Sophisticated hover animation */
+.animated-logo.hovered {
+  animation: professionalHover 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Subtle idle animation */
+.animated-logo.loaded:not(.hovered) {
+  animation: sophisticatedFloat 8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+/* Professional Wing Effects */
+.wing-overlay {
+  position: absolute;
+  top: 50%;
+  width: 35%;
+  height: 55%;
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.08),
+    rgba(147, 51, 234, 0.12), 
+    rgba(236, 72, 153, 0.1)
+  );
+  border-radius: 60% 40% 50% 50%;
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: -1;
+  backdrop-filter: blur(1px);
+}
+
+.wing-left {
+  left: -8%;
+  transform: translateY(-50%) rotate(-25deg) skewX(10deg);
+  transform-origin: 80% center;
+}
+
+.wing-right {
+  right: -8%;
+  transform: translateY(-50%) rotate(25deg) skewX(-10deg);
+  transform-origin: 20% center;
+}
+
+/* Professional hover effects */
+.animated-logo-container:hover .wing-overlay {
+  opacity: 0.4;
+  transform: scale(1.1);
+}
+
+/* Size-specific hover effects */
+.animated-logo-container:hover {
+  transform: scale(1.05) translateY(-2px);
+  filter: drop-shadow(0 10px 25px rgba(59, 130, 246, 0.15));
+}
+
+.animated-logo-container.w-12:hover,
+.animated-logo-container.w-10:hover {
+  transform: scale(1.08) translateY(-3px);
+}
+
+.animated-logo-container.w-8:hover {
+  transform: scale(1.06) translateY(-2px);
+}
+
+/* Professional breathing effect for idle state */
+@keyframes professionalBreath {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 2px 8px rgba(59, 130, 246, 0.1));
+  }
+  50% {
+    transform: scale(1.015);
+    filter: drop-shadow(0 3px 12px rgba(147, 51, 234, 0.12));
+  }
+}
+
+.animated-logo.loaded:not(.hovered):not(.initial-animation) {
+  animation: professionalBreath 6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Micro-interactions */
+.animated-logo-container::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(circle, 
+    rgba(59, 130, 246, 0.02) 0%,
+    rgba(147, 51, 234, 0.03) 40%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: -2;
+}
+
+.animated-logo-container:hover::before {
+  opacity: 1;
+  animation: breathingGlow 2s ease-in-out infinite;
+}
+
+/* Performance optimizations */
+.animated-logo-container {
+  will-change: transform;
+}
+
+.animated-logo {
+  will-change: transform, filter;
+}
+
+.wing-overlay {
+  will-change: transform, opacity;
+}

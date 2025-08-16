@@ -5,6 +5,8 @@ import { useAuthStore } from '../stores/authStore';
 import LanguageSwitcher from './LanguageSwitcher';
 import { getLanguageFromPath } from '../i18n/config';
 import '../styles/dropdown.css';
+import ColorfulLogo from './ColorfulLogo';
+import AnimatedLogo from './AnimatedLogo';
 import { 
   Menu, 
   X, 
@@ -45,28 +47,28 @@ const Layout = ({ children }) => {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link to={createLocalizedLink('/')} className="flex items-center space-x-2">
-              <img 
-                src="/colibrrri-logo.png" 
-                alt={t('site.name')} 
-                className="w-10 h-10"
+              <AnimatedLogo 
+                className="w-10 h-10" 
+                alt={t('site.name')}
+                triggerAnimation={true}
               />
-              <span className="text-xl font-bold">{t('site.name')}</span>
+              <ColorfulLogo className="text-xl" />
             </Link>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <Link to={createLocalizedLink('/generate')} className="flex items-center space-x-1 text-gray-700 hover:text-primary-500 transition">
-                <Sparkles className="w-4 h-4" />
+              <Link to={createLocalizedLink('/generate')} className="flex items-center space-x-1 text-gray-700 hover:text-blue-500 transition group">
+                <Sparkles className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
                 <span>{t('navigation.generate')}</span>
               </Link>
 {/* Временно отключено
-              <Link to="/gallery" className="flex items-center space-x-1 text-gray-700 hover:text-primary-500 transition">
-                <Grid3x3 className="w-4 h-4" />
+              <Link to="/gallery" className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition group">
+                <Grid3x3 className="w-4 h-4 text-orange-500 group-hover:text-orange-600" />
                 <span>Gallery</span>
               </Link>
               */}
-              <Link to={createLocalizedLink('/pricing')} className="flex items-center space-x-1 text-gray-700 hover:text-primary-500 transition">
-                <CreditCard className="w-4 h-4" />
+              <Link to={createLocalizedLink('/pricing')} className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition group">
+                <CreditCard className="w-4 h-4 text-orange-500 group-hover:text-orange-600" />
                 <span>{t('navigation.pricing')}</span>
               </Link>
             </div>
@@ -144,9 +146,18 @@ const Layout = ({ children }) => {
           {mobileMenuOpen && (
             <div className="md:hidden py-4 border-t">
               <div className="space-y-4">
-                <Link to={createLocalizedLink('/generate')} className="block py-2 text-gray-700">{t('navigation.generate')}</Link>
-{/* <Link to={createLocalizedLink('/gallery')} className="block py-2 text-gray-700">{t('navigation.gallery')}</Link> */}
-                <Link to={createLocalizedLink('/pricing')} className="block py-2 text-gray-700">{t('navigation.pricing')}</Link>
+                <Link to={createLocalizedLink('/generate')} className="flex items-center py-2 text-gray-700 hover:text-blue-500">
+                  <Sparkles className="w-4 h-4 text-blue-500 mr-2" />
+                  {t('navigation.generate')}
+                </Link>
+{/* <Link to={createLocalizedLink('/gallery')} className="flex items-center py-2 text-gray-700 hover:text-orange-500">
+  <Grid3x3 className="w-4 h-4 text-orange-500 mr-2" />
+  {t('navigation.gallery')}
+</Link> */}
+                <Link to={createLocalizedLink('/pricing')} className="flex items-center py-2 text-gray-700 hover:text-orange-500">
+                  <CreditCard className="w-4 h-4 text-orange-500 mr-2" />
+                  {t('navigation.pricing')}
+                </Link>
                 <LanguageSwitcher className="md:hidden" />
                 {isAuthenticated ? (
                   <>
@@ -179,12 +190,12 @@ const Layout = ({ children }) => {
             {/* Logo and Description */}
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <img 
-                  src="/colibrrri-logo.png" 
-                  alt="СolibRRRi Logo" 
-                  className="w-10 h-10"
+                <AnimatedLogo 
+                  className="w-10 h-10" 
+                  alt="СolibRRRi Logo"
+                  triggerAnimation={false}
                 />
-                <span className="text-xl font-bold">СolibRRRi</span>
+                <ColorfulLogo className="text-xl" />
               </div>
               <p className="text-gray-600 text-sm mb-4">
                 {t('footer.description')}

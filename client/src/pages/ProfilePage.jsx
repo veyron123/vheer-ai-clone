@@ -13,7 +13,16 @@ import {
   Trash2,
   Grid3x3,
   Save,
-  Loader
+  Loader,
+  Search,
+  Filter,
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  Clock,
+  Zap,
+  BarChart3
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuthStore } from '../stores/authStore';
@@ -52,12 +61,30 @@ const ProfilePage = () => {
     }
   );
 
+  // Generation history filters
+  const [generationFilters, setGenerationFilters] = useState({
+    page: 1,
+    limit: 10,
+    status: '',
+    model: '',
+    search: '',
+    sortBy: 'createdAt',
+    sortOrder: 'desc'
+  });
+
   // Fetch user's generation history
-  const { data: generationsData, isLoading: generationsLoading } = useQuery(
-    ['myGenerations'],
-    () => api.get('/generate/history').then(res => res.data),
+  const { data: generationsData, isLoading: generationsLoading, refetch: refetchGenerations } = useQuery(
+    ['myGenerations', generationFilters],
+    () => {
+      const params = new URLSearchParams();
+      Object.entries(generationFilters).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
+      return api.get(`/generate/history?${params.toString()}`).then(res => res.data);
+    },
     {
-      enabled: activeTab === 'generations'
+      enabled: activeTab === 'generations',
+      keepPreviousData: true
     }
   );
 
@@ -66,12 +93,12 @@ const ProfilePage = () => {
     (data) => api.patch('/users/profile', data),
     {
       onSuccess: (response) => {
-        toast.success('Настройки сохранены!');
+        toast.success('Settings saved!');
         updateUser(response.data.user);
         queryClient.invalidateQueries(['user']);
       },
       onError: (error) => {
-        toast.error(error.response?.data?.error || 'Ошибка при сохранении настроек');
+        toast.error(error.response?.data?.error || 'Error saving settings');
       }
     }
   );
@@ -87,15 +114,57 @@ const ProfilePage = () => {
   };
 
   const handleDeleteImage = async (imageId) => {
-    if (!window.confirm('Вы уверены, что хотите удалить это изображение?')) return;
+    if (!window.confirm('Are you sure you want to delete this image?')) return;
     
     try {
       await api.delete(`/images/${imageId}`);
-      toast.success('Изображение удалено');
+      toast.success('Image deleted');
       refetchImages();
     } catch (error) {
-      toast.error('Ошибка при удалении');
+      toast.error('Error deleting image');
     }
+  };
+
+  const downloadImage = async (imageUrl, filename = 'image.png') => {
+    try {
+      // Use backend proxy for downloading
+      const response = await fetch('/api/images/download', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imageUrl: imageUrl
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Download failed');
+      }
+
+      // Get the blob from response
+      const blob = await response.blob();
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download failed:', error);
+      // Fallback to opening in new tab
+      window.open(imageUrl, '_blank');
+    }
+  };
+
+  const viewImage = (imageUrl) => {
+    window.open(imageUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleSaveSettings = (e) => {
@@ -108,6 +177,57 @@ const ProfilePage = () => {
       ...prev,
       [field]: value
     }));
+  };
+
+  // Generation history functions
+  const handleRegenerateImage = async (generationId) => {
+    try {
+      await api.post(`/generate/${generationId}/regenerate`);
+      toast.success('Regenerating image...');
+      refetchGenerations();
+    } catch (error) {
+      toast.error('Failed to regenerate image');
+    }
+  };
+
+  const handleDeleteGeneration = async (generationId) => {
+    if (!window.confirm('Are you sure you want to delete this generation?')) return;
+    
+    try {
+      await api.delete(`/generate/${generationId}`);
+      toast.success('Generation deleted');
+      refetchGenerations();
+    } catch (error) {
+      toast.error('Failed to delete generation');
+    }
+  };
+
+  const handleFilterChange = (key, value) => {
+    setGenerationFilters(prev => ({
+      ...prev,
+      [key]: value,
+      page: 1 // Reset to first page when filtering
+    }));
+  };
+
+  const handlePageChange = (newPage) => {
+    setGenerationFilters(prev => ({
+      ...prev,
+      page: newPage
+    }));
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'COMPLETED': return 'bg-green-100 text-green-700';
+      case 'FAILED': return 'bg-red-100 text-red-700';
+      case 'PROCESSING': return 'bg-yellow-100 text-yellow-700';
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  const formatModel = (model) => {
+    return model.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
   const tabs = [
@@ -173,131 +293,353 @@ const ProfilePage = () => {
               {imagesLoading ? (
                 <div className="flex justify-center items-center py-20">
                   <Loader className="w-8 h-8 animate-spin text-primary-500" />
-                  <span className="ml-2 text-gray-600">Загрузка изображений...</span>
+                  <span className="ml-2 text-gray-600">Loading images...</span>
+                </div>
+              ) : imagesData?.message ? (
+                <div className="card p-20 text-center">
+                  <CreditCard className="w-24 h-24 text-amber-400 mx-auto mb-4" />
+                  <p className="text-gray-600 text-lg font-medium mb-2">Premium Feature</p>
+                  <p className="text-gray-500 text-sm mb-6">{imagesData.message}</p>
+                  <div className="flex justify-center space-x-4">
+                    <button 
+                      onClick={() => setActiveTab('generations')}
+                      className="btn btn-outline"
+                    >
+                      <Grid3x3 className="w-4 h-4 mr-2" />
+                      View Generation History
+                    </button>
+                    <button className="btn btn-primary">
+                      <CreditCard className="w-4 h-4 mr-2" />
+                      Upgrade Plan
+                    </button>
+                  </div>
                 </div>
               ) : imagesData?.images?.length > 0 ? (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {imagesData.images.map((image, index) => (
-                    <motion.div
-                      key={image.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.05 }}
-                      className="card overflow-hidden group"
-                    >
-                      <div className="relative">
-                        <img
-                          src={image.thumbnailUrl || image.url}
-                          alt={image.prompt}
-                          className="w-full h-64 object-cover"
-                        />
-                        <div className="absolute top-2 right-2 flex space-x-2">
-                          <button
-                            onClick={() => handleToggleVisibility(image.id, !image.isPublic)}
-                            className="p-2 bg-white/90 rounded-lg shadow hover:bg-white transition"
-                            title={image.isPublic ? 'Make Private' : 'Make Public'}
-                          >
-                            {image.isPublic ? (
-                              <Eye className="w-4 h-4" />
-                            ) : (
-                              <EyeOff className="w-4 h-4" />
-                            )}
-                          </button>
-                          <a
-                            href={image.url}
-                            download
-                            className="p-2 bg-white/90 rounded-lg shadow hover:bg-white transition"
-                            title="Download"
-                          >
-                            <Download className="w-4 h-4" />
-                          </a>
-                          <button
-                            onClick={() => handleDeleteImage(image.id)}
-                            className="p-2 bg-white/90 rounded-lg shadow hover:bg-white transition text-red-500"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                <div>
+                  {/* Image Stats for Paid Users */}
+                  <div className="card p-4 mb-6 bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-green-100 rounded-lg">
+                          <Image className="w-5 h-5 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-green-800">My Images Collection</p>
+                          <p className="text-sm text-green-600">{imagesData.images.length} images permanently saved</p>
                         </div>
                       </div>
-                      <div className="p-4">
-                        <p className="text-sm text-gray-600 line-clamp-2">{image.prompt}</p>
-                        <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
-                          <span>{image.model}</span>
-                          <span>{new Date(image.createdAt).toLocaleDateString()}</span>
-                        </div>
+                      <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                        ✓ Premium Access
                       </div>
-                    </motion.div>
-                  ))}
+                    </div>
+                  </div>
+
+                  {/* Images Grid */}
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {imagesData.images.map((image, index) => (
+                      <motion.div
+                        key={image.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                        className="card overflow-hidden group hover:shadow-lg transition-shadow"
+                      >
+                        <div className="relative">
+                          <img
+                            src={image.thumbnailUrl || image.url}
+                            alt={image.prompt}
+                            className="w-full h-64 object-cover"
+                          />
+                          <div className="absolute top-2 right-2 flex space-x-2">
+                            <button
+                              onClick={() => handleToggleVisibility(image.id, !image.isPublic)}
+                              className="p-2 bg-white/90 rounded-lg shadow hover:bg-white transition"
+                              title={image.isPublic ? 'Make Private' : 'Make Public'}
+                            >
+                              {image.isPublic ? (
+                                <Eye className="w-4 h-4 text-green-600" />
+                              ) : (
+                                <EyeOff className="w-4 h-4 text-gray-600" />
+                              )}
+                            </button>
+                            <button
+                              onClick={() => viewImage(image.url)}
+                              className="p-2 bg-white/90 rounded-lg shadow hover:bg-white transition"
+                              title="View Image"
+                            >
+                              <Eye className="w-4 h-4 text-gray-600" />
+                            </button>
+                            <button
+                              onClick={() => downloadImage(image.url, `my-image-${image.id}.png`)}
+                              className="p-2 bg-white/90 rounded-lg shadow hover:bg-white transition"
+                              title="Download"
+                            >
+                              <Download className="w-4 h-4 text-blue-600" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteImage(image.id)}
+                              className="p-2 bg-white/90 rounded-lg shadow hover:bg-white transition text-red-500 hover:text-red-600"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                          {image.isPublic && (
+                            <div className="absolute top-2 left-2">
+                              <div className="px-2 py-1 bg-green-500 text-white text-xs rounded-full">
+                                Public
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-4">
+                          <p className="text-sm text-gray-600 line-clamp-2 mb-2">{image.prompt}</p>
+                          <div className="flex items-center justify-between text-xs text-gray-500">
+                            <span className="font-medium">{image.model}</span>
+                            <span>{new Date(image.createdAt).toLocaleDateString()}</span>
+                          </div>
+                          {image.generation && (
+                            <div className="mt-2 text-xs text-gray-400">
+                              Generation: {image.generation.id.slice(0, 8)}...
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="card p-20 text-center">
                   <Image className="w-24 h-24 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600 text-lg">No images yet</p>
-                  <p className="text-gray-500 text-sm mt-2">Start generating to see your creations here</p>
+                  <p className="text-gray-600 text-lg">No saved images yet</p>
+                  <p className="text-gray-500 text-sm mt-2 mb-6">
+                    Generate images to see them permanently saved here
+                  </p>
+                  <button 
+                    onClick={() => window.location.href = '/generate'}
+                    className="btn btn-primary"
+                  >
+                    Start Generating
+                  </button>
                 </div>
               )}
             </div>
           )}
 
           {activeTab === 'generations' && (
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {/* Statistics Cards */}
+              {generationsData?.stats && (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                  <div className="card p-4">
+                    <div className="flex items-center">
+                      <BarChart3 className="w-8 h-8 text-primary-500 mr-3" />
+                      <div>
+                        <p className="text-2xl font-bold">{generationsData.stats.totalGenerations}</p>
+                        <p className="text-sm text-gray-600">Total Generations</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="card p-4">
+                    <div className="flex items-center">
+                      <Zap className="w-8 h-8 text-yellow-500 mr-3" />
+                      <div>
+                        <p className="text-2xl font-bold">{generationsData.stats.totalCreditsUsed}</p>
+                        <p className="text-sm text-gray-600">Credits Used</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="card p-4">
+                    <div className="flex items-center">
+                      <Grid3x3 className="w-8 h-8 text-green-500 mr-3" />
+                      <div>
+                        <p className="text-2xl font-bold">{generationsData.stats.statusBreakdown?.COMPLETED || 0}</p>
+                        <p className="text-sm text-gray-600">Completed</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="card p-4">
+                    <div className="flex items-center">
+                      <Clock className="w-8 h-8 text-blue-500 mr-3" />
+                      <div>
+                        <p className="text-2xl font-bold">{generationsData.stats.statusBreakdown?.PROCESSING || 0}</p>
+                        <p className="text-sm text-gray-600">Processing</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Filters and Search */}
+              <div className="card p-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <input
+                        type="text"
+                        placeholder="Search prompts..."
+                        value={generationFilters.search}
+                        onChange={(e) => handleFilterChange('search', e.target.value)}
+                        className="input pl-10"
+                      />
+                    </div>
+                  </div>
+                  <select
+                    value={generationFilters.status}
+                    onChange={(e) => handleFilterChange('status', e.target.value)}
+                    className="input md:w-40"
+                  >
+                    <option value="">All Status</option>
+                    <option value="COMPLETED">Completed</option>
+                    <option value="PROCESSING">Processing</option>
+                    <option value="FAILED">Failed</option>
+                  </select>
+                  <select
+                    value={generationFilters.model}
+                    onChange={(e) => handleFilterChange('model', e.target.value)}
+                    className="input md:w-40"
+                  >
+                    <option value="">All Models</option>
+                    <option value="stable-diffusion-xl">SDXL</option>
+                    <option value="kandinsky">Kandinsky</option>
+                    <option value="anime">Anime</option>
+                    <option value="realistic-vision">Realistic</option>
+                  </select>
+                  <select
+                    value={generationFilters.sortBy}
+                    onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                    className="input md:w-40"
+                  >
+                    <option value="createdAt">Date</option>
+                    <option value="creditsUsed">Credits</option>
+                    <option value="status">Status</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Generation History List */}
               {generationsLoading ? (
                 <div className="flex justify-center items-center py-20">
                   <Loader className="w-8 h-8 animate-spin text-primary-500" />
-                  <span className="ml-2 text-gray-600">Загрузка истории...</span>
+                  <span className="ml-2 text-gray-600">Loading history...</span>
                 </div>
               ) : generationsData?.generations?.length > 0 ? (
-                generationsData.generations.map((generation) => (
-                  <div key={generation.id} className="card p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="font-medium mb-2">{generation.prompt}</p>
-                        <div className="flex items-center space-x-4 text-sm text-gray-500">
-                          <span>{generation.model}</span>
-                          <span>{generation.images?.length || 0} images</span>
-                          <span>{generation.creditsUsed} credits</span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            generation.status === 'COMPLETED' 
-                              ? 'bg-green-100 text-green-700'
-                              : generation.status === 'FAILED'
-                              ? 'bg-red-100 text-red-700'
-                              : 'bg-yellow-100 text-yellow-700'
-                          }`}>
+                <div className="space-y-4">
+                  {generationsData.generations.map((generation) => (
+                    <motion.div
+                      key={generation.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="card p-6"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <p className="font-medium mb-2 line-clamp-2">{generation.prompt}</p>
+                          <div className="flex items-center space-x-4 text-sm text-gray-500">
+                            <span className="flex items-center">
+                              <Grid3x3 className="w-4 h-4 mr-1" />
+                              {formatModel(generation.model)}
+                            </span>
+                            <span className="flex items-center">
+                              <Image className="w-4 h-4 mr-1" />
+                              {generation.images?.length || 0} images
+                            </span>
+                            <span className="flex items-center">
+                              <Zap className="w-4 h-4 mr-1" />
+                              {generation.creditsUsed} credits
+                            </span>
+                            <span className="flex items-center">
+                              <Calendar className="w-4 h-4 mr-1" />
+                              {new Date(generation.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(generation.status)}`}>
                             {generation.status}
                           </span>
+                          {generation.status === 'COMPLETED' && (
+                            <button
+                              onClick={() => handleRegenerateImage(generation.id)}
+                              className="p-2 text-gray-400 hover:text-primary-500 transition"
+                              title="Regenerate"
+                            >
+                              <RefreshCw className="w-4 h-4" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDeleteGeneration(generation.id)}
+                            className="p-2 text-gray-400 hover:text-red-500 transition"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
-                      <span className="text-sm text-gray-500">
-                        {new Date(generation.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    {generation.images?.length > 0 && (
-                      <div className="flex space-x-2 mt-4">
-                        {generation.images.map(img => (
-                          <img
-                            key={img.id}
-                            src={img.thumbnailUrl || img.url}
-                            alt=""
-                            className="w-20 h-20 rounded-lg object-cover"
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))
+                      
+                      {generation.images?.length > 0 && (
+                        <div className="flex space-x-2 overflow-x-auto pb-2">
+                          {generation.images.map(img => (
+                            <div key={img.id} className="flex-shrink-0">
+                              <img
+                                src={img.thumbnailUrl || img.url}
+                                alt=""
+                                className="w-20 h-20 rounded-lg object-cover cursor-pointer hover:opacity-80 transition"
+                                onClick={() => window.open(img.url, '_blank')}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {generation.negativePrompt && (
+                        <div className="mt-3 text-sm">
+                          <span className="text-gray-500">Negative prompt: </span>
+                          <span className="text-gray-700">{generation.negativePrompt}</span>
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
               ) : (
                 <div className="card p-20 text-center">
                   <Grid3x3 className="w-24 h-24 text-gray-300 mx-auto mb-4" />
                   <p className="text-gray-600 text-lg">No generation history</p>
+                  <p className="text-gray-500 text-sm mt-2">Start generating to see your history here</p>
+                </div>
+              )}
+
+              {/* Pagination */}
+              {generationsData?.pagination && generationsData.pagination.pages > 1 && (
+                <div className="flex justify-center items-center space-x-4 mt-6">
+                  <button
+                    onClick={() => handlePageChange(generationFilters.page - 1)}
+                    disabled={generationFilters.page <= 1}
+                    className="btn btn-outline disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="w-4 h-4 mr-2" />
+                    Previous
+                  </button>
+                  <span className="text-gray-600">
+                    Page {generationFilters.page} of {generationsData.pagination.pages}
+                  </span>
+                  <button
+                    onClick={() => handlePageChange(generationFilters.page + 1)}
+                    disabled={generationFilters.page >= generationsData.pagination.pages}
+                    className="btn btn-outline disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4 ml-2" />
+                  </button>
                 </div>
               )}
             </div>
           )}
 
           {activeTab === 'settings' && (
-            <div className="card p-8">
-              <h2 className="text-2xl font-bold mb-6">Настройки аккаунта</h2>
+            <div className="card" style={{ padding: '1.5rem' }}>
+              <h2 className="text-2xl font-bold mb-6">Account Settings</h2>
               <form onSubmit={handleSaveSettings} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
@@ -308,7 +650,7 @@ const ProfilePage = () => {
                       disabled
                       className="input bg-gray-50"
                     />
-                    <p className="text-sm text-gray-500 mt-1">Нельзя изменить</p>
+                    <p className="text-sm text-gray-500 mt-1">Cannot be changed</p>
                   </div>
                   <div>
                     <label className="label">Username</label>
@@ -318,46 +660,46 @@ const ProfilePage = () => {
                       disabled
                       className="input bg-gray-50"
                     />
-                    <p className="text-sm text-gray-500 mt-1">Нельзя изменить</p>
+                    <p className="text-sm text-gray-500 mt-1">Cannot be changed</p>
                   </div>
                 </div>
                 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label className="label">Полное имя</label>
+                    <label className="label">Full Name</label>
                     <input
                       type="text"
                       value={settingsForm.fullName}
                       onChange={(e) => handleSettingsChange('fullName', e.target.value)}
                       className="input"
-                      placeholder="Введите ваше полное имя"
+                      placeholder="Enter your full name"
                     />
                   </div>
                   <div>
-                    <label className="label">Местоположение</label>
+                    <label className="label">Location</label>
                     <input
                       type="text"
                       value={settingsForm.location}
                       onChange={(e) => handleSettingsChange('location', e.target.value)}
                       className="input"
-                      placeholder="Город, страна"
+                      placeholder="City, Country"
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <label className="label">О себе</label>
+                  <label className="label">About</label>
                   <textarea
                     value={settingsForm.bio}
                     onChange={(e) => handleSettingsChange('bio', e.target.value)}
                     className="input min-h-[100px] resize-none"
-                    placeholder="Расскажите о себе..."
+                    placeholder="Tell us about yourself..."
                     rows={4}
                   />
                 </div>
                 
                 <div>
-                  <label className="label">Веб-сайт</label>
+                  <label className="label">Website</label>
                   <input
                     type="url"
                     value={settingsForm.website}
@@ -376,12 +718,12 @@ const ProfilePage = () => {
                     {updateSettingsMutation.isLoading ? (
                       <>
                         <Loader className="w-4 h-4 mr-2 animate-spin" />
-                        Сохранение...
+                        Saving...
                       </>
                     ) : (
                       <>
                         <Save className="w-4 h-4 mr-2" />
-                        Сохранить изменения
+                        Save Changes
                       </>
                     )}
                   </button>
@@ -391,7 +733,7 @@ const ProfilePage = () => {
                     className="btn btn-outline text-red-600 border-red-600 hover:bg-red-50"
                   >
                     <LogOut className="w-4 h-4 mr-2" />
-                    Выйти
+                    Sign Out
                   </button>
                 </div>
               </form>
@@ -401,8 +743,10 @@ const ProfilePage = () => {
 
         {/* Danger Zone - Account Deletion */}
         {activeTab === 'settings' && (
-          <div className="mt-12">
-            <DangerZone />
+          <div style={{ marginTop: '100px' }}>
+            <div className="max-w-6xl mx-auto">
+              <DangerZone />
+            </div>
           </div>
         )}
       </div>

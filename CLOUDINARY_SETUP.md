@@ -1,40 +1,40 @@
-# 🖼️ Cloudinary Setup для Render Deployment
+# 🖼️ Cloudinary Setup for Render Deployment
 
-## 📋 Содержание
-1. [Создание аккаунта Cloudinary](#1-создание-аккаунта-cloudinary)
-2. [Получение API ключей](#2-получение-api-ключей)
-3. [Настройка Render Environment Variables](#3-настройка-render-environment-variables)
-4. [Проверка интеграции](#4-проверка-интеграции)
-5. [Monitoring и Debugging](#5-monitoring-и-debugging)
-
----
-
-## 1. Создание аккаунта Cloudinary
-
-### Шаг 1: Регистрация
-1. Перейдите на [cloudinary.com](https://cloudinary.com)
-2. Нажмите **"Start for free"**
-3. Заполните форму регистрации
-4. Подтвердите email
-
-### Шаг 2: Бесплатный план
-✅ **Бесплатный план включает:**
-- 25GB хранилища
-- 25GB месячного трафика
-- 25,000 трансформаций
-- CDN по всему миру
-- Автоматическая оптимизация
+## 📋 Contents
+1. [Creating Cloudinary Account](#1-creating-cloudinary-account)
+2. [Getting API Keys](#2-getting-api-keys)
+3. [Setting up Render Environment Variables](#3-setting-up-render-environment-variables)
+4. [Testing Integration](#4-testing-integration)
+5. [Monitoring and Debugging](#5-monitoring-and-debugging)
 
 ---
 
-## 2. Получение API ключей
+## 1. Creating Cloudinary Account
 
-### Шаг 1: Dashboard
-1. Войдите в [Cloudinary Console](https://console.cloudinary.com)
-2. На главной странице найдите раздел **"Account Details"**
+### Step 1: Registration
+1. Go to [cloudinary.com](https://cloudinary.com)
+2. Click **"Start for free"**
+3. Fill out the registration form
+4. Confirm your email
 
-### Шаг 2: Копирование данных
-Скопируйте следующие данные:
+### Step 2: Free Plan
+✅ **Free plan includes:**
+- 25GB storage
+- 25GB monthly bandwidth
+- 25,000 transformations
+- Global CDN
+- Automatic optimization
+
+---
+
+## 2. Getting API Keys
+
+### Step 1: Dashboard
+1. Log in to [Cloudinary Console](https://console.cloudinary.com)
+2. On the main page, find the **"Account Details"** section
+
+### Step 2: Copy Credentials
+Copy the following data:
 
 ```bash
 Cloud Name: your-cloud-name
@@ -42,20 +42,20 @@ API Key: 123456789012345
 API Secret: abcdefghijklmnopqrstuvwxyz-ABCD
 ```
 
-### 🔐 Безопасность
-⚠️ **ВАЖНО:** Никогда не публикуйте API Secret в коде!
+### 🔐 Security
+⚠️ **IMPORTANT:** Never publish API Secret in your code!
 
 ---
 
-## 3. Настройка Render Environment Variables
+## 3. Setting up Render Environment Variables
 
-### Шаг 1: Render Dashboard
-1. Войдите в [Render Dashboard](https://dashboard.render.com)
-2. Выберите ваш Web Service
-3. Перейдите в **Environment**
+### Step 1: Render Dashboard
+1. Log in to [Render Dashboard](https://dashboard.render.com)
+2. Select your Web Service
+3. Go to **Environment**
 
-### Шаг 2: Добавление переменных
-Добавьте следующие environment variables:
+### Step 2: Adding Variables
+Add the following environment variables:
 
 ```bash
 # Cloudinary Configuration
@@ -68,56 +68,56 @@ NODE_ENV=production
 SERVER_URL=https://your-service.onrender.com
 ```
 
-### Шаг 3: Deploy
-После добавления переменных нажмите **"Manual Deploy"**
+### Step 3: Deploy
+After adding variables, click **"Manual Deploy"**
 
 ---
 
-## 4. Проверка интеграции
+## 4. Testing Integration
 
-### Шаг 1: Проверка логов
-В Render Dashboard проверьте логи при запуске:
+### Step 1: Check Logs
+In Render Dashboard, check the startup logs:
 
 ```bash
-✅ Looking for logs like:
+✅ Look for logs like:
 🟢 Cloudinary configured for production storage
 ```
 
-### Шаг 2: Тест генерации
-1. Авторизуйтесь как `@unitradecargo_1755153796918`
-2. Сгенерируйте изображение
-3. Проверьте "My Images" в профиле
+### Step 2: Test Generation
+1. Login as `@unitradecargo_1755153796918`
+2. Generate an image
+3. Check "My Images" in profile
 
-### Шаг 3: Cloudinary Media Library
-1. В Cloudinary Console перейдите в **Media Library**
-2. Проверьте папку `vheer-ai/generated`
-3. Должны появиться загруженные изображения
+### Step 3: Cloudinary Media Library
+1. In Cloudinary Console go to **Media Library**
+2. Check the `vheer-ai/generated` folder
+3. Uploaded images should appear
 
 ---
 
-## 5. Monitoring и Debugging
+## 5. Monitoring and Debugging
 
 ### Cloudinary Usage
-В Cloudinary Dashboard:
-- **Dashboard > Usage** - статистика использования
-- **Media Library** - все загруженные файлы
-- **Transformations** - история трансформаций
+In Cloudinary Dashboard:
+- **Dashboard > Usage** - usage statistics
+- **Media Library** - all uploaded files
+- **Transformations** - transformation history
 
 ### Render Logs
-В Render Dashboard:
+In Render Dashboard:
 ```bash
-# Успешная загрузка
+# Successful upload
 📤 Uploading to Cloudinary: generated/uuid.png
 ✅ Cloudinary upload successful: https://res.cloudinary.com/...
 
-# Ошибки
+# Errors
 ❌ Cloudinary upload failed: [error details]
 ```
 
 ### Debugging Commands
-Для проверки переменных:
+To check variables:
 ```bash
-# В Render Shell
+# In Render Shell
 echo $CLOUDINARY_CLOUD_NAME
 echo $CLOUDINARY_API_KEY
 echo $NODE_ENV
@@ -125,17 +125,17 @@ echo $NODE_ENV
 
 ---
 
-## 🎯 Структура файлов в Cloudinary
+## 🎯 File Structure in Cloudinary
 
-### Папки:
+### Folders:
 ```
 vheer-ai/
-├── generated/          # Сгенерированные изображения
-├── originals/          # Оригинальные загруженные изображения  
-└── thumbnails/         # Миниатюры (автогенерируемые)
+├── generated/          # Generated images
+├── originals/          # Original uploaded images  
+└── thumbnails/         # Thumbnails (auto-generated)
 ```
 
-### URL формат:
+### URL format:
 ```
 Original: https://res.cloudinary.com/your-cloud/image/upload/vheer-ai/generated/uuid.png
 Thumbnail: https://res.cloudinary.com/your-cloud/image/upload/w_300,h_300,c_fill,q_80,f_webp/vheer-ai/generated/uuid.png
@@ -143,48 +143,48 @@ Thumbnail: https://res.cloudinary.com/your-cloud/image/upload/w_300,h_300,c_fill
 
 ---
 
-## 🚀 Преимущества Cloudinary + Render
+## 🚀 Cloudinary + Render Benefits
 
 ### Performance
-- ✅ **Global CDN** - быстрая загрузка по всему миру
-- ✅ **Auto-optimization** - автоматическое сжатие
-- ✅ **Format conversion** - WebP для поддерживающих браузеров
+- ✅ **Global CDN** - fast loading worldwide
+- ✅ **Auto-optimization** - automatic compression
+- ✅ **Format conversion** - WebP for supporting browsers
 
 ### Reliability  
 - ✅ **99.95% uptime** SLA
-- ✅ **Automatic backup** - файлы не теряются при рестарте Render
-- ✅ **Scalability** - автоматическое масштабирование
+- ✅ **Automatic backup** - files don't get lost on Render restart
+- ✅ **Scalability** - automatic scaling
 
 ### Cost Efficiency
-- ✅ **Free tier** - 25GB бесплатно
-- ✅ **Pay as you grow** - платить только за использование
-- ✅ **No server storage** - экономия дискового пространства Render
+- ✅ **Free tier** - 25GB free
+- ✅ **Pay as you grow** - only pay for usage
+- ✅ **No server storage** - saves Render disk space
 
 ---
 
 ## 🆘 Troubleshooting
 
-### Проблема: "Cloudinary upload failed"
-**Решение:**
-1. Проверьте API ключи в Render Environment
-2. Проверьте квоты в Cloudinary Dashboard
-3. Проверьте сетевые настройки
+### Issue: "Cloudinary upload failed"
+**Solution:**
+1. Check API keys in Render Environment
+2. Check quotas in Cloudinary Dashboard
+3. Check network settings
 
-### Проблема: "Images not saving"
-**Решение:**
-1. Проверьте `NODE_ENV=production` в Render
-2. Проверьте логи Render на ошибки
-3. Убедитесь что пользователь имеет платную подписку
+### Issue: "Images not saving"
+**Solution:**
+1. Check `NODE_ENV=production` in Render
+2. Check Render logs for errors
+3. Make sure user has paid subscription
 
-### Проблема: "Thumbnails not generating"
-**Решение:**
-1. Cloudinary автоматически генерирует thumbnails через URL
-2. Проверьте формат URL в базе данных
-3. Проверьте права доступа в Cloudinary
+### Issue: "Thumbnails not generating"
+**Solution:**
+1. Cloudinary automatically generates thumbnails via URL
+2. Check URL format in database
+3. Check access permissions in Cloudinary
 
 ---
 
-## 📞 Поддержка
+## 📞 Support
 
 - **Cloudinary Docs:** https://cloudinary.com/documentation
 - **Render Docs:** https://render.com/docs
@@ -192,15 +192,15 @@ Thumbnail: https://res.cloudinary.com/your-cloud/image/upload/w_300,h_300,c_fill
 
 ---
 
-## ✅ Checklist при деплое
+## ✅ Deployment Checklist
 
-- [ ] Создан аккаунт Cloudinary
-- [ ] Получены API ключи
-- [ ] Добавлены environment variables в Render
-- [ ] Deployed сервис на Render
-- [ ] Проверены логи запуска
-- [ ] Протестирована генерация изображений
-- [ ] Проверена Media Library в Cloudinary
-- [ ] Проверена страница "My Images"
+- [ ] Created Cloudinary account
+- [ ] Got API keys
+- [ ] Added environment variables to Render
+- [ ] Deployed service on Render
+- [ ] Checked startup logs
+- [ ] Tested image generation
+- [ ] Checked Media Library in Cloudinary
+- [ ] Verified "My Images" page
 
-**Готово! 🎉 Ваши изображения теперь сохраняются в облаке!**
+**Done! 🎉 Your images are now saved in the cloud!**

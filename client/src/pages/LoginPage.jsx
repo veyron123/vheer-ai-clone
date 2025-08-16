@@ -5,6 +5,8 @@ import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { Sparkles, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
+import AnimatedLogo from '../components/AnimatedLogo';
+import ColorfulLogo from '../components/ColorfulLogo';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -37,13 +39,13 @@ const LoginPage = () => {
       >
         <div className="card p-8">
           {/* Logo */}
-          <Link to="/" className="flex items-center justify-center space-x-2 mb-8">
-            <img 
-              src="/colibrrri-logo.png" 
-              alt="СolibRRRi Logo" 
-              className="w-12 h-12"
+          <Link to="/" className="flex items-center justify-center space-x-3 mb-8">
+            <AnimatedLogo 
+              className="w-12 h-12" 
+              alt="СolibRRRi Logo"
+              triggerAnimation={true}
             />
-            <span className="text-2xl font-bold">СolibRRRi</span>
+            <ColorfulLogo className="text-2xl" />
           </Link>
 
           <h2 className="text-2xl font-bold text-center mb-2">Welcome Back</h2>

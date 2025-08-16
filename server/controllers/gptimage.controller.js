@@ -97,42 +97,61 @@ export const generateImage = async (req, res) => {
     
     // If it's base64, try to upload it to a hosting service
     if (!input_image.startsWith('http')) {
-      // First, try uploading to imgbb (with error handling)
+      // Try uploading to Cloudinary first (more reliable than ImgBB)
       try {
-        console.log('Attempting to upload image to ImgBB...');
-        const formData = new URLSearchParams();
-        formData.append('key', IMGBB_API_KEY);
-        // Clean the base64 string by removing data URL prefix if present
-        const cleanBase64 = input_image.replace(/^data:image\/[a-z]+;base64,/, '');
-        formData.append('image', cleanBase64);
+        console.log('🔄 Attempting to upload image to Cloudinary...');
+        console.log('🔍 Input image type:', typeof input_image);
+        console.log('🔍 Input image starts with data:', input_image.startsWith('data:'));
+        console.log('🔍 Input image length:', input_image.length);
         
-        const imgbbResponse = await axios.post('https://api.imgbb.com/1/upload', formData, {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          timeout: 10000 // 10 second timeout
-        });
+        const { getStorageProvider } = await import('../utils/storageProvider.js');
+        const storageProvider = getStorageProvider();
         
-        if (imgbbResponse.data && imgbbResponse.data.data && imgbbResponse.data.data.url) {
-          imageUrl = imgbbResponse.data.data.url;
-          console.log('Image successfully uploaded to ImgBB:', imageUrl);
-        } else {
-          throw new Error('Invalid response from ImgBB');
+        // Upload image using our universal storage provider
+        const uploadResult = await storageProvider.uploadImage(input_image, 'gpt-input');
+        imageUrl = uploadResult.url;
+        console.log('✅ Image successfully uploaded to Cloudinary:', imageUrl);
+        
+      } catch (cloudinaryError) {
+        console.error('❌ Cloudinary upload failed:', cloudinaryError.message);
+        
+        // Fallback to ImgBB if Cloudinary fails
+        try {
+          console.log('🔄 Fallback: Attempting to upload image to ImgBB...');
+          const formData = new URLSearchParams();
+          formData.append('key', IMGBB_API_KEY);
+          // Clean the base64 string by removing data URL prefix if present
+          const cleanBase64 = input_image.replace(/^data:image\/[a-z]+;base64,/, '');
+          formData.append('image', cleanBase64);
+          
+          const imgbbResponse = await axios.post('https://api.imgbb.com/1/upload', formData, {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            timeout: 10000 // 10 second timeout
+          });
+          
+          if (imgbbResponse.data && imgbbResponse.data.data && imgbbResponse.data.data.url) {
+            imageUrl = imgbbResponse.data.data.url;
+            console.log('✅ Image successfully uploaded to ImgBB:', imageUrl);
+          } else {
+            throw new Error('Invalid response from ImgBB');
+          }
+        } catch (uploadError) {
+          console.error('❌ Both Cloudinary and ImgBB upload failed:', uploadError.message);
+          
+          // If both uploads fail, try direct base64 approach with GPT Image
+          console.log('Trying direct base64 approach...');
+          
+          // Some APIs accept direct base64, try this approach
+          if (input_image.startsWith('data:image')) {
+            imageUrl = input_image;
+          } else {
+            // Add data URL prefix if missing
+            imageUrl = `data:image/jpeg;base64,${input_image}`;
+          }
+          console.log('Using direct base64 approach for GPT Image API');
         }
-      } catch (uploadError) {
-        console.error('ImgBB upload failed:', uploadError.message);
-        
-        // If ImgBB fails, try direct base64 approach with GPT Image
-        console.log('Trying direct base64 approach...');
-        
-        // Some APIs accept direct base64, try this approach
-        if (input_image.startsWith('data:image')) {
-          imageUrl = input_image;
-        } else {
-          // Add data URL prefix if missing
-          imageUrl = `data:image/jpeg;base64,${input_image}`;
-        }
-        console.log('Using direct base64 approach for GPT Image API');
       }
     }
 
@@ -158,11 +177,13 @@ export const generateImage = async (req, res) => {
       // Start polling for result using the taskId with the correct endpoint
       const result = await pollForResult(response.data.data.taskId);
       
-      // If generation was successful and user is authenticated, deduct credits
+      // If generation was successful and user is authenticated, deduct credits and save image
       if (result.success && userId) {
         const modelId = 'gpt-image';
         const requiredCredits = getModelCredits(modelId);
+        
         try {
+          // Deduct credits first
           await axios.post('http://localhost:5000/api/users/deduct-credits', {
             modelId
           }, {
@@ -171,6 +192,41 @@ export const generateImage = async (req, res) => {
             }
           });
           console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
+          
+          // Get user data with subscription info for image saving
+          const user = await prisma.user.findUnique({
+            where: { id: userId },
+            include: { subscription: true }
+          });
+          
+          if (user) {
+            // Create generation record
+            const generation = await prisma.generation.create({
+              data: {
+                userId: userId,
+                prompt: prompt,
+                negativePrompt: '',
+                model: modelId,
+                style: style || '',
+                status: 'COMPLETED',
+                creditsUsed: requiredCredits,
+                completedAt: new Date()
+              }
+            });
+            
+            // Try to save the generated image for eligible users
+            try {
+              await saveGeneratedImage(
+                { url: result.image, width: 1024, height: 1024 },
+                user,
+                generation
+              );
+              console.log('GPT Image saved to user gallery');
+            } catch (saveError) {
+              console.log('GPT Image not saved (user not eligible or error):', saveError.message);
+            }
+          }
+          
         } catch (creditError) {
           console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
           // Still return the image but log the credit error
@@ -186,18 +242,54 @@ export const generateImage = async (req, res) => {
         const modelId = 'gpt-image';
         const requiredCredits = getModelCredits(modelId);
         try {
+          // Deduct credits first
           await axios.post('http://localhost:5000/api/users/deduct-credits', {
             modelId
-        }, {
-          headers: {
-            'Authorization': req.headers.authorization
+          }, {
+            headers: {
+              'Authorization': req.headers.authorization
+            }
+          });
+          console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
+          
+          // Get user data with subscription info for image saving
+          const user = await prisma.user.findUnique({
+            where: { id: userId },
+            include: { subscription: true }
+          });
+          
+          if (user) {
+            // Create generation record
+            const generation = await prisma.generation.create({
+              data: {
+                userId: userId,
+                prompt: prompt,
+                negativePrompt: '',
+                model: modelId,
+                style: style || '',
+                status: 'COMPLETED',
+                creditsUsed: requiredCredits,
+                completedAt: new Date()
+              }
+            });
+            
+            // Try to save the generated image for eligible users
+            try {
+              await saveGeneratedImage(
+                { url: response.data.data.images[0], width: 1024, height: 1024 },
+                user,
+                generation
+              );
+              console.log('GPT Image (direct response) saved to user gallery');
+            } catch (saveError) {
+              console.log('GPT Image (direct response) not saved (user not eligible or error):', saveError.message);
+            }
           }
-        });
-        console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
-      } catch (creditError) {
-        console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
-        // Still return the image but log the credit error
-      }
+          
+        } catch (creditError) {
+          console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
+          // Still return the image but log the credit error
+        }
       }
       
       res.json({
@@ -219,8 +311,8 @@ export const generateImage = async (req, res) => {
 
 // Poll for generation result
 async function pollForResult(taskId) {
-  const maxAttempts = 180; // 3 minutes timeout (GPT IMAGE очень медленный)
-  const pollInterval = 3000; // 3 seconds between polls
+  const maxAttempts = 120; // 12 minutes timeout (GPT IMAGE очень медленный)
+  const pollInterval = 6000; // 6 seconds between polls (более редкие запросы)
   
   console.log(`Starting to poll for task: ${taskId}`);
   
@@ -450,11 +542,13 @@ export const generateImageToImage = async (req, res) => {
       // Start polling for result using the taskId with the correct endpoint
       const result = await pollForResult(response.data.data.taskId);
       
-      // If generation was successful and user is authenticated, deduct credits
+      // If generation was successful and user is authenticated, deduct credits and save image
       if (result.success && userId) {
         const modelId = 'gpt-image';
         const requiredCredits = getModelCredits(modelId);
+        
         try {
+          // Deduct credits first
           await axios.post('http://localhost:5000/api/users/deduct-credits', {
             modelId
           }, {
@@ -463,6 +557,41 @@ export const generateImageToImage = async (req, res) => {
             }
           });
           console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
+          
+          // Get user data with subscription info for image saving
+          const user = await prisma.user.findUnique({
+            where: { id: userId },
+            include: { subscription: true }
+          });
+          
+          if (user) {
+            // Create generation record
+            const generation = await prisma.generation.create({
+              data: {
+                userId: userId,
+                prompt: prompt,
+                negativePrompt: negative_prompt || '',
+                model: modelId,
+                style: '',
+                status: 'COMPLETED',
+                creditsUsed: requiredCredits,
+                completedAt: new Date()
+              }
+            });
+            
+            // Try to save the generated image for eligible users
+            try {
+              await saveGeneratedImage(
+                { url: result.image, width: 1024, height: 1024 },
+                user,
+                generation
+              );
+              console.log('GPT Image (image-to-image) saved to user gallery');
+            } catch (saveError) {
+              console.log('GPT Image (image-to-image) not saved (user not eligible or error):', saveError.message);
+            }
+          }
+          
         } catch (creditError) {
           console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
           // Still return the image but log the credit error
@@ -478,18 +607,54 @@ export const generateImageToImage = async (req, res) => {
         const modelId = 'gpt-image';
         const requiredCredits = getModelCredits(modelId);
         try {
+          // Deduct credits first
           await axios.post('http://localhost:5000/api/users/deduct-credits', {
             modelId
-        }, {
-          headers: {
-            'Authorization': req.headers.authorization
+          }, {
+            headers: {
+              'Authorization': req.headers.authorization
+            }
+          });
+          console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
+          
+          // Get user data with subscription info for image saving
+          const user = await prisma.user.findUnique({
+            where: { id: userId },
+            include: { subscription: true }
+          });
+          
+          if (user) {
+            // Create generation record
+            const generation = await prisma.generation.create({
+              data: {
+                userId: userId,
+                prompt: prompt,
+                negativePrompt: '',
+                model: modelId,
+                style: style || '',
+                status: 'COMPLETED',
+                creditsUsed: requiredCredits,
+                completedAt: new Date()
+              }
+            });
+            
+            // Try to save the generated image for eligible users
+            try {
+              await saveGeneratedImage(
+                { url: response.data.data.images[0], width: 1024, height: 1024 },
+                user,
+                generation
+              );
+              console.log('GPT Image (direct response) saved to user gallery');
+            } catch (saveError) {
+              console.log('GPT Image (direct response) not saved (user not eligible or error):', saveError.message);
+            }
           }
-        });
-        console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
-      } catch (creditError) {
-        console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
-        // Still return the image but log the credit error
-      }
+          
+        } catch (creditError) {
+          console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
+          // Still return the image but log the credit error
+        }
       }
       
       res.json({
