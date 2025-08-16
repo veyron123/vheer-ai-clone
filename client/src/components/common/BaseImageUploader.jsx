@@ -122,7 +122,7 @@ const BaseImageUploader = ({
   // Grid layout render
   if (layout === 'grid') {
     return (
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
         {/* Upload Section */}
         <div>
           <h3 className="text-sm font-medium text-gray-700 mb-3">Original Image</h3>
@@ -140,7 +140,7 @@ const BaseImageUploader = ({
                 />
                 <button
                   onClick={onImageRemove}
-                  className="absolute top-3 right-3 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
+                  className="absolute top-2 right-2 sm:top-3 sm:right-3 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg touch-manipulation"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -158,7 +158,7 @@ const BaseImageUploader = ({
                 
                 <label 
                   htmlFor="image-upload" 
-                  className="btn btn-primary mb-4 cursor-pointer flex items-center gap-2"
+                  className="btn btn-primary mb-4 cursor-pointer flex items-center gap-2 touch-manipulation"
                 >
                   <Upload className="w-5 h-5" />
                   {uploadText}
@@ -204,14 +204,14 @@ const BaseImageUploader = ({
                 />
                 <button
                   onClick={handleView}
-                  className="absolute bottom-3 right-16 p-2 bg-white text-gray-700 rounded-full hover:bg-gray-100 transition-colors shadow-lg border border-gray-200"
+                  className="absolute bottom-2 right-14 sm:bottom-3 sm:right-16 p-2 bg-white text-gray-700 rounded-full hover:bg-gray-100 transition-colors shadow-lg border border-gray-200 touch-manipulation"
                   title="View Image"
                 >
                   <ZoomIn className="w-4 h-4" />
                 </button>
                 <button
                   onClick={handleDownload}
-                  className="absolute bottom-3 right-3 p-2 bg-primary-500 text-white rounded-full hover:bg-primary-600 transition-colors shadow-lg"
+                  className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 p-2 bg-primary-500 text-white rounded-full hover:bg-primary-600 transition-colors shadow-lg touch-manipulation"
                   title="Download Image"
                 >
                   <Download className="w-4 h-4" />
@@ -253,7 +253,7 @@ const BaseImageUploader = ({
   // Single layout render (anime style)
   return (
     <div 
-      className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-primary-400 transition-colors cursor-pointer"
+      className="border-2 border-dashed border-gray-300 rounded-xl p-4 sm:p-8 text-center hover:border-primary-400 transition-colors cursor-pointer touch-manipulation"
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onClick={handleClick}
@@ -315,7 +315,7 @@ const BaseImageUploader = ({
           
           <button
             onClick={handleRemove}
-            className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-lg hover:bg-red-600"
+            className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 touch-manipulation"
           >
             <X className="w-5 h-5" />
           </button>
@@ -338,7 +338,7 @@ const BaseImageUploader = ({
         </div>
       ) : (
         <>
-          <button className="bg-yellow-400 text-black font-medium px-6 py-3 rounded-lg mb-4 hover:bg-yellow-500 transition-colors inline-flex items-center">
+          <button className="bg-yellow-400 text-black font-medium px-4 sm:px-6 py-3 rounded-lg mb-4 hover:bg-yellow-500 transition-colors inline-flex items-center touch-manipulation">
             <Upload className="w-5 h-5 mr-2" />
             {uploadText}
           </button>

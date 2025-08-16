@@ -65,8 +65,10 @@ const LoginPage = () => {
                       message: 'Invalid email address'
                     }
                   })}
-                  className="input pl-10"
+                  className="input pl-10 text-base"
                   placeholder="Enter your email"
+                  autoComplete="email"
+                  inputMode="email"
                 />
                 <Mail className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
               </div>
@@ -88,14 +90,16 @@ const LoginPage = () => {
                       message: 'Password must be at least 6 characters'
                     }
                   })}
-                  className="input pl-10 pr-10"
+                  className="input pl-10 pr-10 text-base"
                   placeholder="Enter your password"
+                  autoComplete="current-password"
                 />
                 <Lock className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 touch-manipulation"
+                  aria-label="Toggle password visibility"
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5 text-gray-400" />
@@ -124,7 +128,7 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
             >
               {isLoading ? 'Signing in...' : 'Sign In'}
             </button>
@@ -145,7 +149,7 @@ const LoginPage = () => {
             <button 
               type="button"
               onClick={loginWithGoogle}
-              className="btn btn-outline hover:bg-gray-50 w-full max-w-xs"
+              className="btn btn-outline hover:bg-gray-50 w-full max-w-xs touch-manipulation"
             >
               <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5 mr-2" />
               Continue with Google

@@ -57,12 +57,12 @@ const AnimeGeneratorPage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="container-custom py-8">
-        <div className="grid lg:grid-cols-[1fr,380px] gap-8">
+      <div className="container-custom py-4 sm:py-8">
+        <div className="grid lg:grid-cols-[1fr,380px] gap-4 sm:gap-8">
           
           {/* Left Column - Upload and Examples */}
-          <div>
-            <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div className="order-2 lg:order-1">
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
               <ImageUploader
                 uploadedImage={uploadedImage}
                 generatedImage={generatedImage}
@@ -79,7 +79,7 @@ const AnimeGeneratorPage = () => {
           </div>
 
           {/* Right Column - Settings */}
-          <div className="bg-white rounded-2xl shadow-sm p-6 h-fit">
+          <div className="order-1 lg:order-2 bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6 h-fit lg:sticky lg:top-20">
             <StyleSelector 
               styles={ANIME_STYLES}
               selectedStyle={selectedStyle}

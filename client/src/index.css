@@ -108,4 +108,24 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+  
+  /* Mobile-optimized utilities */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+  
+  /* Ensure touch targets are at least 48x48px on mobile */
+  @media (max-width: 768px) {
+    .btn {
+      @apply min-h-[48px] px-4;
+    }
+    
+    button, a {
+      @apply min-h-[44px];
+    }
+    
+    input, textarea, select {
+      @apply min-h-[48px] text-base;
+    }
+  }
 }

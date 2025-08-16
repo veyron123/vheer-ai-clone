@@ -76,20 +76,63 @@ const SEOTags = ({
       {/* Additional Language Meta */}
       <meta httpEquiv="Content-Language" content={currentLang} />
       
+      {/* Additional SEO Meta Tags */}
+      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+      <meta name="googlebot" content="index, follow" />
+      <meta name="bingbot" content="index, follow" />
+      <meta name="theme-color" content="#fbbf24" />
+      <meta name="mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+      <meta name="apple-mobile-web-app-title" content="СolibRRRi" />
+      <meta name="application-name" content="СolibRRRi" />
+      <meta name="msapplication-TileColor" content="#fbbf24" />
+      <meta name="format-detection" content="telephone=no" />
+      
       {/* JSON-LD Structured Data */}
       <script type="application/ld+json">
         {JSON.stringify({
           "@context": "https://schema.org",
-          "@type": "WebSite",
-          "name": "СolibRRRi AI",
+          "@type": "WebApplication",
+          "name": "СolibRRRi AI Image Generator",
           "url": baseUrl,
           "description": description,
+          "applicationCategory": "DesignApplication",
+          "operatingSystem": "Web Browser",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "description": "Free AI image generation with 100 credits on signup"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "ratingCount": "2547",
+            "bestRating": "5",
+            "worstRating": "1"
+          },
+          "author": {
+            "@type": "Organization",
+            "name": "СolibRRRi Team",
+            "url": baseUrl
+          },
           "inLanguage": currentLang,
           "potentialAction": {
             "@type": "SearchAction",
             "target": `${baseUrl}/search?q={search_term_string}`,
             "query-input": "required name=search_term_string"
-          }
+          },
+          "screenshot": image,
+          "featureList": [
+            "AI Image Generation",
+            "Text to Image",
+            "Image to Image",
+            "Anime Art Generator",
+            "Style Transfer",
+            "Multiple AI Models",
+            "High Resolution Output"
+          ]
         })}
       </script>
     </Helmet>

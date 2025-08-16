@@ -7,6 +7,7 @@ import { getLanguageFromPath } from '../i18n/config';
 import '../styles/dropdown.css';
 import ColorfulLogo from './ColorfulLogo';
 import AnimatedLogo from './AnimatedLogo';
+import MobileNav from './MobileNav';
 import { 
   Menu, 
   X, 
@@ -41,8 +42,11 @@ const Layout = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
+      {/* Mobile Navigation */}
+      <MobileNav />
+      
+      {/* Desktop Header */}
+      <header className="hidden lg:block bg-white shadow-sm sticky top-0 z-50">
         <nav className="container-custom">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
@@ -56,7 +60,7 @@ const Layout = ({ children }) => {
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
+            <div className="flex items-center space-x-8">
               <Link to={createLocalizedLink('/generate')} className="flex items-center space-x-1 text-gray-700 hover:text-blue-500 transition group">
                 <Sparkles className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
                 <span>{t('navigation.generate')}</span>
@@ -74,7 +78,7 @@ const Layout = ({ children }) => {
             </div>
 
             {/* User Menu */}
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="flex items-center space-x-4">
               <LanguageSwitcher />
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
@@ -133,48 +137,7 @@ const Layout = ({ children }) => {
               )}
             </div>
 
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
           </div>
-
-          {/* Mobile Menu */}
-          {mobileMenuOpen && (
-            <div className="md:hidden py-4 border-t">
-              <div className="space-y-4">
-                <Link to={createLocalizedLink('/generate')} className="flex items-center py-2 text-gray-700 hover:text-blue-500">
-                  <Sparkles className="w-4 h-4 text-blue-500 mr-2" />
-                  {t('navigation.generate')}
-                </Link>
-{/* <Link to={createLocalizedLink('/gallery')} className="flex items-center py-2 text-gray-700 hover:text-orange-500">
-  <Grid3x3 className="w-4 h-4 text-orange-500 mr-2" />
-  {t('navigation.gallery')}
-</Link> */}
-                <Link to={createLocalizedLink('/pricing')} className="flex items-center py-2 text-gray-700 hover:text-orange-500">
-                  <CreditCard className="w-4 h-4 text-orange-500 mr-2" />
-                  {t('navigation.pricing')}
-                </Link>
-                <LanguageSwitcher className="md:hidden" />
-                {isAuthenticated ? (
-                  <>
-                    <Link to={createLocalizedLink('/profile')} className="block py-2 text-gray-700">{t('navigation.profile')}</Link>
-                    <button onClick={handleLogout} className="block py-2 text-red-600 w-full text-left">
-                      {t('navigation.logout')}
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link to={createLocalizedLink('/login')} className="block py-2 text-gray-700">{t('navigation.login')}</Link>
-                    <Link to={createLocalizedLink('/register')} className="btn btn-primary w-full">{t('navigation.register')}</Link>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
         </nav>
       </header>
 
