@@ -1,5 +1,9 @@
 import axios from 'axios';
+import { PrismaClient } from '@prisma/client';
 import { getModelCredits, canAffordGeneration } from '../config/pricing.config.js';
+import { saveGeneratedImage } from './images.controller.js';
+
+const prisma = new PrismaClient();
 
 const FLUX_API_KEY = process.env.FLUX_API_KEY || '2f58d1ef-d2d1-48f0-8c1f-a7b5525748c0';
 const FLUX_API_URL = process.env.FLUX_API_URL || 'https://api.bfl.ai/v1/flux-kontext-pro';
@@ -161,11 +165,13 @@ export const generateImage = async (req, res) => {
       // Start polling for result using the new bfl.ai format
       const result = await pollForBflResult(response.data.id, response.data.polling_url, req);
       
-      // If generation was successful and user is authenticated, deduct credits
+      // If generation was successful and user is authenticated, deduct credits and save image
       if (result.success && userId) {
         const modelId = model || 'flux-pro';
         const requiredCredits = getModelCredits(modelId);
+        
         try {
+          // Deduct credits first
           await axios.post('http://localhost:5000/api/users/deduct-credits', {
             modelId
           }, {
@@ -174,6 +180,41 @@ export const generateImage = async (req, res) => {
             }
           });
           console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
+          
+          // Get user data with subscription info for image saving
+          const user = await prisma.user.findUnique({
+            where: { id: userId },
+            include: { subscription: true }
+          });
+          
+          if (user) {
+            // Create generation record
+            const generation = await prisma.generation.create({
+              data: {
+                userId: userId,
+                prompt: prompt,
+                negativePrompt: '',
+                model: modelId,
+                style: style,
+                status: 'COMPLETED',
+                creditsUsed: requiredCredits,
+                completedAt: new Date()
+              }
+            });
+            
+            // Try to save the generated image for eligible users
+            try {
+              await saveGeneratedImage(
+                { url: result.image, width: 1024, height: 1024 },
+                user,
+                generation
+              );
+              console.log('Image saved to user gallery');
+            } catch (saveError) {
+              console.log('Image not saved (user not eligible or error):', saveError.message);
+            }
+          }
+          
         } catch (creditError) {
           console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
           // Still return the image but log the credit error
@@ -508,11 +549,13 @@ export const generateImageToImage = async (req, res) => {
       // Start polling for result using the new bfl.ai format
       const result = await pollForBflResult(requestId, response.data.polling_url, req);
       
-      // If generation was successful and user is authenticated, deduct credits
+      // If generation was successful and user is authenticated, deduct credits and save image
       if (result.success && userId) {
         const modelId = model || 'flux-pro';
         const requiredCredits = getModelCredits(modelId);
+        
         try {
+          // Deduct credits first
           await axios.post('http://localhost:5000/api/users/deduct-credits', {
             modelId
           }, {
@@ -521,6 +564,41 @@ export const generateImageToImage = async (req, res) => {
             }
           });
           console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
+          
+          // Get user data with subscription info for image saving
+          const user = await prisma.user.findUnique({
+            where: { id: userId },
+            include: { subscription: true }
+          });
+          
+          if (user) {
+            // Create generation record
+            const generation = await prisma.generation.create({
+              data: {
+                userId: userId,
+                prompt: prompt,
+                negativePrompt: '',
+                model: modelId,
+                style: style,
+                status: 'COMPLETED',
+                creditsUsed: requiredCredits,
+                completedAt: new Date()
+              }
+            });
+            
+            // Try to save the generated image for eligible users
+            try {
+              await saveGeneratedImage(
+                { url: result.image, width: 1024, height: 1024 },
+                user,
+                generation
+              );
+              console.log('Image saved to user gallery');
+            } catch (saveError) {
+              console.log('Image not saved (user not eligible or error):', saveError.message);
+            }
+          }
+          
         } catch (creditError) {
           console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
           // Still return the image but log the credit error

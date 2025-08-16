@@ -1,0 +1,24 @@
+import express from 'express';
+import { 
+  getMyImages, 
+  updateImageVisibility, 
+  deleteImage, 
+  getPublicImages 
+} from '../controllers/images.controller.js';
+import { authenticate } from '../middleware/auth.middleware.js';
+
+const router = express.Router();
+
+// Get user's saved images (requires authentication)
+router.get('/my-images', authenticate, getMyImages);
+
+// Update image visibility (requires authentication)
+router.patch('/:imageId/visibility', authenticate, updateImageVisibility);
+
+// Delete image (requires authentication)
+router.delete('/:imageId', authenticate, deleteImage);
+
+// Get public images gallery (no authentication required)
+router.get('/public', getPublicImages);
+
+export default router;

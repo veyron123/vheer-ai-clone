@@ -11,6 +11,7 @@ import passport from './config/passport.js';
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import imageRoutes from './routes/image.routes.js';
+import imagesRoutes from './routes/images.routes.js';
 import generationRoutes from './routes/generation.routes.js';
 import subscriptionRoutes from './routes/subscription.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
@@ -74,6 +75,9 @@ app.use(passport.session());
 
 app.use('/api', limiter);
 
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // OAuth Routes (without /api prefix for simpler callback URLs)
 app.use('/auth', authRoutes);
 
@@ -83,7 +87,8 @@ app.use('/api', checkDailyCredits);
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/images', imageRoutes);
+app.use('/api/images', imagesRoutes); // New images route for saved images
+app.use('/api/image', imageRoutes); // Keep existing image route
 app.use('/api/generate', generationRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/payments', paymentRoutes);

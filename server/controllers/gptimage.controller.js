@@ -1,5 +1,9 @@
 import axios from 'axios';
+import { PrismaClient } from '@prisma/client';
 import { getModelCredits } from '../config/pricing.config.js';
+import { saveGeneratedImage } from './images.controller.js';
+
+const prisma = new PrismaClient();
 
 const GPT_IMAGE_API_KEY = process.env.GPT_IMAGE_API_KEY || 'b5cfe077850a194e434914eedd7111d5';
 const GPT_IMAGE_API_URL = process.env.GPT_IMAGE_API_URL || 'https://api.kie.ai/api/v1/gpt4o-image/generate';
