@@ -250,7 +250,7 @@ export const oauthSuccess = async (req, res, next) => {
     const frontendURL = process.env.FRONTEND_URL || 
       (process.env.NODE_ENV === 'production' 
         ? 'https://colibrrri.com' 
-        : 'http://localhost:5182');
+        : 'http://localhost:5178');
     res.redirect(`${frontendURL}/en/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
       id: user.id,
       email: user.email,
@@ -277,7 +277,7 @@ export const oauthFailure = (req, res) => {
   const frontendURL = process.env.FRONTEND_URL || 
     (process.env.NODE_ENV === 'production' 
       ? 'https://colibrrri.com' 
-      : 'http://localhost:5183'); // Исправлен порт на 5183
+      : 'http://localhost:5178');
       
   res.redirect(`${frontendURL}/en/auth/error?message=OAuth authentication failed`);
 };

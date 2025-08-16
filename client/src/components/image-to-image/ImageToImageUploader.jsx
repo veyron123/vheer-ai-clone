@@ -7,6 +7,7 @@ const ImageToImageUploader = ({
   generationTime,
   onImageUpload,
   onImageRemove,
+  onCancel,
   onPaste,
   fileInputRef,
   isGenerating = false
@@ -152,9 +153,18 @@ const ImageToImageUploader = ({
                   <div className="bg-white/90 rounded-full p-4 shadow-lg mb-3">
                     <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
                   </div>
-                  <p className="text-center text-gray-600">
+                  <p className="text-center text-gray-600 mb-4">
                     Generating image...
                   </p>
+                  {onCancel && (
+                    <button
+                      onClick={onCancel}
+                      className="px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
+                    >
+                      <X className="w-4 h-4" />
+                      Cancel
+                    </button>
+                  )}
                 </div>
               ) : (
                 <p className="text-center">

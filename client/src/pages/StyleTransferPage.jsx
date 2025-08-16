@@ -31,7 +31,8 @@ const StyleTransferPage = () => {
     fileInputRef,
     handleImageUpload,
     handleImageRemove,
-    generateImage
+    generateImage,
+    cancelGeneration
   } = useImageGeneration();
 
   const handleGenerate = () => {
@@ -69,6 +70,7 @@ const StyleTransferPage = () => {
                 generationTime={generationTime}
                 onImageUpload={handleImageUpload}
                 onImageRemove={handleImageRemove}
+                onCancel={cancelGeneration}
                 fileInputRef={fileInputRef}
                 isGenerating={isGenerating}
               />

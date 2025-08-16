@@ -49,7 +49,7 @@ const AuthRequiredModal = ({ isOpen, onClose }) => {
 
           {/* Description */}
           <p className="text-gray-600 mb-6">
-            You need to sign in to your account to generate AI images. Join thousands of creators already using our platform!
+            Sign in to unlock AI image generation! Upload your photo and transform it into amazing anime, Disney, or cartoon styles with our advanced AI models.
           </p>
 
           {/* Benefits */}
@@ -59,7 +59,7 @@ const AuthRequiredModal = ({ isOpen, onClose }) => {
               <span className="font-medium text-gray-900">Free Credits Included!</span>
             </div>
             <ul className="text-sm text-gray-700 space-y-1">
-              <li>• 10 free generations on signup</li>
+              <li>• 100 free generations on signup</li>
               <li>• Access to all AI models</li>
               <li>• Save your generated images</li>
               <li>• Track your generation history</li>

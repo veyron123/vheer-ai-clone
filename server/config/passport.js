@@ -33,7 +33,8 @@ const getGoogleCallbackURL = () => {
   if (process.env.NODE_ENV === 'production') {
     return 'https://colibrrri.com/auth/google/callback';
   }
-  return 'http://localhost:5000/auth/google/callback';
+  // Use GOOGLE_CALLBACK_URL from .env if set, otherwise default
+  return process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5178/auth/google/callback';
 };
 
 console.log('Google OAuth configuration:', {

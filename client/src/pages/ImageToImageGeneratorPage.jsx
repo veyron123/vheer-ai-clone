@@ -35,6 +35,7 @@ const ImageToImageGeneratorPage = () => {
     handleImageUpload,
     handleImageRemove,
     generateImage,
+    cancelGeneration,
     handlePaste,
     clearAll
   } = useImageToImageGeneration();
@@ -92,6 +93,7 @@ const ImageToImageGeneratorPage = () => {
                   generationTime={generationTime}
                   onImageUpload={handleImageUpload}
                   onImageRemove={handleImageRemove}
+                  onCancel={cancelGeneration}
                   onPaste={handlePaste}
                   fileInputRef={fileInputRef}
                   isGenerating={isGenerating}

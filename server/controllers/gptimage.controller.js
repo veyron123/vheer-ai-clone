@@ -154,8 +154,10 @@ export const generateImage = async (req, res) => {
       // Start polling for result using the taskId with the correct endpoint
       const result = await pollForResult(response.data.data.taskId);
       
-      // If generation was successful, deduct credits
-      if (result.success) {
+      // If generation was successful and user is authenticated, deduct credits
+      if (result.success && userId) {
+        const modelId = 'gpt-image';
+        const requiredCredits = getModelCredits(modelId);
         try {
           await axios.post('http://localhost:5000/api/users/deduct-credits', {
             modelId
@@ -175,10 +177,13 @@ export const generateImage = async (req, res) => {
     } else if (response.data && response.data.data && response.data.data.images) {
       // Direct response with images (unlikely with GPT IMAGE)
       
-      // Deduct credits for successful generation
-      try {
-        await axios.post('http://localhost:5000/api/users/deduct-credits', {
-          modelId
+      // Deduct credits for successful generation if user is authenticated
+      if (userId) {
+        const modelId = 'gpt-image';
+        const requiredCredits = getModelCredits(modelId);
+        try {
+          await axios.post('http://localhost:5000/api/users/deduct-credits', {
+            modelId
         }, {
           headers: {
             'Authorization': req.headers.authorization
@@ -188,6 +193,7 @@ export const generateImage = async (req, res) => {
       } catch (creditError) {
         console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
         // Still return the image but log the credit error
+      }
       }
       
       res.json({
@@ -440,8 +446,10 @@ export const generateImageToImage = async (req, res) => {
       // Start polling for result using the taskId with the correct endpoint
       const result = await pollForResult(response.data.data.taskId);
       
-      // If generation was successful, deduct credits
-      if (result.success) {
+      // If generation was successful and user is authenticated, deduct credits
+      if (result.success && userId) {
+        const modelId = 'gpt-image';
+        const requiredCredits = getModelCredits(modelId);
         try {
           await axios.post('http://localhost:5000/api/users/deduct-credits', {
             modelId
@@ -461,10 +469,13 @@ export const generateImageToImage = async (req, res) => {
     } else if (response.data && response.data.data && response.data.data.images) {
       // Direct response with images (unlikely with GPT IMAGE)
       
-      // Deduct credits for successful generation
-      try {
-        await axios.post('http://localhost:5000/api/users/deduct-credits', {
-          modelId
+      // Deduct credits for successful generation if user is authenticated
+      if (userId) {
+        const modelId = 'gpt-image';
+        const requiredCredits = getModelCredits(modelId);
+        try {
+          await axios.post('http://localhost:5000/api/users/deduct-credits', {
+            modelId
         }, {
           headers: {
             'Authorization': req.headers.authorization
@@ -474,6 +485,7 @@ export const generateImageToImage = async (req, res) => {
       } catch (creditError) {
         console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
         // Still return the image but log the credit error
+      }
       }
       
       res.json({

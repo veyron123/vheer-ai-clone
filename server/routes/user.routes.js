@@ -164,14 +164,13 @@ router.post('/deduct-credits', authenticate, async (req, res) => {
       }
     });
 
-    // Log the transaction
-    await prisma.creditTransaction.create({
+    // Log the transaction in Credit table
+    await prisma.credit.create({
       data: {
         userId: userId,
         type: 'DEDUCTION',
         amount: -requiredCredits,
-        description: `AI Generation - ${modelId}`,
-        modelUsed: modelId
+        description: `AI Generation - ${modelId}`
       }
     });
 

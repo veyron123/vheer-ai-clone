@@ -13,6 +13,7 @@ export const useImageToImageGeneration = () => {
   const [creativeStrength, setCreativeStrength] = useState(5);
   const [controlStrength, setControlStrength] = useState(2);
   const fileInputRef = useRef(null);
+  const abortControllerRef = useRef(null);
 
   const handleImageUpload = (e) => {
     const file = e.target.files?.[0];
@@ -57,6 +58,9 @@ export const useImageToImageGeneration = () => {
     setGenerationTime(null);
     
     const startTime = Date.now();
+    
+    // Create new abort controller for this generation
+    abortControllerRef.current = new AbortController();
 
     try {
       // Prepare image URL
@@ -65,7 +69,7 @@ export const useImageToImageGeneration = () => {
         imageUrl = await uploadImage(uploadedImage);
       }
       
-      // Generate image using the actual API
+      // Generate image using the actual API with abort signal
       const result = await generateImageToImage(
         imageUrl,
         positivePrompt,
@@ -73,7 +77,8 @@ export const useImageToImageGeneration = () => {
         creativeStrength,
         controlStrength,
         aiModel,
-        aspectRatio
+        aspectRatio,
+        abortControllerRef.current.signal
       );
       
       // Calculate generation time
@@ -90,6 +95,18 @@ export const useImageToImageGeneration = () => {
     } catch (error) {
       console.error('Generation error:', error);
       
+      // Handle cancelled requests
+      if (error.name === 'AbortError' || error.message?.includes('abort')) {
+        toast.success('Generation cancelled');
+        return;
+      }
+      
+      // Handle authentication errors
+      if (error.message?.includes('Authentication required')) {
+        toast.error('Please sign in to generate images');
+        return;
+      }
+      
       // Check if error is due to insufficient credits
       if (error.response?.status === 400 && error.response?.data?.error === 'Insufficient credits') {
         const { required, available } = error.response.data;
@@ -101,6 +118,7 @@ export const useImageToImageGeneration = () => {
       }
     } finally {
       setIsGenerating(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -124,7 +142,21 @@ export const useImageToImageGeneration = () => {
     }
   };
 
+  const cancelGeneration = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsGenerating(false);
+    toast.success('Generation cancelled');
+  };
+
   const clearAll = () => {
+    // Cancel any ongoing generation
+    if (isGenerating) {
+      cancelGeneration();
+    }
+    
     setUploadedImage(null);
     setGeneratedImage(null);
     setGenerationTime(null);
@@ -154,6 +186,7 @@ export const useImageToImageGeneration = () => {
     handleImageUpload,
     handleImageRemove,
     generateImage,
+    cancelGeneration,
     handlePaste,
     clearAll
   };

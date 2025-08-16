@@ -11,8 +11,13 @@ export default defineConfig({
   },
   server: {
     port: 5178,
+    strictPort: true, // Всегда использовать порт 5178, не искать другой
     proxy: {
       '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+      '/auth': {
         target: 'http://localhost:5000',
         changeOrigin: true,
       },

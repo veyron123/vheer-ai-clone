@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { ASPECT_RATIOS } from '../../constants/anime.constants';
 
-const AspectRatioSelector = ({ selectedRatio, onRatioChange, disabled = false }) => {
+const AspectRatioSelector = ({ selectedRatio, onRatioChange, disabled = false, aiModel }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
   
@@ -23,7 +23,19 @@ const AspectRatioSelector = ({ selectedRatio, onRatioChange, disabled = false })
     if (disabled) setShowDropdown(false);
   }, [disabled]);
   
-  const currentOption = ASPECT_RATIOS.find(opt => opt.id === selectedRatio) || ASPECT_RATIOS[0];
+  // Filter options based on selected AI model
+  const availableOptions = aiModel === 'gpt-image' 
+    ? ASPECT_RATIOS 
+    : ASPECT_RATIOS.filter(opt => opt.id !== 'match');
+  
+  // If current selection is not available, switch to first available option
+  useEffect(() => {
+    if (selectedRatio === 'match' && aiModel !== 'gpt-image') {
+      onRatioChange('1:1');
+    }
+  }, [aiModel, selectedRatio, onRatioChange]);
+  
+  const currentOption = availableOptions.find(opt => opt.id === selectedRatio) || availableOptions[0];
   
   return (
     <div className="mb-6 relative" ref={dropdownRef}>
@@ -56,7 +68,7 @@ const AspectRatioSelector = ({ selectedRatio, onRatioChange, disabled = false })
       
       {showDropdown && !disabled && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-          {ASPECT_RATIOS.map((option) => (
+          {availableOptions.map((option) => (
             <button
               key={option.id}
               onClick={() => {

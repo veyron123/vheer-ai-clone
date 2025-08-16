@@ -16,14 +16,21 @@ const GenerateButton = ({ onClick, disabled, isGenerating, aiModel = 'flux-pro' 
     onClick();
   };
 
+  // For authenticated users: disable if disabled or generating
+  // For unauthenticated users: never disable (always allow clicking for auth modal)
+  const isButtonDisabled = isAuthenticated ? (disabled || isGenerating) : false;
+  
+  // Button should be active if not disabled and not generating, OR if user is not authenticated
+  const isButtonActive = (!disabled && !isGenerating) || !isAuthenticated;
+
   return (
     <div>
       <button
         onClick={handleClick}
-        disabled={disabled || isGenerating}
+        disabled={isButtonDisabled}
         className={`w-full py-3 rounded-lg font-medium transition-all ${
-          !disabled && !isGenerating
-            ? 'bg-yellow-400 text-black hover:bg-yellow-500'
+          isButtonActive
+            ? 'bg-yellow-400 text-black hover:bg-yellow-500 cursor-pointer'
             : 'bg-gray-200 text-gray-500 cursor-not-allowed'
         }`}
       >
@@ -56,7 +63,7 @@ const GenerateButton = ({ onClick, disabled, isGenerating, aiModel = 'flux-pro' 
             Sign in to start generating amazing AI images
           </p>
           <p className="text-xs text-yellow-600 font-medium">
-            ⭐ Get 10 free generations on signup!
+            ⭐ Get 100 free generations on signup!
           </p>
         </div>
       )}

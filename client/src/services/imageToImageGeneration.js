@@ -1,5 +1,6 @@
 import { fal } from "@fal-ai/client";
 import { getApiUrl } from '../config/api.config';
+import { useAuthStore } from '../stores/authStore';
 
 // Configure API key from environment variable
 fal.config({
@@ -41,7 +42,7 @@ async function urlToBase64(imageUrl) {
  * @param {string} model - Flux model to use ('flux-pro' or 'flux-max')
  * @returns {Promise} Generated image data
  */
-export async function generateWithFluxImageToImage(imageBase64, positivePrompt, negativePrompt, creativeStrength, controlStrength, model = 'flux-pro') {
+export async function generateWithFluxImageToImage(imageBase64, positivePrompt, negativePrompt, creativeStrength, controlStrength, model = 'flux-pro', abortSignal = null) {
   try {
     // Ensure image is in base64 format
     let base64Data = imageBase64;
@@ -56,12 +57,40 @@ export async function generateWithFluxImageToImage(imageBase64, positivePrompt, 
     const fullPrompt = positivePrompt || "Transform this image with high quality, detailed, professional";
     const fullNegative = negativePrompt || "blurry, low quality, distorted, ugly";
     
+    // Get auth token from store
+    const token = useAuthStore.getState().token;
+    
+    // Setup headers
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    
+    // Add authorization header if user is logged in
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    // Use provided abort signal or create timeout controller
+    let controller = null;
+    let timeoutId = null;
+    
+    if (abortSignal) {
+      // Use the provided abort signal
+      if (abortSignal.aborted) {
+        throw new DOMException('Request was aborted', 'AbortError');
+      }
+    } else {
+      // Create timeout controller if no abort signal provided
+      controller = new AbortController();
+      timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes timeout
+    }
+    
+    const finalSignal = abortSignal || controller.signal;
+
     // Use our backend proxy to avoid CORS issues
     const response = await fetch(getApiUrl('/flux/image-to-image'), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers,
       body: JSON.stringify({
         prompt: fullPrompt,
         negative_prompt: fullNegative,
@@ -69,11 +98,30 @@ export async function generateWithFluxImageToImage(imageBase64, positivePrompt, 
         creative_strength: creativeStrength / 10, // Normalize to 0-1
         control_strength: controlStrength / 5,   // Normalize to 0-1
         model: model
-      })
+      }),
+      signal: finalSignal
+    }).finally(() => {
+      if (timeoutId) clearTimeout(timeoutId);
     });
     
     if (!response.ok) {
-      throw new Error(`Server error: ${response.status}`);
+      // Handle cancelled requests
+      if (response.status === 499) {
+        const errorData = await response.json().catch(() => ({}));
+        if (errorData.cancelled) {
+          throw new DOMException('Request was cancelled', 'AbortError');
+        }
+      }
+      
+      // Handle authentication errors
+      if (response.status === 401) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Authentication required');
+      }
+      
+      // Handle other errors
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || `Server error: ${response.status}`);
     }
     
     const result = await response.json();
@@ -125,12 +173,23 @@ export async function generateWithMidjourneyImageToImage(imageBase64, positivePr
     const timeoutId = setTimeout(() => controller.abort(), 360000); // 6 minute timeout
 
     try {
+      // Get auth token from store
+      const token = useAuthStore.getState().token;
+      
+      // Setup headers
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      // Add authorization header if user is logged in
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       // Use our backend proxy for Midjourney API
       const response = await fetch(getApiUrl('/midjourney/image-to-image'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers,
         body: JSON.stringify({
           prompt: fullPrompt,
           negative_prompt: negativePrompt,
@@ -187,7 +246,7 @@ export async function generateWithMidjourneyImageToImage(imageBase64, positivePr
  * @param {string} aspectRatio - Aspect ratio for generation
  * @returns {Promise} Generated image data
  */
-export async function generateWithGPTImageToImage(imageBase64, positivePrompt, negativePrompt, creativeStrength, controlStrength, aspectRatio = '1:1') {
+export async function generateWithGPTImageToImage(imageBase64, positivePrompt, negativePrompt, creativeStrength, controlStrength, aspectRatio = '1:1', abortSignal = null) {
   try {
     // Ensure image is in base64 format
     let base64Data = imageBase64;
@@ -201,12 +260,40 @@ export async function generateWithGPTImageToImage(imageBase64, positivePrompt, n
     // Construct the prompt for GPT IMAGE
     const fullPrompt = positivePrompt || "Transform this image with high quality, detailed, professional";
     
+    // Get auth token from store
+    const token = useAuthStore.getState().token;
+    
+    // Setup headers
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    
+    // Add authorization header if user is logged in
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    // Use provided abort signal or create timeout controller
+    let controller = null;
+    let timeoutId = null;
+    
+    if (abortSignal) {
+      // Use the provided abort signal
+      if (abortSignal.aborted) {
+        throw new DOMException('Request was aborted', 'AbortError');
+      }
+    } else {
+      // Create timeout controller if no abort signal provided
+      controller = new AbortController();
+      timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes timeout
+    }
+    
+    const finalSignal = abortSignal || controller.signal;
+
     // Use our backend proxy for GPT IMAGE API
     const response = await fetch(getApiUrl('/gptimage/image-to-image'), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers,
       body: JSON.stringify({
         prompt: fullPrompt,
         negative_prompt: negativePrompt,
@@ -214,11 +301,30 @@ export async function generateWithGPTImageToImage(imageBase64, positivePrompt, n
         creative_strength: creativeStrength / 10, // Normalize to 0-1
         control_strength: controlStrength / 5,   // Normalize to 0-1
         aspectRatio: aspectRatio
-      })
+      }),
+      signal: finalSignal
+    }).finally(() => {
+      if (timeoutId) clearTimeout(timeoutId);
     });
     
     if (!response.ok) {
-      throw new Error(`Server error: ${response.status}`);
+      // Handle cancelled requests
+      if (response.status === 499) {
+        const errorData = await response.json().catch(() => ({}));
+        if (errorData.cancelled) {
+          throw new DOMException('Request was cancelled', 'AbortError');
+        }
+      }
+      
+      // Handle authentication errors
+      if (response.status === 401) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Authentication required');
+      }
+      
+      // Handle other errors
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || `Server error: ${response.status}`);
     }
     
     const result = await response.json();
@@ -252,15 +358,15 @@ export async function generateWithGPTImageToImage(imageBase64, positivePrompt, n
  * @param {string} aspectRatio - Aspect ratio for generation ('1:1', '16:9', etc.)
  * @returns {Promise} Generated image data
  */
-export async function generateImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aiModel = 'flux-pro', aspectRatio = '1:1') {
+export async function generateImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aiModel = 'flux-pro', aspectRatio = '1:1', abortSignal = null) {
   // Use Flux for image-to-image generation
   if (aiModel === 'flux-pro' || aiModel === 'flux-max') {
-    return await generateWithFluxImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aiModel);
+    return await generateWithFluxImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aiModel, abortSignal);
   }
   
   // Use GPT IMAGE for image-to-image generation
   if (aiModel === 'gpt-image') {
-    return await generateWithGPTImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aspectRatio);
+    return await generateWithGPTImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aspectRatio, abortSignal);
   }
   
   // Use Midjourney for image-to-image generation (temporarily disabled)
