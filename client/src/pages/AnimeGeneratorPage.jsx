@@ -20,7 +20,7 @@ import { useImageGeneration } from '../hooks/useImageGeneration';
 const AnimeGeneratorPage = () => {
   const [selectedStyle, setSelectedStyle] = useState('studio-ghibli');
   const [aiModel, setAiModel] = useState('flux-pro');
-  const [aspectRatio, setAspectRatio] = useState('match');
+  const [aspectRatio, setAspectRatio] = useState('1:1');
   
   const {
     uploadedImage,
@@ -30,7 +30,8 @@ const AnimeGeneratorPage = () => {
     fileInputRef,
     handleImageUpload,
     handleImageRemove,
-    generateImage
+    generateImage,
+    cancelGeneration
   } = useImageGeneration();
 
   const handleGenerate = () => {
@@ -68,6 +69,7 @@ const AnimeGeneratorPage = () => {
                 generationTime={generationTime}
                 onImageUpload={handleImageUpload}
                 onImageRemove={handleImageRemove}
+                onCancel={cancelGeneration}
                 fileInputRef={fileInputRef}
                 isGenerating={isGenerating}
               />
@@ -93,6 +95,7 @@ const AnimeGeneratorPage = () => {
               selectedRatio={aspectRatio}
               onRatioChange={setAspectRatio}
               disabled={aiModel !== 'gpt-image'}
+              aiModel={aiModel}
             />
             
             <GenerateButton

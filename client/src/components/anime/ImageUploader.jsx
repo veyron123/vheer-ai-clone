@@ -7,6 +7,7 @@ const ImageUploader = ({
   generationTime,
   onImageUpload, 
   onImageRemove,
+  onCancel,
   fileInputRef,
   isGenerating = false
 }) => {
@@ -33,6 +34,12 @@ const ImageUploader = ({
 
   const handleRemove = (e) => {
     e.stopPropagation();
+    
+    // If generating, cancel the generation
+    if (isGenerating && onCancel) {
+      onCancel();
+    }
+    
     onImageRemove();
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -102,6 +109,12 @@ const ImageUploader = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
+                
+                // If generating, cancel the generation
+                if (isGenerating && onCancel) {
+                  onCancel();
+                }
+                
                 fileInputRef.current?.click();
               }}
               className="absolute bottom-2 left-2 bg-white text-black px-3 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors flex items-center gap-2 shadow-lg"

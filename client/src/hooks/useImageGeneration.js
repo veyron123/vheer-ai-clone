@@ -8,6 +8,7 @@ export const useImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationTime, setGenerationTime] = useState(null);
   const fileInputRef = useRef(null);
+  const abortControllerRef = useRef(null);
 
   const handleImageUpload = async (file) => {
     if (!file || !file.type.startsWith('image/')) return;
@@ -24,6 +25,12 @@ export const useImageGeneration = () => {
   };
 
   const handleImageRemove = () => {
+    // Cancel any ongoing generation
+    if (abortControllerRef.current && isGenerating) {
+      abortControllerRef.current.abort();
+      setIsGenerating(false);
+    }
+    
     setUploadedImage(null);
     setGeneratedImage(null);
     setGenerationTime(null);
@@ -34,6 +41,14 @@ export const useImageGeneration = () => {
       alert('Please upload an image first');
       return;
     }
+    
+    // Cancel any previous generation
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Create new AbortController for this generation
+    abortControllerRef.current = new AbortController();
     
     setIsGenerating(true);
     setGeneratedImage(null);
@@ -48,17 +63,30 @@ export const useImageGeneration = () => {
         imageUrl = await uploadImage(uploadedImage);
       }
       
-      // Determine aspect ratio for GPT Image
+      // Determine aspect ratio
       let finalAspectRatio = '1:1';
+      
       if (aiModel === 'gpt-image') {
-        finalAspectRatio = aspectRatio;
-        if (aspectRatio === 'match') {
+        // For GPT Image - use selected aspect ratio
+        finalAspectRatio = aspectRatio || '1:1';
+        if (aspectRatio === 'match' && uploadedImage) {
+          finalAspectRatio = await detectAspectRatio(uploadedImage);
+        }
+      } else {
+        // For Flux models - always auto-detect from uploaded image
+        if (uploadedImage) {
           finalAspectRatio = await detectAspectRatio(uploadedImage);
         }
       }
       
-      // Generate image
-      const result = await generateAnimeImage(imageUrl, style, aiModel, finalAspectRatio);
+      // Generate image with abort signal
+      const result = await generateAnimeImage(
+        imageUrl, 
+        style, 
+        aiModel, 
+        finalAspectRatio, 
+        abortControllerRef.current.signal
+      );
       
       // Calculate generation time
       const timeTaken = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -71,6 +99,12 @@ export const useImageGeneration = () => {
     } catch (error) {
       console.error('Generation error:', error);
       
+      // Check if the request was aborted (user cancelled)
+      if (error.name === 'AbortError' || error.message.includes('aborted')) {
+        console.log('Generation cancelled by user');
+        return; // Don't show error for user cancellation
+      }
+      
       // Check if error is due to insufficient credits
       if (error.response?.status === 400 && error.response?.data?.error === 'Insufficient credits') {
         const { required, available } = error.response.data;
@@ -81,6 +115,14 @@ export const useImageGeneration = () => {
         alert('Ошибка генерации изображения. Попробуйте ещё раз.');
       }
     } finally {
+      setIsGenerating(false);
+      abortControllerRef.current = null;
+    }
+  };
+
+  const cancelGeneration = () => {
+    if (abortControllerRef.current && isGenerating) {
+      abortControllerRef.current.abort();
       setIsGenerating(false);
     }
   };
@@ -93,6 +135,7 @@ export const useImageGeneration = () => {
     fileInputRef,
     handleImageUpload,
     handleImageRemove,
-    generateImage
+    generateImage,
+    cancelGeneration
   };
 };

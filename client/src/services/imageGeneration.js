@@ -1,5 +1,6 @@
 import { fal } from "@fal-ai/client";
 import { getApiUrl } from '../config/api.config';
+import { useAuthStore } from '../stores/authStore';
 
 // Configure API key from environment variable
 fal.config({
@@ -124,11 +125,16 @@ async function urlToBase64(imageUrl) {
  * @param {string} imageBase64 - Base64 encoded image
  * @param {string} style - Selected anime style
  * @param {string} model - Flux model to use ('flux-pro' or 'flux-max')
+ * @param {string} aspectRatio - Aspect ratio for generation
+ * @param {AbortSignal} abortSignal - Signal to abort the request
  * @returns {Promise} Generated image data
  */
-export async function generateWithFlux(imageBase64, style = 'disney', model = 'flux-pro') {
+export async function generateWithFlux(imageBase64, style = 'disney', model = 'flux-pro', aspectRatio = '1:1', abortSignal = null) {
   try {
     const styleConfig = animeStylePrompts[style] || animeStylePrompts.disney;
+    
+    // Get auth token from store
+    const token = useAuthStore.getState().token;
     
     // Ensure image is in base64 format
     let base64Data = imageBase64;
@@ -142,20 +148,55 @@ export async function generateWithFlux(imageBase64, style = 'disney', model = 'f
     const prompt = `Transform this photo into ${styleConfig.prefix} style, ${styleConfig.suffix}. Make it look like a professional ${style} animation character portrait.`;
     
     // Use our backend proxy to avoid CORS issues
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    
+    // Add authorization header if user is logged in
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    // Use provided abort signal or create timeout controller
+    let controller = null;
+    let timeoutId = null;
+    
+    if (abortSignal) {
+      // Use the provided abort signal
+      if (abortSignal.aborted) {
+        throw new DOMException('Request was aborted', 'AbortError');
+      }
+    } else {
+      // Create timeout controller if no abort signal provided
+      controller = new AbortController();
+      timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes timeout
+    }
+    
+    const finalSignal = abortSignal || controller.signal;
+    
     const response = await fetch(getApiUrl('/flux/generate'), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers,
       body: JSON.stringify({
         prompt: prompt,
         input_image: base64Only,
         style: style,
-        model: model
-      })
+        model: model,
+        aspectRatio: aspectRatio
+      }),
+      signal: finalSignal
+    }).finally(() => {
+      if (timeoutId) clearTimeout(timeoutId);
     });
     
     if (!response.ok) {
+      // Handle cancelled requests
+      if (response.status === 499) {
+        const errorData = await response.json().catch(() => ({}));
+        if (errorData.cancelled) {
+          throw new DOMException('Request was cancelled', 'AbortError');
+        }
+      }
       throw new Error(`Server error: ${response.status}`);
     }
     
@@ -185,18 +226,22 @@ export async function generateWithFlux(imageBase64, style = 'disney', model = 'f
  * @param {string} style - Selected anime style
  * @param {string} aiModel - AI model to use ('flux-pro', 'flux-max', or 'gpt-image')
  * @param {string} aspectRatio - Aspect ratio for generation ('1:1', '16:9', etc.)
+ * @param {AbortSignal} abortSignal - Signal to abort the request
  * @returns {Promise} Generated image data
  */
-export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = 'flux-pro', aspectRatio = '1:1') {
+export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = 'flux-pro', aspectRatio = '1:1', abortSignal = null) {
   // Use Flux for image-to-image generation
   if (aiModel === 'flux-pro' || aiModel === 'flux-max') {
-    return await generateWithFlux(imageUrl, style, aiModel);
+    return await generateWithFlux(imageUrl, style, aiModel, aspectRatio, abortSignal);
   }
   
   // Use GPT IMAGE for image-to-image generation
   if (aiModel === 'gpt-image') {
     try {
       const styleConfig = animeStylePrompts[style] || animeStylePrompts.disney;
+      
+      // Get auth token from store
+      const token = useAuthStore.getState().token;
       
       // Ensure image is in base64 format
       let base64Data = imageUrl;
@@ -210,12 +255,20 @@ export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = '
       // Construct the prompt for GPT IMAGE
       const prompt = `Transform this photo into ${styleConfig.prefix} anime style, ${styleConfig.suffix}, high quality anime portrait, masterpiece`;
       
+      // Setup headers
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      // Add authorization header if user is logged in
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       // Use our backend proxy for GPT IMAGE API
       const response = await fetch(getApiUrl('/gptimage/generate'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers,
         body: JSON.stringify({
           prompt: prompt,
           input_image: base64Only,

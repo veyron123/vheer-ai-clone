@@ -118,8 +118,13 @@ app.use(errorHandler);
 // Initialize credit cron jobs
 CreditCronJob.init();
 
-// Start server
-app.listen(PORT, () => {
+// Start server with increased timeout
+const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-}); 
+});
+
+// Increase server timeout to 5 minutes for long-running requests like image generation
+server.setTimeout(300000); // 5 minutes
+server.keepAliveTimeout = 310000; // Slightly longer than timeout
+server.headersTimeout = 320000; // Even longer for headers 
