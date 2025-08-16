@@ -22,19 +22,23 @@ export async function saveGeneratedImage(imageData, user, generation) {
 
     const { url: imageUrl, width = 1024, height = 1024 } = imageData;
     
-    // Download and save the image
-    const { localPath, filename } = await downloadAndSaveImage(imageUrl, 'generated');
+    // Download and save the image (Cloudinary for production, local for dev)
+    const { localPath, filename, cloudinaryId } = await downloadAndSaveImage(imageUrl, 'generated');
     
     // Generate thumbnail
     const thumbnailPath = await generateThumbnail(localPath);
     
-    // Save to database
+    // Save to database with proper URLs
+    const serverUrl = process.env.SERVER_URL || 'http://localhost:5000';
+    const finalImageUrl = localPath.startsWith('http') ? localPath : `${serverUrl}/${localPath}`;
+    const finalThumbUrl = thumbnailPath.startsWith('http') ? thumbnailPath : `${serverUrl}/${thumbnailPath}`;
+    
     const savedImage = await prisma.image.create({
       data: {
         userId: user.id,
         generationId: generation.id,
-        url: `http://localhost:5000/${localPath}`,
-        thumbnailUrl: `http://localhost:5000/${thumbnailPath}`,
+        url: finalImageUrl,
+        thumbnailUrl: finalThumbUrl,
         prompt: generation.prompt,
         negativePrompt: generation.negativePrompt,
         model: generation.model,
@@ -164,9 +168,10 @@ export const deleteImage = async (req, res) => {
       return res.status(404).json({ error: 'Image not found' });
     }
 
-    // Extract file paths from URLs
-    const imagePath = image.url?.replace('http://localhost:5000/', '');
-    const thumbnailPath = image.thumbnailUrl?.replace('http://localhost:5000/', '');
+    // Extract file paths from URLs (handle both local and Cloudinary URLs)
+    const serverUrl = process.env.SERVER_URL || 'http://localhost:5000';
+    const imagePath = image.url?.replace(`${serverUrl}/`, '').replace('http://localhost:5000/', '');
+    const thumbnailPath = image.thumbnailUrl?.replace(`${serverUrl}/`, '').replace('http://localhost:5000/', '');
 
     // Delete from database first
     await prisma.image.delete({
