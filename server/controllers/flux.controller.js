@@ -72,14 +72,22 @@ export const generateImage = async (req, res) => {
     const requiredCredits = getModelCredits(modelId);
     
     try {
-      // Make API call to check user credits
-      const creditCheckResponse = await axios.post('http://localhost:5000/api/users/check-credits', {
-        modelId
-      }, {
-        headers: {
-          'Authorization': req.headers.authorization
-        }
+      // Get user from database directly instead of making HTTP call
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { totalCredits: true }
       });
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const creditCheckResponse = {
+        data: {
+          canAfford: user.totalCredits >= requiredCredits,
+          available: user.totalCredits
+        }
+      };
 
       console.log('Credit check response:', creditCheckResponse.data);
       if (!creditCheckResponse.data.canAfford) {
@@ -171,12 +179,13 @@ export const generateImage = async (req, res) => {
         const requiredCredits = getModelCredits(modelId);
         
         try {
-          // Deduct credits first
-          await axios.post('http://localhost:5000/api/users/deduct-credits', {
-            modelId
-          }, {
-            headers: {
-              'Authorization': req.headers.authorization
+          // Deduct credits directly from database
+          await prisma.user.update({
+            where: { id: userId },
+            data: {
+              totalCredits: {
+                decrement: requiredCredits
+              }
             }
           });
           console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
@@ -455,14 +464,22 @@ export const generateImageToImage = async (req, res) => {
     const requiredCredits = getModelCredits(modelId);
     
     try {
-      // Make API call to check user credits
-      const creditCheckResponse = await axios.post('http://localhost:5000/api/users/check-credits', {
-        modelId
-      }, {
-        headers: {
-          'Authorization': req.headers.authorization
-        }
+      // Get user from database directly instead of making HTTP call
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { totalCredits: true }
       });
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const creditCheckResponse = {
+        data: {
+          canAfford: user.totalCredits >= requiredCredits,
+          available: user.totalCredits
+        }
+      };
 
       console.log('Credit check response:', creditCheckResponse.data);
       if (!creditCheckResponse.data.canAfford) {
@@ -555,12 +572,13 @@ export const generateImageToImage = async (req, res) => {
         const requiredCredits = getModelCredits(modelId);
         
         try {
-          // Deduct credits first
-          await axios.post('http://localhost:5000/api/users/deduct-credits', {
-            modelId
-          }, {
-            headers: {
-              'Authorization': req.headers.authorization
+          // Deduct credits directly from database
+          await prisma.user.update({
+            where: { id: userId },
+            data: {
+              totalCredits: {
+                decrement: requiredCredits
+              }
             }
           });
           console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
