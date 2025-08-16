@@ -54,37 +54,45 @@ export const generateImage = async (req, res) => {
       userId 
     });
 
-    // Skip credit checks for testing if user not authenticated
-    if (userId) {
-      // Check credits before processing (only if authenticated)
-      const modelId = model || 'flux-pro';
-      const requiredCredits = getModelCredits(modelId);
-      
-      try {
-        // Make API call to check user credits
-        const creditCheckResponse = await axios.post('http://localhost:5000/api/users/check-credits', {
-          modelId
-        }, {
-          headers: {
-            'Authorization': req.headers.authorization
-          }
-        });
+    // Require authentication for image generation
+    if (!userId) {
+      console.log('User not authenticated - generation requires login');
+      return res.status(401).json({ 
+        error: 'Authentication required',
+        message: 'Please sign in to generate images'
+      });
+    }
 
-        console.log('Credit check response:', creditCheckResponse.data);
-        if (!creditCheckResponse.data.canAfford) {
-          console.log('Insufficient credits - returning 400');
-          return res.status(400).json({ 
-            error: 'Insufficient credits',
-            required: requiredCredits,
-            available: creditCheckResponse.data.available,
-            modelId
-          });
+    // Check credits before processing
+    const modelId = model || 'flux-pro';
+    const requiredCredits = getModelCredits(modelId);
+    
+    try {
+      // Make API call to check user credits
+      const creditCheckResponse = await axios.post('http://localhost:5000/api/users/check-credits', {
+        modelId
+      }, {
+        headers: {
+          'Authorization': req.headers.authorization
         }
-      } catch (creditError) {
-        console.log('Credit check failed, proceeding with generation for testing:', creditError.message);
+      });
+
+      console.log('Credit check response:', creditCheckResponse.data);
+      if (!creditCheckResponse.data.canAfford) {
+        console.log('Insufficient credits - returning 400');
+        return res.status(400).json({ 
+          error: 'Insufficient credits',
+          required: requiredCredits,
+          available: creditCheckResponse.data.available,
+          modelId
+        });
       }
-    } else {
-      console.log('User not authenticated, skipping credit checks for testing');
+    } catch (creditError) {
+      console.error('Credit check failed:', creditError.message);
+      return res.status(500).json({
+        error: 'Credit verification failed',
+        message: 'Unable to verify account credits'
+      });
     }
 
     if (!prompt || !input_image) {
@@ -392,37 +400,45 @@ export const generateImageToImage = async (req, res) => {
       userId
     });
 
-    // Skip credit checks for testing if user not authenticated
-    if (userId) {
-      // Check credits before processing (only if authenticated)
-      const modelId = model || 'flux-pro';
-      const requiredCredits = getModelCredits(modelId);
-      
-      try {
-        // Make API call to check user credits
-        const creditCheckResponse = await axios.post('http://localhost:5000/api/users/check-credits', {
-          modelId
-        }, {
-          headers: {
-            'Authorization': req.headers.authorization
-          }
-        });
+    // Require authentication for image generation
+    if (!userId) {
+      console.log('User not authenticated - generation requires login');
+      return res.status(401).json({ 
+        error: 'Authentication required',
+        message: 'Please sign in to generate images'
+      });
+    }
 
-        console.log('Credit check response:', creditCheckResponse.data);
-        if (!creditCheckResponse.data.canAfford) {
-          console.log('Insufficient credits - returning 400');
-          return res.status(400).json({ 
-            error: 'Insufficient credits',
-            required: requiredCredits,
-            available: creditCheckResponse.data.available,
-            modelId
-          });
+    // Check credits before processing
+    const modelId = model || 'flux-pro';
+    const requiredCredits = getModelCredits(modelId);
+    
+    try {
+      // Make API call to check user credits
+      const creditCheckResponse = await axios.post('http://localhost:5000/api/users/check-credits', {
+        modelId
+      }, {
+        headers: {
+          'Authorization': req.headers.authorization
         }
-      } catch (creditError) {
-        console.log('Credit check failed, proceeding with generation for testing:', creditError.message);
+      });
+
+      console.log('Credit check response:', creditCheckResponse.data);
+      if (!creditCheckResponse.data.canAfford) {
+        console.log('Insufficient credits - returning 400');
+        return res.status(400).json({ 
+          error: 'Insufficient credits',
+          required: requiredCredits,
+          available: creditCheckResponse.data.available,
+          modelId
+        });
       }
-    } else {
-      console.log('User not authenticated, skipping credit checks for testing');
+    } catch (creditError) {
+      console.error('Credit check failed:', creditError.message);
+      return res.status(500).json({
+        error: 'Credit verification failed',
+        message: 'Unable to verify account credits'
+      });
     }
 
     if (!prompt || !input_image) {

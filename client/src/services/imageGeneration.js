@@ -197,7 +197,16 @@ export async function generateWithFlux(imageBase64, style = 'disney', model = 'f
           throw new DOMException('Request was cancelled', 'AbortError');
         }
       }
-      throw new Error(`Server error: ${response.status}`);
+      
+      // Handle authentication errors
+      if (response.status === 401) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Authentication required');
+      }
+      
+      // Handle other errors
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || `Server error: ${response.status}`);
     }
     
     const result = await response.json();
@@ -278,7 +287,15 @@ export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = '
       });
       
       if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
+        // Handle authentication errors
+        if (response.status === 401) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Authentication required');
+        }
+        
+        // Handle other errors
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || errorData.error || `Server error: ${response.status}`);
       }
       
       const result = await response.json();
