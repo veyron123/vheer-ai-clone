@@ -1,36 +1,14 @@
 import { fal } from "@fal-ai/client";
 import { getApiUrl } from '../config/api.config';
 import { useAuthStore } from '../stores/authStore';
+import { urlToBase64 } from '../utils/imageUtils';
 
 // Configure API key from environment variable
 fal.config({
   credentials: import.meta.env.VITE_FAL_API_KEY || "e405913f-48b3-42e6-9016-cddd8844add5:20315b83d223a2b6664fe3945238f67d"
 });
 
-/**
- * Convert image to base64 if it's a URL
- * @param {string} imageUrl - URL of the image
- * @returns {Promise<string>} Base64 encoded image
- */
-async function urlToBase64(imageUrl) {
-  if (imageUrl.startsWith('data:')) {
-    return imageUrl;
-  }
-  
-  try {
-    const response = await fetch(imageUrl);
-    const blob = await response.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-  } catch (error) {
-    console.error('Error converting URL to base64:', error);
-    throw error;
-  }
-}
+// urlToBase64 function removed - now imported from utils/imageUtils.js
 
 /**
  * Generate image-to-image transformation using Flux.1 Kontext
