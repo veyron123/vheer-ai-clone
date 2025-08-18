@@ -30,7 +30,19 @@ const MockupGenerator = ({ imageUrl, aspectRatio, onClose }) => {
 
   // Рендеринг мокапа
   useEffect(() => {
-    if (!canvasRef.current || !imageUrl) return;
+    if (!imageUrl) {
+      setIsLoading(false);
+      return;
+    }
+    
+    // Ждем, пока canvas ref установится
+    if (!canvasRef.current) {
+      const timeout = setTimeout(() => {
+        // Повторный вызов useEffect через зависимости
+        setIsLoading(true);
+      }, 100);
+      return () => clearTimeout(timeout);
+    }
     
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -44,8 +56,22 @@ const MockupGenerator = ({ imageUrl, aspectRatio, onClose }) => {
     
     // Загрузка и отрисовка пользовательского изображения
     const userImg = new Image();
-    userImg.crossOrigin = 'anonymous';
-    userImg.onload = () => {
+    
+    // Добавляем обработку ошибок
+    userImg.onerror = (error) => {
+      // Пробуем без CORS
+      const fallbackImg = new Image();
+      fallbackImg.onload = () => {
+        renderImageOnCanvas(fallbackImg);
+      };
+      fallbackImg.onerror = () => {
+        setIsLoading(false);
+      };
+      fallbackImg.src = imageUrl;
+    };
+    
+    // Функция рендеринга изображения
+    const renderImageOnCanvas = (img) => {
       ctx.save();
       
       // Применение области обрезки
@@ -63,17 +89,17 @@ const MockupGenerator = ({ imageUrl, aspectRatio, onClose }) => {
       
       // Масштабирование изображения
       const autoScale = Math.max(
-        screen.width / userImg.width,
-        screen.height / userImg.height
+        screen.width / img.width,
+        screen.height / img.height
       );
       const finalScale = autoScale * scale;
       
       ctx.drawImage(
-        userImg,
-        -userImg.width * finalScale / 2,
-        -userImg.height * finalScale / 2,
-        userImg.width * finalScale,
-        userImg.height * finalScale
+        img,
+        -img.width * finalScale / 2,
+        -img.height * finalScale / 2,
+        img.width * finalScale,
+        img.height * finalScale
       );
       
       ctx.restore();
@@ -96,9 +122,16 @@ const MockupGenerator = ({ imageUrl, aspectRatio, onClose }) => {
       };
       frameImg.src = currentFrame.frame;
     };
+    
+    userImg.onload = () => {
+      renderImageOnCanvas(userImg);
+    };
+    
+    // Пробуем сначала с CORS
+    userImg.crossOrigin = 'anonymous';
     userImg.src = imageUrl;
     
-  }, [imageUrl, aspectRatio, rotation, scale, position, currentFrame]);
+  }, [imageUrl, aspectRatio, rotation, scale, position, currentFrame, isLoading]);
 
   // Скачивание результата
   const downloadMockup = () => {
@@ -135,19 +168,20 @@ const MockupGenerator = ({ imageUrl, aspectRatio, onClose }) => {
             {/* Превью */}
             <div>
               <h3 className="text-sm font-medium text-gray-700 mb-3">Превью</h3>
-              <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-center min-h-[400px]">
-                {isLoading ? (
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-2"></div>
-                    <p className="text-sm text-gray-500">Загрузка...</p>
+              <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-center min-h-[400px] relative">
+                {isLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-50 rounded-lg z-10">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-2"></div>
+                      <p className="text-sm text-gray-500">Загрузка...</p>
+                    </div>
                   </div>
-                ) : (
-                  <canvas
-                    ref={canvasRef}
-                    className="max-w-full h-auto"
-                    style={{ imageRendering: 'crisp-edges' }}
-                  />
                 )}
+                <canvas
+                  ref={canvasRef}
+                  className={`max-w-full h-auto ${isLoading ? 'invisible' : 'visible'}`}
+                  style={{ imageRendering: 'crisp-edges' }}
+                />
               </div>
             </div>
 

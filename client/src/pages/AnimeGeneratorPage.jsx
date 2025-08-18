@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Frame } from 'lucide-react';
 
 // Components
 import ImageUploader from '../components/anime/ImageUploader';
@@ -9,6 +9,7 @@ import ModelSelector from '../components/anime/ModelSelector';
 import AspectRatioSelector from '../components/anime/AspectRatioSelector';
 import GenerateButton from '../components/anime/GenerateButton';
 import ExampleGallery from '../components/anime/ExampleGallery';
+import MockupGenerator from '../components/image-to-image/MockupGenerator';
 import SEO from '../components/SEO';
 
 // Constants
@@ -22,6 +23,7 @@ const AnimeGeneratorPage = () => {
   const [customStyle, setCustomStyle] = useState('');
   const [aiModel, setAiModel] = useState('flux-pro');
   const [aspectRatio, setAspectRatio] = useState('1:1');
+  const [showMockupGenerator, setShowMockupGenerator] = useState(false);
   
   const {
     uploadedImage,
@@ -39,6 +41,15 @@ const AnimeGeneratorPage = () => {
     // Use custom style if provided, otherwise use selected style
     const finalStyle = customStyle.trim() ? 'custom' : selectedStyle;
     generateImage(finalStyle, aiModel, aspectRatio, customStyle.trim());
+  };
+
+  // Проверяем условия для показа кнопки мокапа
+  const canShowMockupButton = () => {
+    return (
+      generatedImage &&
+      aiModel === 'gpt-image' &&
+      (aspectRatio === '1:1' || aspectRatio === '4:3')
+    );
   };
 
   return (
@@ -110,10 +121,33 @@ const AnimeGeneratorPage = () => {
               aiModel={aiModel}
             />
             
+            {/* Кнопка создания мокапа */}
+            {canShowMockupButton() && (
+              <div className="mt-4">
+                <button
+                  onClick={() => setShowMockupGenerator(true)}
+                  className="w-full px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02]"
+                >
+                  <Frame className="w-5 h-5" />
+                  Создать мокап
+                </button>
+              </div>
+            )}
+            
+            
           </div>
         </div>
       </div>
     </div>
+
+    {/* Модальное окно мокапа */}
+    {showMockupGenerator && (
+      <MockupGenerator
+        imageUrl={generatedImage}
+        aspectRatio={aspectRatio}
+        onClose={() => setShowMockupGenerator(false)}
+      />
+    )}
     </>
   );
 };
