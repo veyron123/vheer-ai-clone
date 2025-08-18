@@ -23,6 +23,7 @@ const TermsPage = () => {
     'privacy',
     'termination',
     'changes',
+    'refundPolicy',
     'governing',
     'contact'
   ];
