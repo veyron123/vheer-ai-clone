@@ -18,6 +18,10 @@ import AuthCallback from '../pages/AuthCallback';
 import AnimeGeneratorPage from '../pages/AnimeGeneratorPage';
 import ImageToImageGeneratorPage from '../pages/ImageToImageGeneratorPage';
 import StyleTransferPage from '../pages/StyleTransferPage';
+import MockupCanvasPage from '../pages/MockupCanvasPage';
+import MockupCSSPage from '../pages/MockupCSSPage';
+import MockupLibraryPage from '../pages/MockupLibraryPage';
+import MockupTestPage from '../pages/MockupTestPage';
 
 const LocalizedRoutes = () => {
   const location = useLocation();
@@ -88,6 +92,12 @@ const LanguageRoutes = () => {
       <Route path="/anime-generator" element={<AnimeGeneratorPage />} />
       <Route path="/image-to-image-generator" element={<ImageToImageGeneratorPage />} />
       <Route path="/generate" element={<StyleTransferPage />} />
+      
+      {/* Mockup test pages */}
+      <Route path="/mockup-test" element={<MockupTestPage />} />
+      <Route path="/mockup-canvas" element={<MockupCanvasPage />} />
+      <Route path="/mockup-css" element={<MockupCSSPage />} />
+      <Route path="/mockup-library" element={<MockupLibraryPage />} />
       
       {/* Auth routes */}
       <Route path="/auth/callback" element={<AuthCallback />} />

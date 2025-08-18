@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import SEOTags from '../components/SEOTags';
+import DebugTranslation from '../components/DebugTranslation';
 import { getLanguageFromPath } from '../i18n/config';
 
 const TermsPage = () => {
@@ -30,6 +31,7 @@ const TermsPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <DebugTranslation />
       <SEOTags
         title={`${t('title')} - СolibRRRi`}
         description="Read our terms and conditions for using СolibRRRi AI image generation services. Learn about your rights, our policies, and how we protect your data."
@@ -71,11 +73,11 @@ const TermsPage = () => {
                       {t(`sections.${sectionKey}.title`)}
                     </h2>
                     <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed">
-                      {t(`sections.${sectionKey}.content`).split('\\n\\n').map((paragraph, index) => (
+                      {t(`sections.${sectionKey}.content`).split('\n\n').map((paragraph, index) => (
                         <div key={index}>
                           {paragraph.includes('•') ? (
                             <ul className="list-disc pl-6 mb-6 space-y-2">
-                              {paragraph.split('\\n•').slice(1).map((item, itemIndex) => (
+                              {paragraph.split('\n•').slice(1).map((item, itemIndex) => (
                                 <li key={itemIndex} className="text-gray-700">
                                   {item.trim()}
                                 </li>

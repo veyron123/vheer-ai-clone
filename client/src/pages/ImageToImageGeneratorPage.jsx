@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Frame } from 'lucide-react';
 
 // Components
 import ImageToImageUploader from '../components/image-to-image/ImageToImageUploader';
@@ -9,6 +9,7 @@ import ImageModelSelector from '../components/image-to-image/ImageModelSelector'
 import ImageAspectRatioSelector from '../components/image-to-image/ImageAspectRatioSelector';
 import ImageGenerateButton from '../components/image-to-image/ImageGenerateButton';
 import ImageExampleGallery from '../components/image-to-image/ImageExampleGallery';
+import MockupGenerator from '../components/image-to-image/MockupGenerator';
 import SEO from '../components/SEO';
 
 // Hooks
@@ -17,6 +18,7 @@ import { useImageToImageGeneration } from '../hooks/useImageToImageGeneration';
 const ImageToImageGeneratorPage = () => {
   const [aiModel, setAiModel] = useState('flux-pro');
   const [aspectRatio, setAspectRatio] = useState('match');
+  const [showMockupGenerator, setShowMockupGenerator] = useState(false);
   
   const {
     uploadedImage,
@@ -42,6 +44,15 @@ const ImageToImageGeneratorPage = () => {
 
   const handleGenerate = () => {
     generateImage(aiModel, aspectRatio);
+  };
+
+  // Проверяем условия для показа кнопки мокапа
+  const canShowMockupButton = () => {
+    return (
+      generatedImage &&
+      aiModel === 'gpt-image' &&
+      (aspectRatio === '1:1' || aspectRatio === '4:3')
+    );
   };
 
   return (
@@ -139,12 +150,32 @@ const ImageToImageGeneratorPage = () => {
                   onClear={clearAll}
                   aiModel={aiModel}
                 />
+
+                {/* Кнопка создания мокапа */}
+                {canShowMockupButton() && (
+                  <button
+                    onClick={() => setShowMockupGenerator(true)}
+                    className="w-full px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02]"
+                  >
+                    <Frame className="w-5 h-5" />
+                    Создать мокап
+                  </button>
+                )}
                 
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Модальное окно с генератором мокапов */}
+      {showMockupGenerator && (
+        <MockupGenerator
+          imageUrl={generatedImage}
+          aspectRatio={aspectRatio}
+          onClose={() => setShowMockupGenerator(false)}
+        />
+      )}
     </>
   );
 };

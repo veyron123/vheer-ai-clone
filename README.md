@@ -7,6 +7,7 @@ Transform your photos into stunning anime, cartoon, and artistic styles using ad
 - 🎨 **16+ Artistic Styles**: Disney, Pixar, Manga, Cyberpunk, and more
 - 🤖 **Multiple AI Models**: Flux Pro, Flux Max, GPT Image
 - 🖼️ **Custom Aspect Ratios**: Support for various image dimensions
+- 🖼️ **Portrait Frame Mockups**: Create beautiful framed presentations of generated images
 - ⚡ **Fast Generation**: Optimized for quick results
 - 🎯 **High Quality**: Professional-grade output
 - 📱 **Responsive Design**: Works on all devices
@@ -113,6 +114,13 @@ vheer-clone/
 ### Gallery
 - `GET /api/images` - Get user's images
 - `DELETE /api/images/:id` - Delete image
+
+## Documentation
+
+- [Mockup System Documentation](MOCKUP_DOCUMENTATION.md) - Learn how the portrait frame mockup system works
+- [API Configuration](API_CONFIGURATION.md) - API setup and configuration
+- [Deployment Guide](DEPLOY.md) - Deployment instructions
+- [Architecture](ARCHITECTURE_IMPROVEMENTS.md) - System architecture details
 
 ## License
 

@@ -232,10 +232,10 @@ class StorageProvider {
     // Convert source to buffer
     if (typeof source === 'string') {
       if (source.startsWith('data:')) {
-        // Base64 data
+        // Base64 data with prefix
         const base64Data = source.replace(/^data:image\/[a-z]+;base64,/, '');
         buffer = Buffer.from(base64Data, 'base64');
-      } else {
+      } else if (source.startsWith('http')) {
         // URL - download first
         const response = await axios({
           method: 'GET',
@@ -244,6 +244,13 @@ class StorageProvider {
           timeout: 30000
         });
         buffer = Buffer.from(response.data);
+      } else {
+        // Assume it's base64 without prefix (raw base64 string)
+        try {
+          buffer = Buffer.from(source, 'base64');
+        } catch (error) {
+          throw new Error(`Invalid image source: ${error.message}`);
+        }
       }
     } else {
       buffer = source; // Already a buffer

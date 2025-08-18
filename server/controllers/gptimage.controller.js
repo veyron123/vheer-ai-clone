@@ -97,61 +97,48 @@ export const generateImage = async (req, res) => {
     
     // If it's base64, try to upload it to a hosting service
     if (!input_image.startsWith('http')) {
-      // Try uploading to Cloudinary first (more reliable than ImgBB)
-      try {
-        console.log('🔄 Attempting to upload image to Cloudinary...');
-        console.log('🔍 Input image type:', typeof input_image);
-        console.log('🔍 Input image starts with data:', input_image.startsWith('data:'));
-        console.log('🔍 Input image length:', input_image.length);
-        
-        const { getStorageProvider } = await import('../utils/storageProvider.js');
-        const storageProvider = getStorageProvider();
-        
-        // Upload image using our universal storage provider
-        const uploadResult = await storageProvider.uploadImage(input_image, 'gpt-input');
-        imageUrl = uploadResult.url;
-        console.log('✅ Image successfully uploaded to Cloudinary:', imageUrl);
-        
-      } catch (cloudinaryError) {
-        console.error('❌ Cloudinary upload failed:', cloudinaryError.message);
-        
-        // Fallback to ImgBB if Cloudinary fails
+      // Check if we have valid Cloudinary credentials first
+      const hasValidCloudinary = process.env.CLOUDINARY_CLOUD_NAME && 
+                                  process.env.CLOUDINARY_CLOUD_NAME !== 'demo' &&
+                                  process.env.CLOUDINARY_API_KEY &&
+                                  process.env.CLOUDINARY_API_KEY !== '123456789';
+      
+      if (hasValidCloudinary) {
+        // Try uploading to Cloudinary first (more reliable than ImgBB)
         try {
-          console.log('🔄 Fallback: Attempting to upload image to ImgBB...');
-          const formData = new URLSearchParams();
-          formData.append('key', IMGBB_API_KEY);
-          // Clean the base64 string by removing data URL prefix if present
-          const cleanBase64 = input_image.replace(/^data:image\/[a-z]+;base64,/, '');
-          formData.append('image', cleanBase64);
+          console.log('🔄 Attempting to upload image to Cloudinary...');
+          console.log('🔍 Input image type:', typeof input_image);
+          console.log('🔍 Input image starts with data:', input_image.startsWith('data:'));
+          console.log('🔍 Input image length:', input_image.length);
           
-          const imgbbResponse = await axios.post('https://api.imgbb.com/1/upload', formData, {
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            timeout: 10000 // 10 second timeout
-          });
+          const { getStorageProvider } = await import('../utils/storageProvider.js');
+          const storageProvider = getStorageProvider();
           
-          if (imgbbResponse.data && imgbbResponse.data.data && imgbbResponse.data.data.url) {
-            imageUrl = imgbbResponse.data.data.url;
-            console.log('✅ Image successfully uploaded to ImgBB:', imageUrl);
-          } else {
-            throw new Error('Invalid response from ImgBB');
-          }
-        } catch (uploadError) {
-          console.error('❌ Both Cloudinary and ImgBB upload failed:', uploadError.message);
+          // Upload image using our universal storage provider
+          const uploadResult = await storageProvider.uploadImage(input_image, 'gpt-input');
+          imageUrl = uploadResult.url;
+          console.log('✅ Image successfully uploaded to Cloudinary:', imageUrl);
           
-          // If both uploads fail, try direct base64 approach with GPT Image
-          console.log('Trying direct base64 approach...');
-          
-          // Some APIs accept direct base64, try this approach
-          if (input_image.startsWith('data:image')) {
-            imageUrl = input_image;
-          } else {
-            // Add data URL prefix if missing
-            imageUrl = `data:image/jpeg;base64,${input_image}`;
-          }
-          console.log('Using direct base64 approach for GPT Image API');
+        } catch (cloudinaryError) {
+          console.error('❌ Cloudinary upload failed:', cloudinaryError.message);
+          // Continue to try other approaches
         }
+      } else {
+        console.log('⚠️ Cloudinary not configured properly, skipping...');
+      }
+      
+      // If Cloudinary didn't work (or wasn't configured), try direct base64 approach
+      if (imageUrl === input_image) {
+        console.log('🔄 Trying direct base64 approach for GPT Image API...');
+        
+        // GPT Image API might accept direct base64
+        if (input_image.startsWith('data:image')) {
+          imageUrl = input_image;
+        } else {
+          // Add data URL prefix if missing
+          imageUrl = `data:image/jpeg;base64,${input_image}`;
+        }
+        console.log('✅ Using direct base64 approach for GPT Image API');
       }
     }
 
@@ -469,39 +456,43 @@ export const generateImageToImage = async (req, res) => {
     
     // If it's base64, try to upload it to a hosting service
     if (!input_image.startsWith('http')) {
-      try {
-        console.log('Attempting to upload image to ImgBB for image-to-image...');
-        const cleanBase64 = input_image.replace(/^data:image\/[a-z]+;base64,/, '');
-        
-        const formData = new URLSearchParams();
-        formData.append('key', IMGBB_API_KEY);
-        formData.append('image', cleanBase64);
-        
-        const imgbbResponse = await axios.post('https://api.imgbb.com/1/upload', formData, {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          timeout: 10000 // 10 second timeout
-        });
-
-        if (imgbbResponse.data && imgbbResponse.data.data && imgbbResponse.data.data.url) {
-          imageUrl = imgbbResponse.data.data.url;
-          console.log('Image successfully uploaded to ImgBB:', imageUrl);
-        } else {
-          throw new Error('Invalid response from ImgBB');
+      // Check if we have valid Cloudinary credentials first
+      const hasValidCloudinary = process.env.CLOUDINARY_CLOUD_NAME && 
+                                  process.env.CLOUDINARY_CLOUD_NAME !== 'demo' &&
+                                  process.env.CLOUDINARY_API_KEY &&
+                                  process.env.CLOUDINARY_API_KEY !== '123456789';
+      
+      if (hasValidCloudinary) {
+        // Try uploading to Cloudinary first (more reliable than ImgBB)
+        try {
+          console.log('🔄 Attempting to upload image to Cloudinary for image-to-image...');
+          
+          const { getStorageProvider } = await import('../utils/storageProvider.js');
+          const storageProvider = getStorageProvider();
+          
+          // Upload image using our universal storage provider
+          const uploadResult = await storageProvider.uploadImage(input_image, 'gpt-input');
+          imageUrl = uploadResult.url;
+          console.log('✅ Image successfully uploaded to Cloudinary for image-to-image:', imageUrl);
+          
+        } catch (cloudinaryError) {
+          console.error('❌ Cloudinary upload failed for image-to-image:', cloudinaryError.message);
+          // Continue to try other approaches
         }
-      } catch (uploadError) {
-        console.error('ImgBB upload failed for image-to-image:', uploadError.message);
-        
-        // If ImgBB fails, try direct base64 approach
-        console.log('Trying direct base64 approach for image-to-image...');
+      } else {
+        console.log('⚠️ Cloudinary not configured properly for image-to-image, skipping...');
+      }
+      
+      // If Cloudinary didn't work (or wasn't configured), try direct base64 approach
+      if (imageUrl === input_image) {
+        console.log('🔄 Trying direct base64 approach for image-to-image...');
         
         if (input_image.startsWith('data:image')) {
           imageUrl = input_image;
         } else {
           imageUrl = `data:image/jpeg;base64,${input_image}`;
         }
-        console.log('Using direct base64 approach for GPT Image API (image-to-image)');
+        console.log('✅ Using direct base64 approach for GPT Image API (image-to-image)');
       }
     }
 
