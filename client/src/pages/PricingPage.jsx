@@ -2,14 +2,21 @@ import React from 'react';
 import { useQuery } from 'react-query';
 import { motion } from 'framer-motion';
 import { Check, Sparkles, Zap, Crown, Building } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { getLanguageFromPath } from '../i18n/config';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 
 const PricingPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated } = useAuthStore();
+  const { t } = useTranslation('pricing');
+  
+  // Get current language from path
+  const currentLang = getLanguageFromPath(location.pathname) || 'en';
 
   const { data: plans } = useQuery('plans', () =>
     api.get('/subscriptions/plans').then(res => res.data)
@@ -36,9 +43,9 @@ const PricingPage = () => {
       <div className="container-custom">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
+          <h1 className="text-4xl font-bold mb-4">{t('title')}</h1>
           <p className="text-xl text-gray-600">
-            Start free and upgrade as you grow. No hidden fees.
+            {t('subtitle')}
           </p>
         </div>
 
@@ -59,7 +66,7 @@ const PricingPage = () => {
                 {isPopular && (
                   <div className="absolute -top-4 left-0 right-0 flex justify-center">
                     <span className="bg-primary-500 text-white px-4 py-1 rounded-full text-sm font-medium">
-                      Most Popular
+                      {t('mostPopular')}
                     </span>
                   </div>
                 )}
@@ -76,7 +83,9 @@ const PricingPage = () => {
                   </div>
 
                   {/* Plan Name */}
-                  <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                  <h3 className="text-2xl font-bold mb-2">
+                    {t(`plans.${plan.id.toLowerCase()}.name`)}
+                  </h3>
 
                   {/* Price */}
                   <div className="mb-6">
@@ -84,23 +93,23 @@ const PricingPage = () => {
                       ${plan.price}
                     </span>
                     {plan.price > 0 && (
-                      <span className="text-gray-600">/month</span>
+                      <span className="text-gray-600">/{t('perMonth').replace('per ', '').replace('на ', '')}</span>
                     )}
                   </div>
 
                   {/* Credits */}
                   <div className="mb-6 pb-6 border-b">
                     <p className="text-lg font-medium">
-                      {plan.credits} credits
+                      {plan.credits} {t('credits')}
                     </p>
                     <p className="text-sm text-gray-600">
-                      {plan.id === 'FREE' ? 'per day' : 'per month'}
+                      {plan.id === 'FREE' ? t('perDay') : t('perMonth')}
                     </p>
                   </div>
 
                   {/* Features */}
                   <ul className="space-y-3 mb-8 flex-grow">
-                    {plan.features.map((feature, idx) => (
+                    {t(`plans.${plan.id.toLowerCase()}.features`, { returnObjects: true }).map((feature, idx) => (
                       <li key={idx} className="flex items-start">
                         <Check className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
                         <span className="text-sm text-gray-700">{feature}</span>
@@ -119,7 +128,7 @@ const PricingPage = () => {
                         : 'btn btn-secondary'
                     }`}
                   >
-                    {plan.id === 'FREE' ? 'Get Started' : 'Upgrade Now'}
+                    {plan.id === 'FREE' ? t('getStarted') : t('upgradeNow')}
                   </button>
                 </div>
               </motion.div>
@@ -130,38 +139,35 @@ const PricingPage = () => {
         {/* FAQ Section */}
         <div className="mt-20 max-w-3xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">
-            Frequently Asked Questions
+            {t('faq.title')}
           </h2>
           
           <div className="space-y-6">
             <div className="card p-6">
-              <h3 className="font-semibold mb-2">What are credits?</h3>
+              <h3 className="font-semibold mb-2">{t('faq.questions.whatAreCredits.question')}</h3>
               <p className="text-gray-600">
-                Credits are used to generate images. Each image generation consumes credits based on the model and settings used. 
-                Higher quality models and larger images require more credits.
+                {t('faq.questions.whatAreCredits.answer')}
               </p>
             </div>
 
             <div className="card p-6">
-              <h3 className="font-semibold mb-2">Can I change my plan anytime?</h3>
+              <h3 className="font-semibold mb-2">{t('faq.questions.changePlan.question')}</h3>
               <p className="text-gray-600">
-                Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately, 
-                and we'll prorate any payments.
+                {t('faq.questions.changePlan.answer')}
               </p>
             </div>
 
             <div className="card p-6">
-              <h3 className="font-semibold mb-2">Do unused credits roll over?</h3>
+              <h3 className="font-semibold mb-2">{t('faq.questions.rollOver.question')}</h3>
               <p className="text-gray-600">
-                Credits reset each month and don't roll over. However, you can purchase additional credit packs 
-                that never expire.
+                {t('faq.questions.rollOver.answer')}
               </p>
             </div>
 
             <div className="card p-6">
-              <h3 className="font-semibold mb-2">Is there a free trial?</h3>
+              <h3 className="font-semibold mb-2">{t('faq.questions.freeTrial.question')}</h3>
               <p className="text-gray-600">
-                Yes! Every new user gets 100 free credits to try our service. No credit card required.
+                {t('faq.questions.freeTrial.answer')}
               </p>
             </div>
           </div>

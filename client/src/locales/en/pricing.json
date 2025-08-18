@@ -1,1 +1,74 @@
-{}
+{
+  "title": "Choose Your Plan",
+  "subtitle": "Start free and upgrade as you grow. No hidden fees.",
+  "mostPopular": "Most Popular",
+  "perMonth": "per month",
+  "perDay": "per day",
+  "credits": "credits",
+  "getStarted": "Get Started",
+  "upgradeNow": "Upgrade Now",
+  "plans": {
+    "free": {
+      "name": "Free",
+      "features": [
+        "100 free credits daily",
+        "Basic models",
+        "Standard resolution",
+        "Community support"
+      ]
+    },
+    "basic": {
+      "name": "Basic", 
+      "features": [
+        "100 credits monthly",
+        "All models",
+        "HD resolution",
+        "Priority support",
+        "Private images"
+      ]
+    },
+    "pro": {
+      "name": "Pro",
+      "features": [
+        "500 credits monthly",
+        "All models",
+        "4K resolution", 
+        "Priority processing",
+        "API access",
+        "Commercial use"
+      ]
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "features": [
+        "2000 credits monthly",
+        "Custom models",
+        "Unlimited resolution",
+        "Dedicated support",
+        "Team collaboration",
+        "Custom integrations"
+      ]
+    }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "questions": {
+      "whatAreCredits": {
+        "question": "What are credits?",
+        "answer": "Credits are used to generate images. Each image generation consumes credits based on the model and settings used. Higher quality models and larger images require more credits."
+      },
+      "changePlan": {
+        "question": "Can I change my plan anytime?",
+        "answer": "Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll prorate any payments."
+      },
+      "rollOver": {
+        "question": "Do unused credits roll over?",
+        "answer": "Credits reset each month and don't roll over. However, you can purchase additional credit packs that never expire."
+      },
+      "freeTrial": {
+        "question": "Is there a free trial?",
+        "answer": "Yes! Every new user gets 100 free credits to try our service. No credit card required."
+      }
+    }
+  }
+}
