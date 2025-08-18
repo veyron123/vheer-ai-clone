@@ -50,13 +50,17 @@
       "title": "11. Changes to Terms",
       "content": "We reserve the right to modify these Terms at any time. We will notify users of significant changes by posting the updated Terms on our website with a new effective date.\n\nContinued use of the Services after changes constitutes acceptance of the new Terms."
     },
+    "refundPolicy": {
+      "title": "12. Refund Policy",
+      "content": "All payments for our Services, including subscriptions and credits, are final and non-refundable. In accordance with this policy:\n\n• Credits used for image generation are non-refundable\n• Subscription fees are not refunded after the subscription period is activated\n• Partial use of subscription does not entitle you to proportional refunds\n• Unused credits cannot be converted to cash\n• Refunds may be provided solely at the company's discretion in case of technical errors from our system\n\nIn case of technical problems or service errors, please contact our support team at support@colibrrri.com for individual consideration of your situation."
+    },
     "governing": {
-      "title": "12. Governing Law and Jurisdiction",
-      "content": "These Terms are governed by and construed in accordance with the laws of [Jurisdiction]. Any disputes arising from these Terms or your use of the Services will be resolved in the courts of [Jurisdiction]."
+      "title": "13. Governing Law and Jurisdiction",
+      "content": "These Terms are governed by and construed in accordance with the laws of Ukraine. All disputes arising from these Terms or your use of the Services shall be subject to the exclusive jurisdiction of the courts of Kharkiv, Ukraine.\n\nServices are provided by FOP Gavrilyak Denis Ismikhanovich, registered in Ukraine."
     },
     "contact": {
-      "title": "13. Contact Information",
-      "content": "If you have any questions about these Terms, please contact us at:\n\nСolibRRRi Technologies\nEmail: support@colibrrri.com\nWebsite: https://colibrrri.com/contact"
+      "title": "14. Contact Information",
+      "content": "If you have any questions about these Terms, please contact us at:\n\nFOP Gavrilyak Denis Ismikhanovich\nAddress: Ukraine, Kharkiv, Blagodatnaya St. 2a\nEmail: support@colibrrri.com\nPhone: +380673874048\nWebsite: https://colibrrri.com/contact"
     }
   },
   "lastUpdated": "Last updated: January 15, 2025"
