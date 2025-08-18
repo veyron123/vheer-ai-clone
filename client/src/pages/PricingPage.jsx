@@ -90,7 +90,7 @@ const PricingPage = () => {
                   {/* Price */}
                   <div className="mb-6">
                     <span className="text-4xl font-bold">
-                      ${plan.price}
+                      {plan.currency || '₴'}{plan.price}
                     </span>
                     {plan.price > 0 && (
                       <span className="text-gray-600">/{t('perMonth').replace('per ', '').replace('на ', '')}</span>

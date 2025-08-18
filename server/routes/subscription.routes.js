@@ -10,6 +10,7 @@ router.get('/plans', (req, res) => {
       id: 'FREE',
       name: 'Free',
       price: 0,
+      currency: '₴',
       credits: 100,
       features: [
         '100 free credits daily',
@@ -21,7 +22,8 @@ router.get('/plans', (req, res) => {
     {
       id: 'BASIC',
       name: 'Basic',
-      price: 9.99,
+      price: 400,
+      currency: '₴',
       credits: 100,
       features: [
         '100 credits monthly',
@@ -34,7 +36,8 @@ router.get('/plans', (req, res) => {
     {
       id: 'PRO',
       name: 'Pro',
-      price: 29.99,
+      price: 1200,
+      currency: '₴',
       credits: 500,
       features: [
         '500 credits monthly',
@@ -48,7 +51,8 @@ router.get('/plans', (req, res) => {
     {
       id: 'ENTERPRISE',
       name: 'Enterprise',
-      price: 99.99,
+      price: 4000,
+      currency: '₴',
       credits: 2000,
       features: [
         '2000 credits monthly',
