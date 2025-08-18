@@ -13,6 +13,7 @@ import PricingPage from '../pages/PricingPage';
 import TermsPage from '../pages/TermsPage';
 import PrivacyPage from '../pages/PrivacyPage';
 import CookiesPage from '../pages/CookiesPage';
+import ContactPage from '../pages/ContactPage';
 import AuthCallback from '../pages/AuthCallback';
 import AnimeGeneratorPage from '../pages/AnimeGeneratorPage';
 import ImageToImageGeneratorPage from '../pages/ImageToImageGeneratorPage';
@@ -83,6 +84,7 @@ const LanguageRoutes = () => {
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/cookies" element={<CookiesPage />} />
+      <Route path="/contact" element={<ContactPage />} />
       <Route path="/anime-generator" element={<AnimeGeneratorPage />} />
       <Route path="/image-to-image-generator" element={<ImageToImageGeneratorPage />} />
       <Route path="/generate" element={<StyleTransferPage />} />
