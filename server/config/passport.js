@@ -37,18 +37,8 @@ const getGoogleCallbackURL = () => {
   return process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5178/auth/google/callback';
 };
 
-console.log('Google OAuth configuration:', {
-  clientID: process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Not set',
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET ? 'Set' : 'Not set',
-  callbackURL: getGoogleCallbackURL(),
-  environment: process.env.NODE_ENV
-});
-
-console.log('Full OAuth config (masked):', {
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecretPrefix: process.env.GOOGLE_CLIENT_SECRET ? process.env.GOOGLE_CLIENT_SECRET.substring(0, 10) + '...' : 'Not set',
-  callbackURL: getGoogleCallbackURL()
-});
+// OAuth configuration logging removed for security
+// Configuration status is checked in validateEnv.js
 
 // Google OAuth Strategy
 passport.use(new GoogleStrategy({
@@ -57,10 +47,7 @@ passport.use(new GoogleStrategy({
   callbackURL: getGoogleCallbackURL()
 }, async (accessToken, refreshToken, profile, done) => {
   try {
-    console.log('=== Google OAuth Strategy Debug ===');
-    console.log('Access Token:', accessToken ? 'Received' : 'Missing');
-    console.log('Refresh Token:', refreshToken ? 'Received' : 'Missing');
-    console.log('Profile:', profile);
+    // OAuth token and profile processing
     
     // Check if user already exists with this Google ID
     let user = await prisma.user.findFirst({
@@ -115,7 +102,7 @@ passport.use(new GoogleStrategy({
 
     return done(null, user);
   } catch (error) {
-    console.error('Google OAuth Error:', error);
+    // Error handled and passed to done callback
     return done(error, null);
   }
 }));
@@ -128,7 +115,7 @@ passport.use(new FacebookStrategy({
   profileFields: ['id', 'emails', 'name', 'picture.type(large)']
 }, async (accessToken, refreshToken, profile, done) => {
   try {
-    console.log('Facebook Profile:', profile);
+    // Facebook profile processing
     
     // Check if user already exists with this Facebook ID
     let user = await prisma.user.findFirst({
@@ -184,7 +171,7 @@ passport.use(new FacebookStrategy({
 
     return done(null, user);
   } catch (error) {
-    console.error('Facebook OAuth Error:', error);
+    // Error handled and passed to done callback
     return done(error, null);
   }
 }));

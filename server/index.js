@@ -25,7 +25,15 @@ import { errorHandler } from './middleware/error.middleware.js';
 import { checkDailyCredits } from './middleware/credit.middleware.js';
 import CreditCronJob from './jobs/creditCronJob.js';
 
+// Environment validation
+import { validateEnv } from './config/validateEnv.js';
+import { corsOptions, securityHeaders } from './config/cors.config.js';
+import logger from './utils/logger.js';
+
 dotenv.config();
+
+// Validate environment variables at startup
+validateEnv();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,15 +54,11 @@ const limiter = rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 
-// Middleware
-const corsOrigins = process.env.NODE_ENV === 'production' 
-  ? [process.env.CORS_ORIGIN, 'https://vheer-client.onrender.com', 'https://vheer.ai', 'https://colibrrri.com']
-  : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:5176', 'http://localhost:5177', 'http://localhost:5178'];
+// Security headers
+app.use(securityHeaders);
 
-app.use(cors({
-  origin: corsOrigins,
-  credentials: true
-}));
+// CORS configuration
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
@@ -125,8 +129,11 @@ CreditCronJob.init();
 
 // Start server with increased timeout
 const server = app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info('Server started', {
+    port: PORT,
+    environment: process.env.NODE_ENV || 'development',
+    nodeVersion: process.version
+  });
 });
 
 // Increase server timeout to 5 minutes for long-running requests like image generation
