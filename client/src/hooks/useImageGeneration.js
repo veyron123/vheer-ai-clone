@@ -36,7 +36,7 @@ export const useImageGeneration = () => {
     setGenerationTime(null);
   };
 
-  const generateImage = async (style, aiModel, aspectRatio) => {
+  const generateImage = async (style, aiModel, aspectRatio, customPrompt = null) => {
     if (!uploadedImage) {
       alert('Please upload an image first');
       return;
@@ -85,7 +85,8 @@ export const useImageGeneration = () => {
         style, 
         aiModel, 
         finalAspectRatio, 
-        abortControllerRef.current.signal
+        abortControllerRef.current.signal,
+        customPrompt
       );
       
       // Calculate generation time

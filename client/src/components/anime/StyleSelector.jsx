@@ -1,7 +1,13 @@
 import React from 'react';
 import { Info } from 'lucide-react';
 
-const StyleSelector = ({ styles, selectedStyle, onStyleChange }) => {
+const StyleSelector = ({ 
+  styles, 
+  selectedStyle, 
+  onStyleChange, 
+  customStyle, 
+  onCustomStyleChange 
+}) => {
   return (
     <>
       <h3 className="text-lg font-semibold mb-4 flex items-center">
@@ -33,6 +39,18 @@ const StyleSelector = ({ styles, selectedStyle, onStyleChange }) => {
             </div>
           </button>
         ))}
+      </div>
+
+      {/* Custom Style Section */}
+      <div className="mb-6">
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Your Custom Style</h4>
+        <textarea
+          value={customStyle || ''}
+          onChange={(e) => onCustomStyleChange && onCustomStyleChange(e.target.value)}
+          placeholder="Input more details information here"
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
+          rows={3}
+        />
       </div>
     </>
   );

@@ -93,6 +93,257 @@ const animeStylePrompts = {
     prefix: "Neon punk anime style, glowing effects",
     suffix: "neon colors, cyberpunk aesthetic, vibrant",
     negative: "natural, soft, muted"
+  },
+  'voxel': {
+    prefix: "Voxel art style, 3D pixel art",
+    suffix: "blocky textures, minecraft-like, cubic forms",
+    negative: "smooth, realistic, high detail"
+  },
+  'abstract-expressionist': {
+    prefix: "Abstract expressionist art style",
+    suffix: "bold brushstrokes, emotional colors, artistic",
+    negative: "realistic, detailed, photographic"
+  },
+  'cubist': {
+    prefix: "Cubist artwork style, geometric forms",
+    suffix: "fragmented shapes, multiple perspectives, abstract",
+    negative: "realistic, smooth, traditional"
+  },
+  'caricature': {
+    prefix: "Caricature style, exaggerated features",
+    suffix: "humorous proportions, cartoon-like, expressive",
+    negative: "realistic, proportional, serious"
+  },
+  'chinese-paper-cutting': {
+    prefix: "Chinese paper cutting art style",
+    suffix: "intricate patterns, silhouette design, traditional",
+    negative: "3D, realistic, modern"
+  },
+  // Style Transfer styles
+  'studio-ghibli': {
+    prefix: "Studio Ghibli anime style, magical realism",
+    suffix: "whimsical atmosphere, detailed backgrounds, soft colors",
+    negative: "dark, scary, realistic photo"
+  },
+  'pixar-style': {
+    prefix: "Pixar 3D animation style, cartoon character",
+    suffix: "vibrant colors, smooth rendering, expressive",
+    negative: "realistic, dark, 2D"
+  },
+  'pixel-art': {
+    prefix: "Pixel art style, 8-bit retro gaming",
+    suffix: "blocky pixels, retro aesthetic, digital art",
+    negative: "smooth, realistic, high resolution"
+  },
+  'marvel-comic-anime': {
+    prefix: "Marvel comic anime fusion style",
+    suffix: "superhero aesthetic, dynamic poses, bold colors",
+    negative: "realistic, dark, minimalist"
+  },
+  'dc-comic': {
+    prefix: "DC Comics art style, superhero illustration",
+    suffix: "dramatic lighting, heroic poses, comic book",
+    negative: "cute, childish, realistic photo"
+  },
+  'japanese-ukiyo-e': {
+    prefix: "Japanese Ukiyo-e woodblock print style",
+    suffix: "traditional patterns, flat colors, artistic",
+    negative: "3D, realistic, modern"
+  },
+  'simpsons': {
+    prefix: "The Simpsons cartoon style, yellow characters",
+    suffix: "simple lines, bright colors, comedy style",
+    negative: "realistic, detailed, dark"
+  },
+  'flat-illustration': {
+    prefix: "Flat illustration style, minimalist design",
+    suffix: "simple shapes, clean lines, modern",
+    negative: "3D, realistic, detailed"
+  },
+  'childrens-book': {
+    prefix: "Children's book illustration style",
+    suffix: "whimsical, colorful, friendly characters",
+    negative: "scary, dark, realistic"
+  },
+  'claymation': {
+    prefix: "Claymation stop-motion style",
+    suffix: "clay texture, handmade feel, tactile",
+    negative: "smooth, digital, realistic"
+  },
+  'lego': {
+    prefix: "LEGO minifigure style, plastic toy",
+    suffix: "blocky construction, bright colors, toy-like",
+    negative: "realistic, organic, soft"
+  },
+  'jojos-bizarre': {
+    prefix: "JoJo's Bizarre Adventure manga style",
+    suffix: "dramatic poses, bold lines, flamboyant",
+    negative: "subtle, realistic, simple"
+  },
+  'knitted-yarn': {
+    prefix: "Knitted yarn art style, textile craft",
+    suffix: "soft textures, cozy feel, handmade",
+    negative: "hard, metallic, digital"
+  },
+  'rick-morty': {
+    prefix: "Rick and Morty cartoon style",
+    suffix: "simple lines, bright colors, quirky",
+    negative: "realistic, detailed, serious"
+  },
+  'kawaii-3d': {
+    prefix: "Kawaii 3D character style, cute anime",
+    suffix: "adorable features, pastel colors, chibi",
+    negative: "scary, dark, realistic"
+  },
+  'snoopy-comic': {
+    prefix: "Peanuts Snoopy comic strip style",
+    suffix: "simple lines, classic cartoon, wholesome",
+    negative: "complex, realistic, dark"
+  },
+  'minecraft': {
+    prefix: "Minecraft voxel style, blocky 3D",
+    suffix: "cubic shapes, pixelated textures, gaming",
+    negative: "smooth, realistic, rounded"
+  },
+  'vintage-oil-painting-anime': {
+    prefix: "Vintage oil painting anime style",
+    suffix: "classical art meets anime, elegant brushwork",
+    negative: "modern, digital, simple"
+  },
+  'watercolor': {
+    prefix: "Watercolor painting style, flowing colors",
+    suffix: "soft edges, transparent layers, artistic",
+    negative: "sharp, digital, realistic photo"
+  },
+  'acrylic': {
+    prefix: "Acrylic painting style, bold colors",
+    suffix: "thick paint texture, vibrant hues, artistic",
+    negative: "digital, transparent, muted"
+  },
+  'printmaking': {
+    prefix: "Printmaking art style, etching technique",
+    suffix: "carved lines, artistic impression, handcrafted",
+    negative: "digital, smooth, photographic"
+  },
+  'mosaic': {
+    prefix: "Mosaic art style, tile pattern",
+    suffix: "small colored pieces, ancient technique",
+    negative: "smooth, continuous, modern"
+  },
+  'fresco-mural': {
+    prefix: "Fresco mural painting style, wall art",
+    suffix: "large scale, classical technique, architectural",
+    negative: "small, modern, digital"
+  },
+  'abstract-art': {
+    prefix: "Abstract art style, non-representational",
+    suffix: "geometric forms, bold colors, artistic",
+    negative: "realistic, detailed, photographic"
+  },
+  'pop-art': {
+    prefix: "Pop art style, Andy Warhol inspired",
+    suffix: "bold colors, high contrast, commercial",
+    negative: "realistic, muted, traditional"
+  },
+  'magical-fantasy-anime': {
+    prefix: "Magical fantasy anime style, enchanted",
+    suffix: "mystical elements, glowing effects, ethereal",
+    negative: "realistic, modern, mundane"
+  },
+  'medieval-fantasy-anime': {
+    prefix: "Medieval fantasy anime style, knights",
+    suffix: "armor, castles, epic adventure, heroic",
+    negative: "modern, sci-fi, realistic"
+  },
+  'gothic-fantasy-anime': {
+    prefix: "Gothic fantasy anime style, dark romance",
+    suffix: "dramatic shadows, mysterious atmosphere",
+    negative: "bright, cheerful, realistic"
+  },
+  'cyberpunk-anime': {
+    prefix: "Cyberpunk anime style, futuristic neon",
+    suffix: "tech wear, neon lights, sci-fi aesthetic",
+    negative: "natural, traditional, rustic"
+  },
+  'steampunk-anime': {
+    prefix: "Steampunk anime style, Victorian sci-fi",
+    suffix: "brass gears, steam power, retro-futuristic",
+    negative: "modern, clean, minimalist"
+  },
+  'futuristic-scifi-anime': {
+    prefix: "Futuristic sci-fi anime style, space age",
+    suffix: "advanced technology, sleek design, cosmic",
+    negative: "ancient, primitive, realistic"
+  },
+  'tezuka-osamu': {
+    prefix: "Tezuka Osamu manga style, classic anime",
+    suffix: "expressive eyes, clean lines, vintage",
+    negative: "modern, realistic, complex"
+  },
+  'south-park': {
+    prefix: "South Park cartoon style, cut-out animation",
+    suffix: "simple shapes, flat colors, comedy",
+    negative: "realistic, detailed, serious"
+  },
+  'magical-girl-anime': {
+    prefix: "Magical girl anime style, sparkly transformation",
+    suffix: "cute outfits, magical powers, pastel colors",
+    negative: "dark, realistic, masculine"
+  },
+  'kemonomimi-furry-anime': {
+    prefix: "Kemonomimi furry anime style, animal features",
+    suffix: "cute ears, tail, anthropomorphic, adorable",
+    negative: "human only, realistic, serious"
+  },
+  'bauhaus': {
+    prefix: "Bauhaus design style, geometric modernism",
+    suffix: "clean lines, functional design, minimalist",
+    negative: "ornate, decorative, complex"
+  },
+  'glitch-art': {
+    prefix: "Glitch art style, digital corruption",
+    suffix: "pixelated errors, neon colors, cyberpunk",
+    negative: "clean, perfect, traditional"
+  },
+  'van-gogh': {
+    prefix: "Van Gogh painting style, post-impressionist",
+    suffix: "swirling brushstrokes, vibrant colors, expressive",
+    negative: "smooth, realistic, digital"
+  },
+  'picasso': {
+    prefix: "Picasso cubist style, fragmented forms",
+    suffix: "geometric shapes, multiple perspectives, abstract",
+    negative: "realistic, smooth, traditional"
+  },
+  'monet': {
+    prefix: "Claude Monet impressionist style",
+    suffix: "light effects, soft brushwork, atmospheric",
+    negative: "sharp, detailed, modern"
+  },
+  'childrens-crayon': {
+    prefix: "Children's crayon drawing style, innocent art",
+    suffix: "simple lines, bright colors, childlike",
+    negative: "sophisticated, realistic, dark"
+  },
+  'graffiti': {
+    prefix: "Graffiti street art style, urban expression",
+    suffix: "spray paint, bold letters, street culture",
+    negative: "clean, formal, traditional"
+  },
+  'sticker': {
+    prefix: "Sticker art style, adhesive graphics",
+    suffix: "bold outlines, simple shapes, graphic design",
+    negative: "complex, realistic, subtle"
+  },
+  'geometric-softness': {
+    prefix: "Geometric softness style, rounded shapes",
+    suffix: "soft geometry, pastel colors, modern design",
+    negative: "sharp, harsh, realistic"
+  },
+  'microtopia': {
+    prefix: "Microtopia miniature world style",
+    suffix: "tiny detailed scenes, macro photography feel",
+    negative: "large scale, simple, realistic"
   }
 };
 
@@ -112,7 +363,7 @@ const animeStylePrompts = {
  * @param {AbortSignal} abortSignal - Signal to abort the request
  * @returns {Promise} Generated image data
  */
-export async function generateWithFlux(imageBase64, style = 'disney', model = 'flux-pro', aspectRatio = '1:1', abortSignal = null) {
+export async function generateWithFlux(imageBase64, style = 'disney', model = 'flux-pro', aspectRatio = '1:1', abortSignal = null, customPrompt = null) {
   try {
     const styleConfig = animeStylePrompts[style] || animeStylePrompts.disney;
     
@@ -128,7 +379,12 @@ export async function generateWithFlux(imageBase64, style = 'disney', model = 'f
     // Remove data URL prefix if present
     const base64Only = base64Data.replace(/^data:image\/[a-z]+;base64,/, '');
     
-    const prompt = `Transform this photo into ${styleConfig.prefix} style, ${styleConfig.suffix}. Make it look like a professional ${style} animation character portrait.`;
+    let prompt;
+    if (customPrompt && style === 'custom') {
+      prompt = `Transform this photo with custom style: ${customPrompt}`;
+    } else {
+      prompt = `Transform this photo into ${styleConfig.prefix} style, ${styleConfig.suffix}. Make it look like a professional ${style} animation character portrait.`;
+    }
     
     // Use our backend proxy to avoid CORS issues
     const headers = {
@@ -221,10 +477,10 @@ export async function generateWithFlux(imageBase64, style = 'disney', model = 'f
  * @param {AbortSignal} abortSignal - Signal to abort the request
  * @returns {Promise} Generated image data
  */
-export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = 'flux-pro', aspectRatio = '1:1', abortSignal = null) {
+export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = 'flux-pro', aspectRatio = '1:1', abortSignal = null, customPrompt = null) {
   // Use Flux for image-to-image generation
   if (aiModel === 'flux-pro' || aiModel === 'flux-max') {
-    return await generateWithFlux(imageUrl, style, aiModel, aspectRatio, abortSignal);
+    return await generateWithFlux(imageUrl, style, aiModel, aspectRatio, abortSignal, customPrompt);
   }
   
   // Use GPT IMAGE for image-to-image generation
@@ -245,7 +501,12 @@ export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = '
       const base64Only = base64Data.replace(/^data:image\/[a-z]+;base64,/, '');
       
       // Construct the prompt for GPT IMAGE
-      const prompt = `Transform this photo into ${styleConfig.prefix} anime style, ${styleConfig.suffix}, high quality anime portrait, masterpiece`;
+      let prompt;
+      if (customPrompt && style === 'custom') {
+        prompt = `Transform this photo with custom style: ${customPrompt}`;
+      } else {
+        prompt = `Transform this photo into ${styleConfig.prefix} anime style, ${styleConfig.suffix}, high quality anime portrait, masterpiece`;
+      }
       
       // Setup headers
       const headers = {

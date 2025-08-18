@@ -18,7 +18,8 @@ import { ANIME_STYLES } from '../constants/anime.constants';
 import { useImageGeneration } from '../hooks/useImageGeneration';
 
 const AnimeGeneratorPage = () => {
-  const [selectedStyle, setSelectedStyle] = useState('studio-ghibli');
+  const [selectedStyle, setSelectedStyle] = useState('disney');
+  const [customStyle, setCustomStyle] = useState('');
   const [aiModel, setAiModel] = useState('flux-pro');
   const [aspectRatio, setAspectRatio] = useState('1:1');
   
@@ -35,7 +36,9 @@ const AnimeGeneratorPage = () => {
   } = useImageGeneration();
 
   const handleGenerate = () => {
-    generateImage(selectedStyle, aiModel, aspectRatio);
+    // Use custom style if provided, otherwise use selected style
+    const finalStyle = customStyle.trim() ? 'custom' : selectedStyle;
+    generateImage(finalStyle, aiModel, aspectRatio, customStyle.trim());
   };
 
   return (
@@ -84,6 +87,8 @@ const AnimeGeneratorPage = () => {
               styles={ANIME_STYLES}
               selectedStyle={selectedStyle}
               onStyleChange={setSelectedStyle}
+              customStyle={customStyle}
+              onCustomStyleChange={setCustomStyle}
             />
             
             <ModelSelector

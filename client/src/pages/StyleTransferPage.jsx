@@ -13,13 +13,14 @@ import SEO from '../components/SEO';
 import CreditDisplay from '../components/CreditDisplay';
 
 // Constants
-import { ANIME_STYLES } from '../constants/anime.constants';
+import { STYLE_TRANSFER_STYLES } from '../constants/styleTransfer.constants';
 
 // Hooks
 import { useImageGeneration } from '../hooks/useImageGeneration';
 
 const StyleTransferPage = () => {
   const [selectedStyle, setSelectedStyle] = useState('studio-ghibli');
+  const [customStyle, setCustomStyle] = useState('');
   const [aiModel, setAiModel] = useState('flux-pro');
   const [aspectRatio, setAspectRatio] = useState('match');
   
@@ -36,7 +37,9 @@ const StyleTransferPage = () => {
   } = useImageGeneration();
 
   const handleGenerate = () => {
-    generateImage(selectedStyle, aiModel, aspectRatio);
+    // Use custom style if provided, otherwise use selected style
+    const finalStyle = customStyle.trim() ? 'custom' : selectedStyle;
+    generateImage(finalStyle, aiModel, aspectRatio, customStyle.trim());
   };
 
   return (
@@ -86,9 +89,11 @@ const StyleTransferPage = () => {
             
             <div className="bg-white rounded-2xl shadow-sm p-6 h-fit">
               <StyleSelector 
-              styles={ANIME_STYLES}
+              styles={STYLE_TRANSFER_STYLES}
               selectedStyle={selectedStyle}
               onStyleChange={setSelectedStyle}
+              customStyle={customStyle}
+              onCustomStyleChange={setCustomStyle}
             />
             
             <ModelSelector
