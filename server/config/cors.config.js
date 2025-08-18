@@ -71,13 +71,10 @@ export const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = getAllowedOrigins();
     
-    // Allow requests with no origin (like mobile apps, Postman, etc.)
-    // Only in development or if explicitly allowed
+    // Allow requests with no origin (same-origin requests, mobile apps, Postman, etc.)
+    // This includes SPA requests to the same server
     if (!origin) {
-      if (process.env.NODE_ENV === 'development' || process.env.ALLOW_NO_ORIGIN === 'true') {
-        return callback(null, true);
-      }
-      return callback(new Error('No origin header present'), false);
+      return callback(null, true);
     }
     
     // Check if origin is allowed

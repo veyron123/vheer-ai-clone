@@ -107,18 +107,42 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
 });
 
+// Favicon route - prevent 500 errors
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end(); // No content
+});
+
 // Serve static files from client build in production
 if (process.env.NODE_ENV === 'production') {
   const clientBuildPath = path.join(__dirname, '../client/dist');
-  app.use(express.static(clientBuildPath));
+  
+  // Serve static assets with proper headers
+  app.use(express.static(clientBuildPath, {
+    maxAge: '1y', // Cache static assets for 1 year
+    setHeaders: (res, path) => {
+      // Don't cache HTML files
+      if (path.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      }
+    }
+  }));
   
   // Handle React Router (serve index.html for non-API routes)
-  app.get('*', (req, res) => {
+  app.get('*', (req, res, next) => {
     // Don't serve index.html for API routes
     if (req.path.startsWith('/api') || req.path.startsWith('/auth')) {
       return res.status(404).json({ error: 'API endpoint not found' });
     }
-    res.sendFile(path.join(clientBuildPath, 'index.html'));
+    
+    // Log the request for debugging
+    logger.debug('Serving SPA route', { path: req.path });
+    
+    try {
+      res.sendFile(path.join(clientBuildPath, 'index.html'));
+    } catch (error) {
+      logger.error('Failed to serve index.html', error);
+      next(error);
+    }
   });
 }
 
