@@ -82,11 +82,8 @@ const UniversalGenerateButton = ({
       {/* Login Prompt */}
       {!isAuthenticated && (
         <div className="text-center">
-          <p className="text-sm text-gray-600">
-            Sign in to start generating amazing AI images
-          </p>
-          <p className="text-xs text-yellow-600 font-medium">
-            ⭐ Get 100 free generations on signup!
+          <p className="text-sm text-yellow-600 font-medium">
+            ⭐ Get 100 free credits on signup!
           </p>
         </div>
       )}

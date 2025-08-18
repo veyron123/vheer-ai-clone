@@ -93,7 +93,9 @@ const PricingPage = () => {
                     <p className="text-lg font-medium">
                       {plan.credits} credits
                     </p>
-                    <p className="text-sm text-gray-600">per month</p>
+                    <p className="text-sm text-gray-600">
+                      {plan.id === 'FREE' ? 'per day' : 'per month'}
+                    </p>
                   </div>
 
                   {/* Features */}
@@ -159,7 +161,7 @@ const PricingPage = () => {
             <div className="card p-6">
               <h3 className="font-semibold mb-2">Is there a free trial?</h3>
               <p className="text-gray-600">
-                Yes! Every new user gets 10 free credits to try our service. No credit card required.
+                Yes! Every new user gets 100 free credits to try our service. No credit card required.
               </p>
             </div>
           </div>

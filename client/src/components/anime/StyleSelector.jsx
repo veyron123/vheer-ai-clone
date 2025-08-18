@@ -17,40 +17,42 @@ const StyleSelector = ({
         </button>
       </h3>
       
-      <div className="grid grid-cols-4 gap-2 mb-6 max-h-[400px] overflow-y-auto">
-        {styles.map((style) => (
-          <button
-            key={style.id}
-            onClick={() => onStyleChange(style.id)}
-            className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-              selectedStyle === style.id 
-                ? 'border-primary-500 shadow-lg scale-105' 
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
-          >
-            <img 
-              src={style.image} 
-              alt={`${style.name} AI art style - Transform photos to ${style.name} style`}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-1">
-              <p className="text-white text-[10px] leading-tight">{style.name}</p>
-            </div>
-          </button>
-        ))}
-      </div>
+      <div className="max-h-[320px] overflow-y-auto overflow-x-hidden mb-4">
+        <div className="grid grid-cols-4 gap-1.5">
+          {styles.map((style) => (
+            <button
+              key={style.id}
+              onClick={() => onStyleChange(style.id)}
+              className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all ${
+                selectedStyle === style.id 
+                  ? 'border-primary-500 shadow-md scale-[1.02]' 
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <img 
+                src={style.image} 
+                alt={`${style.name} AI art style - Transform photos to ${style.name} style`}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-0.5">
+                <p className="text-white text-[9px] leading-tight font-medium">{style.name}</p>
+              </div>
+            </button>
+          ))}
+        </div>
 
-      {/* Custom Style Section */}
-      <div className="mb-6">
-        <h4 className="text-sm font-medium text-gray-700 mb-2">Your Custom Style</h4>
-        <textarea
-          value={customStyle || ''}
-          onChange={(e) => onCustomStyleChange && onCustomStyleChange(e.target.value)}
-          placeholder="Input more details information here"
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-          rows={3}
-        />
+        {/* Custom Style Section - Inside scrollable area */}
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <h4 className="text-xs font-medium text-gray-700 mb-1.5">Your Custom Style</h4>
+          <textarea
+            value={customStyle || ''}
+            onChange={(e) => onCustomStyleChange && onCustomStyleChange(e.target.value)}
+            placeholder="Input more details information here"
+            className="w-full px-2.5 py-2 border border-gray-200 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-xs"
+            rows={2}
+          />
+        </div>
       </div>
     </>
   );

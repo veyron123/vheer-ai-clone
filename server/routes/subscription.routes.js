@@ -10,9 +10,9 @@ router.get('/plans', (req, res) => {
       id: 'FREE',
       name: 'Free',
       price: 0,
-      credits: 10,
+      credits: 100,
       features: [
-        '10 free credits daily',
+        '100 free credits daily',
         'Basic models',
         'Standard resolution',
         'Community support'

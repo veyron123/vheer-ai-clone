@@ -195,6 +195,11 @@ const animeStylePrompts = {
     suffix: "adorable features, pastel colors, chibi",
     negative: "scary, dark, realistic"
   },
+  '3d person': {
+    prefix: "3D character style, kawaii anime person",
+    suffix: "cute features, soft rendering, adorable design",
+    negative: "scary, dark, realistic, harsh"
+  },
   'snoopy-comic': {
     prefix: "Peanuts Snoopy comic strip style",
     suffix: "simple lines, classic cartoon, wholesome",
