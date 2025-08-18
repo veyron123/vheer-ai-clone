@@ -241,6 +241,9 @@ class FluxService extends BaseAIService {
    * Poll for generation result
    */
   async pollForResult(taskId, maxAttempts = 30) {
+    // Start with 3 second delay, increase on rate limit errors
+    let pollDelay = 3000;
+    
     for (let i = 0; i < maxAttempts; i++) {
       try {
         const response = await axios.get(`${this.statusUrl}?id=${taskId}`, {
@@ -257,13 +260,24 @@ class FluxService extends BaseAIService {
           throw new Error('Generation failed: ' + (response.data.error || 'Unknown error'));
         }
 
-        // Wait 2 seconds before next poll
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Wait before next poll
+        await new Promise(resolve => setTimeout(resolve, pollDelay));
       } catch (error) {
-        if (i === maxAttempts - 1) {
+        // Handle rate limiting
+        if (error.response?.status === 429) {
+          logger.warn('Rate limited, increasing poll delay', { 
+            attempt: i, 
+            currentDelay: pollDelay 
+          });
+          // Exponentially increase delay on rate limit
+          pollDelay = Math.min(pollDelay * 2, 10000); // Max 10 seconds
+          await new Promise(resolve => setTimeout(resolve, pollDelay));
+        } else if (i === maxAttempts - 1) {
           throw error;
+        } else {
+          // Continue polling on other transient errors
+          await new Promise(resolve => setTimeout(resolve, pollDelay));
         }
-        // Continue polling on transient errors
       }
     }
 

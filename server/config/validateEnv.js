@@ -1,27 +1,35 @@
-import dotenv from 'dotenv';
-
-// Load environment variables
-dotenv.config();
-
 /**
  * Validates required environment variables at startup
- * Fails fast if critical variables are missing
+ * More lenient in production to allow for different configuration methods
  */
 export function validateEnv() {
-  const requiredVars = {
+  // In production, Render might set env vars differently
+  // Check if we're in Render environment
+  const isRender = process.env.RENDER === 'true';
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  // Critical vars that must always exist
+  const criticalVars = {
     // Database
     DATABASE_URL: 'Database connection string',
     
     // Security
     JWT_SECRET: 'JWT secret for token generation',
-    
-    // API Keys (Production)
+  };
+  
+  // API Keys - in production these might come from Render Dashboard
+  // Only require them in development or if not on Render
+  const apiKeyVars = (!isProduction || !isRender) ? {
     FLUX_API_KEY: 'Flux AI API key',
     GPT_IMAGE_API_KEY: 'GPT Image API key',
     IMGBB_API_KEY: 'ImgBB storage API key',
-    
-    // URLs
-    CORS_ORIGIN: 'Allowed CORS origin',
+  } : {};
+  
+  const requiredVars = {
+    ...criticalVars,
+    ...apiKeyVars,
+    // URLs - only required in non-production
+    ...(isProduction ? {} : { CORS_ORIGIN: 'Allowed CORS origin' }),
   };
 
   const optionalVars = {

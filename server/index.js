@@ -25,12 +25,13 @@ import { errorHandler } from './middleware/error.middleware.js';
 import { checkDailyCredits } from './middleware/credit.middleware.js';
 import CreditCronJob from './jobs/creditCronJob.js';
 
-// Environment validation
+// Load environment variables first
+dotenv.config();
+
+// Environment validation and configuration
 import { validateEnv } from './config/validateEnv.js';
 import { corsOptions, securityHeaders } from './config/cors.config.js';
 import logger from './utils/logger.js';
-
-dotenv.config();
 
 // Validate environment variables at startup
 validateEnv();
