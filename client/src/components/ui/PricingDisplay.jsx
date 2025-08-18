@@ -17,7 +17,7 @@ const PricingDisplay = ({
 }) => {
   const user = useAuthStore(state => state.user);
   const pricing = getModelPricing(modelId);
-  const userCredits = user?.credits || 0;
+  const userCredits = user?.totalCredits || 0;
   const canAfford = canAffordGeneration(userCredits, modelId);
 
   // Format the pricing text to match screenshot: "20 / image, faster & better"
