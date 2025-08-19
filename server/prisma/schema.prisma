@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL")
 }
 
 model User {
@@ -31,6 +32,8 @@ model User {
   credits         Credit[]
   payments        Payment[]
   favorites       Favorite[]
+
+  @@map("colibrrri_users")
 }
 
 model Subscription {
@@ -44,6 +47,8 @@ model Subscription {
   stripeSubscriptionId String? @unique
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  
+  @@map("colibrrri_subscriptions")
 }
 
 model Credit {
@@ -54,6 +59,8 @@ model Credit {
   type            String
   description     String?
   createdAt       DateTime  @default(now())
+  
+  @@map("colibrrri_credits")
 }
 
 model Image {
@@ -81,6 +88,8 @@ model Image {
   generationId    String
   favorites       Favorite[]
   tags            Tag[]
+
+  @@map("colibrrri_images")
 }
 
 model Generation {
@@ -99,6 +108,8 @@ model Generation {
   completedAt     DateTime?
   
   images          Image[]
+
+  @@map("colibrrri_generations")
 }
 
 model Favorite {
@@ -110,6 +121,7 @@ model Favorite {
   createdAt       DateTime  @default(now())
   
   @@unique([userId, imageId])
+  @@map("colibrrri_favorites")
 }
 
 model Payment {
@@ -122,6 +134,8 @@ model Payment {
   stripePaymentId String?   @unique
   description     String?
   createdAt       DateTime  @default(now())
+
+  @@map("colibrrri_payments")
 }
 
 model Tag {
@@ -129,5 +143,7 @@ model Tag {
   name            String    @unique
   images          Image[]
   createdAt       DateTime  @default(now())
+
+  @@map("colibrrri_tags")
 }
 
