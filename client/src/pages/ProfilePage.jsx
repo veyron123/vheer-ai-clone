@@ -110,12 +110,16 @@ const ProfilePage = () => {
   const cancelSubscriptionMutation = useMutation(
     () => api.post('/payments/wayforpay/cancel'),
     {
-      onSuccess: () => {
+      onSuccess: (response) => {
         toast.success(t('subscription.cancel_success'));
+        // Update user data immediately with the response
+        if (response.data.user) {
+          updateUser(response.data.user);
+        }
         queryClient.invalidateQueries(['user']);
       },
       onError: (error) => {
-        toast.error(error.response?.data?.error || t('subscription.cancel_error'));
+        toast.error(error.response?.data?.message || error.response?.data?.error || t('subscription.cancel_error'));
       }
     }
   );
@@ -283,10 +287,19 @@ const ProfilePage = () => {
                     <span className="font-medium text-primary-600">{t('header.credits', { count: user?.totalCredits || 0 })}</span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <div className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full font-medium">
-                      {t('header.plan', { plan: user?.subscription?.plan || 'FREE' })}
+                    <div className={`px-3 py-1 rounded-full font-medium ${
+                      user?.subscription?.status === 'CANCELLED' 
+                        ? 'bg-gray-100 text-gray-700' 
+                        : 'bg-primary-100 text-primary-700'
+                    }`}>
+                      {user?.subscription?.status === 'CANCELLED' 
+                        ? t('header.plan_cancelled', { plan: user?.subscription?.plan || 'FREE' })
+                        : t('header.plan', { plan: user?.subscription?.plan || 'FREE' })
+                      }
                     </div>
-                    {user?.subscription?.plan && user?.subscription?.plan !== 'FREE' && (
+                    {user?.subscription?.plan && 
+                     user?.subscription?.plan !== 'FREE' && 
+                     user?.subscription?.status === 'ACTIVE' && (
                       <button
                         onClick={handleCancelSubscription}
                         disabled={cancelSubscriptionMutation.isLoading}

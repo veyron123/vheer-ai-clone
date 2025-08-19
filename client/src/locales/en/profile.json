@@ -97,6 +97,7 @@
   },
   "header": {
     "plan": "{{plan}} Plan",
+    "plan_cancelled": "{{plan}} Plan (cancelled)",
     "credits": "{{count}} Credits",
     "images_count": "{{count}} Images"
   },

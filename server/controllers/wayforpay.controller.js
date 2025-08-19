@@ -451,32 +451,59 @@ export const cancelSubscription = async (req, res) => {
   try {
     const userId = req.user.id;
     
+    console.log(`🔄 Attempting to cancel subscription for user: ${userId}`);
+    
     const subscription = await prisma.subscription.findUnique({
       where: { userId }
     });
     
     if (!subscription) {
+      console.log('❌ No subscription found for user');
       return res.status(404).json({ 
         success: false, 
         message: 'No active subscription found' 
       });
     }
     
+    if (subscription.status !== 'ACTIVE') {
+      console.log(`❌ Subscription already ${subscription.status}`);
+      return res.status(400).json({
+        success: false,
+        message: `Subscription is already ${subscription.status.toLowerCase()}`
+      });
+    }
+    
+    console.log(`🎯 Cancelling ${subscription.plan} subscription...`);
+    
     // Update subscription status
-    await prisma.subscription.update({
+    const updatedSubscription = await prisma.subscription.update({
       where: { userId },
       data: {
-        status: 'CANCELLED'
+        status: 'CANCELLED',
+        cancelledAt: new Date()
       }
     });
     
+    console.log('✅ Subscription status updated to CANCELLED in database');
+    
+    // Get updated user data with subscription
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { subscription: true }
+    });
+    
+    console.log('🔄 TODO: Implement WayForPay subscription cancellation API call');
+    // TODO: Add WayForPay API call here to cancel recurring payments
+    // This requires WayForPay recurring payment cancellation endpoint
+    
     res.json({
       success: true,
-      message: 'Subscription cancelled successfully'
+      message: 'Subscription cancelled successfully',
+      user: updatedUser
     });
     
   } catch (error) {
-    console.error('Cancellation error:', error);
+    console.error('❌ Cancellation error:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Failed to cancel subscription' 

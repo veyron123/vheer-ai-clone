@@ -97,6 +97,7 @@
   },
   "header": {
     "plan": "План {{plan}}",
+    "plan_cancelled": "План {{plan}} (скасовано)",
     "credits": "{{count}} кредитів",
     "images_count": "{{count}} зображень"
   },
