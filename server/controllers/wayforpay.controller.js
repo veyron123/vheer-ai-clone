@@ -174,6 +174,7 @@ export const handleCallback = async (req, res) => {
     }
     
     console.log('Processed callback data:', JSON.stringify(callbackData, null, 2));
+    console.log('Available fields in callbackData:', Object.keys(callbackData));
     
     const {
       orderReference,
@@ -191,6 +192,23 @@ export const handleCallback = async (req, res) => {
       clientFirstName,
       clientLastName
     } = callbackData;
+    
+    console.log('🔍 Extracted field values:', {
+      orderReference,
+      status, 
+      time,
+      signature,
+      amount,
+      currency,
+      transactionStatus,
+      reasonCode,
+      reason,
+      authCode,
+      cardPan,
+      clientEmail,
+      clientFirstName,
+      clientLastName
+    });
     
     // Verify signature for callback
     const expectedSignature = generateCallbackSignature({
