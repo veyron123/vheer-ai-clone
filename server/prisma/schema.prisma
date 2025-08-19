@@ -127,15 +127,16 @@ model Favorite {
 }
 
 model Payment {
-  id              String    @id @default(cuid())
-  userId          String
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  amount          Float
-  currency        String    @default("USD")
-  status          String
-  stripePaymentId String?   @unique
-  description     String?
-  createdAt       DateTime  @default(now())
+  id                      String    @id @default(cuid())
+  userId                  String
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount                  Float
+  currency                String    @default("USD")
+  status                  String
+  stripePaymentId         String?   @unique
+  wayforpayOrderReference String?   @unique
+  description             String?
+  createdAt               DateTime  @default(now())
 
   @@map("colibrrri_payments")
 }

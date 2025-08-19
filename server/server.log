@@ -61,3 +61,36 @@ Emitted 'error' event on Server instance at:
 
 Node.js v22.17.1
 [31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+NODE_ENV: development
+🟢 Cloudinary configured for production storage
+Flux API configuration: {
+  FLUX_API_KEY: 'Set (2f58d1ef...)',
+  FLUX_API_URL: 'https://api.bfl.ai/v1/flux-kontext-pro',
+  NODE_ENV: 'development'
+}
+GPT Image API configuration: {
+  GPT_IMAGE_API_KEY: 'Set',
+  GPT_IMAGE_API_URL: 'https://api.kie.ai/api/v1/gpt4o-image/generate',
+  IMGBB_API_KEY: 'Set',
+  NODE_ENV: 'development'
+}
+🔧 Environment Configuration Check
+===================================
+
+🚨 Missing Required Environment Variables:
+❌ CORS_ORIGIN: Allowed CORS origin
+
+⚠️  Running in development mode with missing variables. Some features may not work.
+
+📝 Optional environment variables not set:
+⚠️  GPTIMAGE_API_URL: GPT Image API endpoint
+⚠️  BASE_URL: Base URL of the application
+===================================
+
+✅ Credit cron jobs initialized successfully
+📅 Daily credits will be added at 00:00 UTC every day
+🔄 Additional checks every 6 hours
+[2025-08-19T15:29:00.488Z] [INFO] Server started {"port":5000,"environment":"development","nodeVersion":"v22.17.1"}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m

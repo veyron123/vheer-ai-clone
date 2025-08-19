@@ -330,6 +330,31 @@ export const handleCallback = async (req, res) => {
       console.log('✅ Created new user:', user.id, userEmail);
     }
     
+    // Check if this orderReference has already been processed to prevent duplicates
+    console.log('🔍 Checking for duplicate orderReference:', orderReference);
+    const existingPayment = await prisma.payment.findFirst({
+      where: { 
+        wayforpayOrderReference: orderReference,
+        status: 'COMPLETED'
+      }
+    });
+    
+    if (existingPayment) {
+      console.log('⚠️  DUPLICATE DETECTED! OrderReference already processed:', orderReference);
+      console.log('   Existing payment ID:', existingPayment.id);
+      console.log('   Existing payment date:', existingPayment.createdAt);
+      
+      // Send success response to WayForPay to acknowledge receipt
+      const responseData = {
+        orderReference,
+        status: 'accept',
+        time: Math.floor(Date.now() / 1000)
+      };
+      
+      console.log('📤 Sending acknowledge response for duplicate:', responseData);
+      return res.json(responseData);
+    }
+    
     // Create payment record
     const payment = await prisma.payment.create({
       data: {
@@ -337,7 +362,8 @@ export const handleCallback = async (req, res) => {
         amount: parseFloat(amount),
         currency,
         status: transactionStatus === 'Approved' ? 'COMPLETED' : 'FAILED',
-        description: `WayForPay payment - ${orderReference}`
+        description: `WayForPay payment - ${orderReference}`,
+        wayforpayOrderReference: orderReference
       }
     });
     
