@@ -140,20 +140,39 @@ export const handleCallback = async (req, res) => {
     console.log('=== WayForPay Callback Received ===');
     console.log('Request body:', JSON.stringify(req.body, null, 2));
     
+    // WayForPay sends data in a strange format - extract the JSON string from the key
+    let callbackData;
+    
+    // Check if data comes as JSON string in the key (common WayForPay format)
+    const bodyKeys = Object.keys(req.body);
+    if (bodyKeys.length === 1 && bodyKeys[0].startsWith('{')) {
+      try {
+        callbackData = JSON.parse(bodyKeys[0]);
+        console.log('✅ Parsed callback data from JSON key');
+      } catch (parseError) {
+        console.log('❌ Failed to parse JSON from key, using req.body directly');
+        callbackData = req.body;
+      }
+    } else {
+      callbackData = req.body;
+    }
+    
+    console.log('Processed callback data:', JSON.stringify(callbackData, null, 2));
+    
     const {
       orderReference,
       status,
       time,
-      signature,
+      merchantSignature: signature,
       amount,
       currency,
       transactionStatus,
       reasonCode,
       reason,
-      clientEmail,
+      email: clientEmail,
       clientFirstName,
       clientLastName
-    } = req.body;
+    } = callbackData;
     
     // Verify signature for callback
     const expectedSignature = generateCallbackSignature({
