@@ -501,28 +501,45 @@ export const cancelSubscription = async (req, res) => {
     }
     
     console.log(`🎯 Cancelling ${subscription.plan} subscription...`);
+    console.log(`📊 Before update - Status: ${subscription.status}, Plan: ${subscription.plan}`);
     
-    // Update subscription status and plan
-    const updatedSubscription = await prisma.subscription.update({
-      where: { userId },
-      data: {
-        status: 'CANCELLED',
-        plan: 'FREE',
-        cancelledAt: new Date()
+    // Use transaction to ensure atomic database update
+    const result = await prisma.$transaction(async (tx) => {
+      // Update subscription status and plan atomically
+      const updatedSubscription = await tx.subscription.update({
+        where: { userId },
+        data: {
+          status: 'CANCELLED',
+          plan: 'FREE',
+          cancelledAt: new Date()
+        }
+      });
+      
+      console.log(`📊 After update - Status: ${updatedSubscription.status}, Plan: ${updatedSubscription.plan}`);
+      console.log('✅ Subscription status updated to CANCELLED in database');
+      
+      // Get updated user data with subscription
+      const updatedUser = await tx.user.findUnique({
+        where: { id: userId },
+        include: { subscription: true }
+      });
+      
+      // Verify the update was successful
+      if (updatedUser.subscription.status !== 'CANCELLED' || updatedUser.subscription.plan !== 'FREE') {
+        console.error('❌ Database update verification failed!');
+        console.error(`   Expected: Status=CANCELLED, Plan=FREE`);
+        console.error(`   Actual: Status=${updatedUser.subscription.status}, Plan=${updatedUser.subscription.plan}`);
+        throw new Error('Subscription update verification failed');
       }
-    });
-    
-    console.log('✅ Subscription status updated to CANCELLED in database');
-    
-    // Get updated user data with subscription
-    const updatedUser = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { subscription: true }
+      
+      console.log('✅ Database update verification successful');
+      return { updatedSubscription, updatedUser };
     });
     
     console.log('🔄 Attempting to cancel WayForPay subscription...');
     
     // WayForPay subscription cancellation API call using REMOVE request
+    let wayforpaySuccess = false;
     try {
       const orderReference = subscription.wayforpayOrderReference;
       
@@ -562,6 +579,7 @@ export const cancelSubscription = async (req, res) => {
         
         if (responseData.reasonCode === 4100 && responseData.reason === 'Ok') {
           console.log('✅ WayForPay subscription successfully cancelled');
+          wayforpaySuccess = true;
         } else {
           console.log('❌ WayForPay cancellation failed:', responseData.reason);
           console.log('- Local subscription cancelled but WayForPay subscription may still be active');
@@ -573,14 +591,41 @@ export const cancelSubscription = async (req, res) => {
       console.log('- Local subscription cancelled but WayForPay API call failed');
     }
     
+    // Final verification log
+    console.log('🏁 Final cancellation result:');
+    console.log(`   ✅ Database: Status=${result.updatedUser.subscription.status}, Plan=${result.updatedUser.subscription.plan}`);
+    console.log(`   ${wayforpaySuccess ? '✅' : '❌'} WayForPay: ${wayforpaySuccess ? 'Successfully cancelled' : 'Failed or no orderReference'}`);
+    
     res.json({
       success: true,
       message: 'Subscription cancelled successfully',
-      user: updatedUser
+      user: result.updatedUser
     });
     
   } catch (error) {
     console.error('❌ Cancellation error:', error);
+    
+    // If there was a database transaction error, try to clean up any partial state
+    try {
+      const subscription = await prisma.subscription.findUnique({
+        where: { userId: req.user.id }
+      });
+      
+      if (subscription && subscription.cancelledAt && subscription.status === 'ACTIVE') {
+        console.log('🔧 Detected partial cancellation - attempting cleanup...');
+        await prisma.subscription.update({
+          where: { userId: req.user.id },
+          data: {
+            status: 'CANCELLED',
+            plan: 'FREE'
+          }
+        });
+        console.log('✅ Cleanup successful - subscription properly cancelled');
+      }
+    } catch (cleanupError) {
+      console.error('❌ Cleanup failed:', cleanupError);
+    }
+    
     res.status(500).json({ 
       success: false, 
       message: 'Failed to cancel subscription' 
