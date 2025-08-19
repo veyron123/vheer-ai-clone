@@ -34,13 +34,29 @@ const PLAN_CONFIG = {
  * Generate signature for WayForPay callback verification
  */
 const generateCallbackSignature = (data) => {
-  // WayForPay callback signature format
+  // WayForPay callback signature format: merchantAccount, orderReference, amount, currency, authCode, cardPan, transactionStatus, reasonCode
   const signString = [
-    MERCHANT_LOGIN,
+    MERCHANT_LOGIN, // merchantAccount
     data.orderReference,
     data.amount,
-    data.currency
+    data.currency,
+    data.authCode || '',
+    data.cardPan || '',
+    data.transactionStatus,
+    data.reasonCode
   ].join(';');
+  
+  console.log('🔐 Generating callback signature with fields:', {
+    merchantAccount: MERCHANT_LOGIN,
+    orderReference: data.orderReference,
+    amount: data.amount,
+    currency: data.currency,
+    authCode: data.authCode || '',
+    cardPan: data.cardPan || '',
+    transactionStatus: data.transactionStatus,
+    reasonCode: data.reasonCode,
+    signString
+  });
   
   return crypto.createHmac('md5', MERCHANT_SECRET)
     .update(signString)
@@ -169,6 +185,8 @@ export const handleCallback = async (req, res) => {
       transactionStatus,
       reasonCode,
       reason,
+      authCode,
+      cardPan,
       email: clientEmail,
       clientFirstName,
       clientLastName
@@ -178,7 +196,11 @@ export const handleCallback = async (req, res) => {
     const expectedSignature = generateCallbackSignature({
       orderReference,
       amount,
-      currency
+      currency,
+      authCode,
+      cardPan,
+      transactionStatus,
+      reasonCode
     });
     
     console.log('Signature verification:', {
@@ -187,6 +209,10 @@ export const handleCallback = async (req, res) => {
       orderReference,
       amount,
       currency,
+      authCode,
+      cardPan,
+      transactionStatus,
+      reasonCode,
       match: signature === expectedSignature
     });
     
