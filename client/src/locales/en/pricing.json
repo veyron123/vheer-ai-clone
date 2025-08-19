@@ -21,7 +21,7 @@
     "basic": {
       "name": "Basic", 
       "features": [
-        "100 credits monthly",
+        "800 credits monthly",
         "All models",
         "HD resolution",
         "Priority support",
@@ -31,7 +31,7 @@
     "pro": {
       "name": "Pro",
       "features": [
-        "500 credits monthly",
+        "3000 credits monthly",
         "All models",
         "4K resolution", 
         "Priority processing",
@@ -40,9 +40,9 @@
       ]
     },
     "enterprise": {
-      "name": "Enterprise",
+      "name": "Maximum",
       "features": [
-        "2000 credits monthly",
+        "15000 credits monthly",
         "Custom models",
         "Unlimited resolution",
         "Dedicated support",
