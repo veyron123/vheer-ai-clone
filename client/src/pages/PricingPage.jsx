@@ -143,6 +143,13 @@ const PricingPage = () => {
                   >
                     {plan.id === 'FREE' ? t('getStarted') : t('upgradeNow')}
                   </button>
+                  
+                  {/* Auto-renew text for paid plans */}
+                  {plan.id !== 'FREE' && (
+                    <p className="text-xs text-gray-500 text-center mt-2">
+                      Auto-Renew. Cancel Anytime
+                    </p>
+                  )}
                 </div>
               </motion.div>
             );
