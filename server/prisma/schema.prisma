@@ -45,6 +45,7 @@ model Subscription {
   currentPeriodEnd DateTime?
   stripeCustomerId String?  @unique
   stripeSubscriptionId String? @unique
+  wayforpayOrderReference String? // WayForPay orderReference for cancellation
   cancelledAt     DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -147,4 +148,3 @@ model Tag {
 
   @@map("colibrrri_tags")
 }
-

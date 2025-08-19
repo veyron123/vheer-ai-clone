@@ -83,6 +83,31 @@ const generateSignature = (data) => {
 };
 
 /**
+ * Generate signature for WayForPay REMOVE request
+ */
+const generateRemoveSignature = (orderReference) => {
+  // For REMOVE request: requestType, merchantAccount, merchantPassword, orderReference
+  const signString = [
+    'REMOVE',
+    MERCHANT_LOGIN,
+    MERCHANT_PASSWORD,
+    orderReference
+  ].join(';');
+  
+  console.log('🔐 Generating REMOVE signature with fields:', {
+    requestType: 'REMOVE',
+    merchantAccount: MERCHANT_LOGIN,
+    merchantPassword: '[MASKED]',
+    orderReference,
+    signString: signString.replace(MERCHANT_PASSWORD, '[MASKED]')
+  });
+  
+  return crypto.createHmac('md5', MERCHANT_SECRET)
+    .update(signString)
+    .digest('hex');
+};
+
+/**
  * Initialize payment for subscription
  */
 export const initializePayment = async (req, res) => {
@@ -329,19 +354,21 @@ export const handleCallback = async (req, res) => {
       
       console.log(`💰 Processing payment: ${planType} plan, ${credits} credits`);
       
-      // Update user subscription
+      // Update user subscription and save orderReference for future cancellation
       await prisma.subscription.upsert({
         where: { userId: user.id },
         update: {
           plan: planType,
           status: 'ACTIVE',
-          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+          wayforpayOrderReference: orderReference
         },
         create: {
           userId: user.id,
           plan: planType,
           status: 'ACTIVE',
-          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          wayforpayOrderReference: orderReference
         }
       });
       
@@ -495,34 +522,55 @@ export const cancelSubscription = async (req, res) => {
     
     console.log('🔄 Attempting to cancel WayForPay subscription...');
     
-    // WayForPay subscription cancellation API call
+    // WayForPay subscription cancellation API call using REMOVE request
     try {
-      // Note: This requires the subscription ID from WayForPay
-      // For now, we log this as a TODO until we implement the full API call
-      console.log('⚠️ WayForPay API call needed:');
-      console.log('- Endpoint: https://api.wayforpay.com/regularApi');
-      console.log('- Method: Delete recurrent payment');
-      console.log('- Required: merchant login, subscription ID, signature');
-      console.log('- Current status: Not implemented - WayForPay subscription remains active');
+      const orderReference = subscription.wayforpayOrderReference;
       
-      // TODO: Implement actual WayForPay API call
-      /*
-      const wayforpayResponse = await fetch('https://api.wayforpay.com/regularApi', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          transactionType: 'DELETE_SUBSCRIPTION',
+      if (!orderReference) {
+        console.log('⚠️ No WayForPay orderReference found for this subscription');
+        console.log('- This subscription may be from before orderReference storage was implemented');
+        console.log('- Subscription cancelled in database but WayForPay payment remains active');
+      } else {
+        console.log(`🎯 Cancelling WayForPay subscription with orderReference: ${orderReference}`);
+        
+        // Generate signature for REMOVE request
+        const merchantSignature = generateRemoveSignature(orderReference);
+        
+        const removeRequestData = {
+          requestType: 'REMOVE',
           merchantAccount: MERCHANT_LOGIN,
-          orderReference: subscription.wayforpaySubscriptionId, // Need to store this
-          merchantSignature: generateSubscriptionSignature(...)
-        })
-      });
-      */
+          merchantPassword: MERCHANT_PASSWORD,
+          orderReference: orderReference,
+          merchantSignature: merchantSignature
+        };
+        
+        console.log('📤 Sending REMOVE request to WayForPay:', {
+          ...removeRequestData,
+          merchantPassword: '[MASKED]'
+        });
+        
+        const wayforpayResponse = await fetch('https://api.wayforpay.com/regularApi', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(removeRequestData)
+        });
+        
+        const responseData = await wayforpayResponse.json();
+        console.log('📥 WayForPay REMOVE response:', responseData);
+        
+        if (responseData.reasonCode === 4100 && responseData.reason === 'Ok') {
+          console.log('✅ WayForPay subscription successfully cancelled');
+        } else {
+          console.log('❌ WayForPay cancellation failed:', responseData.reason);
+          console.log('- Local subscription cancelled but WayForPay subscription may still be active');
+        }
+      }
       
     } catch (error) {
       console.error('❌ WayForPay cancellation error:', error);
+      console.log('- Local subscription cancelled but WayForPay API call failed');
     }
     
     res.json({

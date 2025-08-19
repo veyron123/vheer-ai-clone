@@ -11,11 +11,17 @@ model User {
   id              String    @id @default(cuid())
   email           String    @unique
   username        String    @unique
-  password        String
+  password        String?
   fullName        String?
   avatar          String?
   bio             String?
+  website         String?
+  location        String?
+  totalCredits    Int       @default(100)
+  lastCreditUpdate DateTime  @default(now())
   emailVerified   Boolean   @default(false)
+  googleId        String?   @unique
+  facebookId      String?   @unique
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   
@@ -25,19 +31,25 @@ model User {
   credits         Credit[]
   payments        Payment[]
   favorites       Favorite[]
+
+  @@map("colibrrri_users")
 }
 
 model Subscription {
   id              String    @id @default(cuid())
   userId          String    @unique
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan            Plan      @default(FREE)
-  status          Status    @default(ACTIVE)
+  plan            String    @default("FREE")
+  status          String    @default("ACTIVE")
   currentPeriodEnd DateTime?
   stripeCustomerId String?  @unique
   stripeSubscriptionId String? @unique
+  wayforpayOrderReference String? // WayForPay orderReference for cancellation
+  cancelledAt     DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  
+  @@map("colibrrri_subscriptions")
 }
 
 model Credit {
@@ -45,9 +57,11 @@ model Credit {
   userId          String
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   amount          Int
-  type            CreditType
+  type            String
   description     String?
   createdAt       DateTime  @default(now())
+  
+  @@map("colibrrri_credits")
 }
 
 model Image {
@@ -56,6 +70,7 @@ model Image {
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   url             String
   thumbnailUrl    String?
+  cloudPath       String?   // Path for cloud storage deletion (Cloudinary public_id, S3 key, etc.)
   prompt          String
   negativePrompt  String?
   model           String
@@ -74,6 +89,8 @@ model Image {
   generationId    String
   favorites       Favorite[]
   tags            Tag[]
+
+  @@map("colibrrri_images")
 }
 
 model Generation {
@@ -85,13 +102,15 @@ model Generation {
   model           String
   style           String?
   batchSize       Int       @default(1)
-  status          GenerationStatus @default(PENDING)
+  status          String @default("PENDING")
   error           String?
   creditsUsed     Int
   createdAt       DateTime  @default(now())
   completedAt     DateTime?
   
   images          Image[]
+
+  @@map("colibrrri_generations")
 }
 
 model Favorite {
@@ -103,6 +122,7 @@ model Favorite {
   createdAt       DateTime  @default(now())
   
   @@unique([userId, imageId])
+  @@map("colibrrri_favorites")
 }
 
 model Payment {
@@ -111,10 +131,12 @@ model Payment {
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   amount          Float
   currency        String    @default("USD")
-  status          PaymentStatus
+  status          String
   stripePaymentId String?   @unique
   description     String?
   createdAt       DateTime  @default(now())
+
+  @@map("colibrrri_payments")
 }
 
 model Tag {
@@ -122,41 +144,6 @@ model Tag {
   name            String    @unique
   images          Image[]
   createdAt       DateTime  @default(now())
-}
 
-enum Plan {
-  FREE
-  BASIC
-  PRO
-  ENTERPRISE
-}
-
-enum Status {
-  ACTIVE
-  INACTIVE
-  CANCELLED
-  EXPIRED
-}
-
-enum CreditType {
-  PURCHASE
-  BONUS
-  REFUND
-  USAGE
-  SUBSCRIPTION
-}
-
-enum GenerationStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  FAILED
-  CANCELLED
-}
-
-enum PaymentStatus {
-  PENDING
-  COMPLETED
-  FAILED
-  REFUNDED
+  @@map("colibrrri_tags")
 }
