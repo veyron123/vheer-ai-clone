@@ -22,8 +22,10 @@ import {
   Calendar,
   Clock,
   Zap,
-  BarChart3
+  BarChart3,
+  X
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import toast from 'react-hot-toast';
@@ -31,6 +33,7 @@ import DangerZone from '../components/profile/DangerZone';
 
 const ProfilePage = () => {
   const { user, logout, updateUser } = useAuthStore();
+  const { t } = useTranslation('profile');
   const [activeTab, setActiveTab] = useState('images');
   const [settingsForm, setSettingsForm] = useState({
     fullName: '',
@@ -93,12 +96,26 @@ const ProfilePage = () => {
     (data) => api.patch('/users/profile', data),
     {
       onSuccess: (response) => {
-        toast.success('Settings saved!');
+        toast.success(t('settings.messages.save_success'));
         updateUser(response.data.user);
         queryClient.invalidateQueries(['user']);
       },
       onError: (error) => {
-        toast.error(error.response?.data?.error || 'Error saving settings');
+        toast.error(error.response?.data?.error || t('settings.messages.save_error'));
+      }
+    }
+  );
+
+  // Cancel subscription mutation
+  const cancelSubscriptionMutation = useMutation(
+    () => api.post('/payments/wayforpay/cancel'),
+    {
+      onSuccess: () => {
+        toast.success(t('subscription.cancel_success'));
+        queryClient.invalidateQueries(['user']);
+      },
+      onError: (error) => {
+        toast.error(error.response?.data?.error || t('subscription.cancel_error'));
       }
     }
   );
@@ -106,23 +123,30 @@ const ProfilePage = () => {
   const handleToggleVisibility = async (imageId, isPublic) => {
     try {
       await api.patch(`/images/${imageId}/visibility`, { isPublic });
-      toast.success(`Image ${isPublic ? 'published' : 'made private'}`);
+      const action = isPublic ? 'публічним' : 'приватним';
+      toast.success(t('images.visibility_success', { action }));
       refetchImages();
     } catch (error) {
-      toast.error('Failed to update image visibility');
+      toast.error(t('images.error'));
     }
   };
 
   const handleDeleteImage = async (imageId) => {
-    if (!window.confirm('Are you sure you want to delete this image?')) return;
+    if (!window.confirm(t('images.delete_confirm'))) return;
     
     try {
       await api.delete(`/images/${imageId}`);
-      toast.success('Image deleted');
+      toast.success(t('images.delete_success'));
       refetchImages();
     } catch (error) {
-      toast.error('Error deleting image');
+      toast.error(t('images.error'));
     }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!window.confirm(t('subscription.cancel_confirm'))) return;
+    
+    cancelSubscriptionMutation.mutate();
   };
 
   const downloadImage = async (imageUrl, filename = 'image.png') => {
@@ -183,7 +207,7 @@ const ProfilePage = () => {
   const handleRegenerateImage = async (generationId) => {
     try {
       await api.post(`/generate/${generationId}/regenerate`);
-      toast.success('Regenerating image...');
+      toast.success(t('generations.details.regenerate') + '...');
       refetchGenerations();
     } catch (error) {
       toast.error('Failed to regenerate image');
@@ -191,11 +215,11 @@ const ProfilePage = () => {
   };
 
   const handleDeleteGeneration = async (generationId) => {
-    if (!window.confirm('Are you sure you want to delete this generation?')) return;
+    if (!window.confirm(t('generations.delete_confirm'))) return;
     
     try {
       await api.delete(`/generate/${generationId}`);
-      toast.success('Generation deleted');
+      toast.success(t('generations.details.delete') + 'd');
       refetchGenerations();
     } catch (error) {
       toast.error('Failed to delete generation');
@@ -231,9 +255,9 @@ const ProfilePage = () => {
   };
 
   const tabs = [
-    { id: 'images', label: 'My Images', icon: Image },
-    { id: 'generations', label: 'Generation History', icon: Grid3x3 },
-    { id: 'settings', label: 'Settings', icon: Settings }
+    { id: 'images', label: t('tabs.images'), icon: Image },
+    { id: 'generations', label: t('tabs.generations'), icon: Grid3x3 },
+    { id: 'settings', label: t('tabs.settings'), icon: Settings }
   ];
 
   return (
@@ -252,14 +276,27 @@ const ProfilePage = () => {
                 <div className="flex items-center space-x-6 text-sm">
                   <div className="flex items-center space-x-2">
                     <Image className="w-4 h-4 text-gray-500" />
-                    <span>{imagesData?.images?.length || 0} Images</span>
+                    <span>{t('header.images_count', { count: imagesData?.images?.length || 0 })}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <CreditCard className="w-4 h-4 text-gray-500" />
-                    <span className="font-medium text-primary-600">{user?.totalCredits || 0} Credits</span>
+                    <span className="font-medium text-primary-600">{t('header.credits', { count: user?.totalCredits || 0 })}</span>
                   </div>
-                  <div className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full font-medium">
-                    {user?.subscription?.plan || 'FREE'} Plan
+                  <div className="flex items-center space-x-3">
+                    <div className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full font-medium">
+                      {t('header.plan', { plan: user?.subscription?.plan || 'FREE' })}
+                    </div>
+                    {user?.subscription?.plan && user?.subscription?.plan !== 'FREE' && (
+                      <button
+                        onClick={handleCancelSubscription}
+                        disabled={cancelSubscriptionMutation.isLoading}
+                        className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium hover:bg-red-200 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                        title={t('subscription.cancel_button')}
+                      >
+                        <X className="w-3 h-3" />
+                        <span>{t('subscription.cancel_button')}</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -293,12 +330,12 @@ const ProfilePage = () => {
               {imagesLoading ? (
                 <div className="flex justify-center items-center py-20">
                   <Loader className="w-8 h-8 animate-spin text-primary-500" />
-                  <span className="ml-2 text-gray-600">Loading images...</span>
+                  <span className="ml-2 text-gray-600">{t('images.loading')}</span>
                 </div>
               ) : imagesData?.message ? (
                 <div className="card p-20 text-center">
                   <CreditCard className="w-24 h-24 text-amber-400 mx-auto mb-4" />
-                  <p className="text-gray-600 text-lg font-medium mb-2">Premium Feature</p>
+                  <p className="text-gray-600 text-lg font-medium mb-2">{t('images.premium_feature')}</p>
                   <p className="text-gray-500 text-sm mb-6">{imagesData.message}</p>
                   <div className="flex justify-center space-x-4">
                     <button 
@@ -306,11 +343,11 @@ const ProfilePage = () => {
                       className="btn btn-outline"
                     >
                       <Grid3x3 className="w-4 h-4 mr-2" />
-                      View Generation History
+                      {t('images.buttons.view_history')}
                     </button>
                     <button className="btn btn-primary">
                       <CreditCard className="w-4 h-4 mr-2" />
-                      Upgrade Plan
+                      {t('images.buttons.upgrade_plan')}
                     </button>
                   </div>
                 </div>
@@ -324,12 +361,12 @@ const ProfilePage = () => {
                           <Image className="w-5 h-5 text-green-600" />
                         </div>
                         <div>
-                          <p className="font-medium text-green-800">My Images Collection</p>
-                          <p className="text-sm text-green-600">{imagesData.images.length} images permanently saved</p>
+                          <p className="font-medium text-green-800">{t('images.premium_collection')}</p>
+                          <p className="text-sm text-green-600">{t('images.images_saved', { count: imagesData.images.length })}</p>
                         </div>
                       </div>
                       <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                        ✓ Premium Access
+                        {t('images.premium_access')}
                       </div>
                     </div>
                   </div>
@@ -354,7 +391,7 @@ const ProfilePage = () => {
                             <button
                               onClick={() => handleToggleVisibility(image.id, !image.isPublic)}
                               className="p-2 bg-white/90 rounded-lg shadow hover:bg-white transition"
-                              title={image.isPublic ? 'Make Private' : 'Make Public'}
+                              title={image.isPublic ? t('images.actions.make_private') : t('images.actions.make_public')}
                             >
                               {image.isPublic ? (
                                 <Eye className="w-4 h-4 text-green-600" />
@@ -365,21 +402,21 @@ const ProfilePage = () => {
                             <button
                               onClick={() => viewImage(image.url)}
                               className="p-2 bg-white/90 rounded-lg shadow hover:bg-white transition"
-                              title="View Image"
+                              title={t('images.actions.view')}
                             >
                               <Eye className="w-4 h-4 text-gray-600" />
                             </button>
                             <button
                               onClick={() => downloadImage(image.url, `my-image-${image.id}.png`)}
                               className="p-2 bg-white/90 rounded-lg shadow hover:bg-white transition"
-                              title="Download"
+                              title={t('images.actions.download')}
                             >
                               <Download className="w-4 h-4 text-blue-600" />
                             </button>
                             <button
                               onClick={() => handleDeleteImage(image.id)}
                               className="p-2 bg-white/90 rounded-lg shadow hover:bg-white transition text-red-500 hover:text-red-600"
-                              title="Delete"
+                              title={t('images.actions.delete')}
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -387,7 +424,7 @@ const ProfilePage = () => {
                           {image.isPublic && (
                             <div className="absolute top-2 left-2">
                               <div className="px-2 py-1 bg-green-500 text-white text-xs rounded-full">
-                                Public
+                                {t('images.public')}
                               </div>
                             </div>
                           )}
@@ -411,15 +448,15 @@ const ProfilePage = () => {
               ) : (
                 <div className="card p-20 text-center">
                   <Image className="w-24 h-24 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600 text-lg">No saved images yet</p>
+                  <p className="text-gray-600 text-lg">{t('images.empty_title')}</p>
                   <p className="text-gray-500 text-sm mt-2 mb-6">
-                    Generate images to see them permanently saved here
+                    {t('images.empty_description')}
                   </p>
                   <button 
                     onClick={() => window.location.href = '/generate'}
                     className="btn btn-primary"
                   >
-                    Start Generating
+                    {t('images.buttons.start_generating')}
                   </button>
                 </div>
               )}
@@ -436,7 +473,7 @@ const ProfilePage = () => {
                       <BarChart3 className="w-8 h-8 text-primary-500 mr-3" />
                       <div>
                         <p className="text-2xl font-bold">{generationsData.stats.totalGenerations}</p>
-                        <p className="text-sm text-gray-600">Total Generations</p>
+                        <p className="text-sm text-gray-600">{t('generations.stats.total_generations')}</p>
                       </div>
                     </div>
                   </div>
@@ -445,7 +482,7 @@ const ProfilePage = () => {
                       <Zap className="w-8 h-8 text-yellow-500 mr-3" />
                       <div>
                         <p className="text-2xl font-bold">{generationsData.stats.totalCreditsUsed}</p>
-                        <p className="text-sm text-gray-600">Credits Used</p>
+                        <p className="text-sm text-gray-600">{t('generations.stats.credits_used')}</p>
                       </div>
                     </div>
                   </div>
@@ -454,7 +491,7 @@ const ProfilePage = () => {
                       <Grid3x3 className="w-8 h-8 text-green-500 mr-3" />
                       <div>
                         <p className="text-2xl font-bold">{generationsData.stats.statusBreakdown?.COMPLETED || 0}</p>
-                        <p className="text-sm text-gray-600">Completed</p>
+                        <p className="text-sm text-gray-600">{t('generations.stats.completed')}</p>
                       </div>
                     </div>
                   </div>
@@ -463,7 +500,7 @@ const ProfilePage = () => {
                       <Clock className="w-8 h-8 text-blue-500 mr-3" />
                       <div>
                         <p className="text-2xl font-bold">{generationsData.stats.statusBreakdown?.PROCESSING || 0}</p>
-                        <p className="text-sm text-gray-600">Processing</p>
+                        <p className="text-sm text-gray-600">{t('generations.stats.processing')}</p>
                       </div>
                     </div>
                   </div>
@@ -478,7 +515,7 @@ const ProfilePage = () => {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                       <input
                         type="text"
-                        placeholder="Search prompts..."
+                        placeholder={t('generations.filters.search_placeholder')}
                         value={generationFilters.search}
                         onChange={(e) => handleFilterChange('search', e.target.value)}
                         className="input pl-10"
@@ -490,17 +527,17 @@ const ProfilePage = () => {
                     onChange={(e) => handleFilterChange('status', e.target.value)}
                     className="input md:w-40"
                   >
-                    <option value="">All Status</option>
-                    <option value="COMPLETED">Completed</option>
-                    <option value="PROCESSING">Processing</option>
-                    <option value="FAILED">Failed</option>
+                    <option value="">{t('generations.filters.all_status')}</option>
+                    <option value="COMPLETED">{t('generations.status.COMPLETED')}</option>
+                    <option value="PROCESSING">{t('generations.status.PROCESSING')}</option>
+                    <option value="FAILED">{t('generations.status.FAILED')}</option>
                   </select>
                   <select
                     value={generationFilters.model}
                     onChange={(e) => handleFilterChange('model', e.target.value)}
                     className="input md:w-40"
                   >
-                    <option value="">All Models</option>
+                    <option value="">{t('generations.filters.all_models')}</option>
                     <option value="stable-diffusion-xl">SDXL</option>
                     <option value="kandinsky">Kandinsky</option>
                     <option value="anime">Anime</option>
@@ -511,9 +548,9 @@ const ProfilePage = () => {
                     onChange={(e) => handleFilterChange('sortBy', e.target.value)}
                     className="input md:w-40"
                   >
-                    <option value="createdAt">Date</option>
-                    <option value="creditsUsed">Credits</option>
-                    <option value="status">Status</option>
+                    <option value="createdAt">{t('generations.filters.sort_by_date')}</option>
+                    <option value="creditsUsed">{t('generations.filters.sort_by_credits')}</option>
+                    <option value="status">{t('generations.filters.sort_by_status')}</option>
                   </select>
                 </div>
               </div>
@@ -522,7 +559,7 @@ const ProfilePage = () => {
               {generationsLoading ? (
                 <div className="flex justify-center items-center py-20">
                   <Loader className="w-8 h-8 animate-spin text-primary-500" />
-                  <span className="ml-2 text-gray-600">Loading history...</span>
+                  <span className="ml-2 text-gray-600">{t('generations.loading')}</span>
                 </div>
               ) : generationsData?.generations?.length > 0 ? (
                 <div className="space-y-4">
@@ -543,11 +580,11 @@ const ProfilePage = () => {
                             </span>
                             <span className="flex items-center">
                               <Image className="w-4 h-4 mr-1" />
-                              {generation.images?.length || 0} images
+                              {t('generations.details.images_count', { count: generation.images?.length || 0 })}
                             </span>
                             <span className="flex items-center">
                               <Zap className="w-4 h-4 mr-1" />
-                              {generation.creditsUsed} credits
+                              {t('generations.details.credits_used', { count: generation.creditsUsed })}
                             </span>
                             <span className="flex items-center">
                               <Calendar className="w-4 h-4 mr-1" />
@@ -563,7 +600,7 @@ const ProfilePage = () => {
                             <button
                               onClick={() => handleRegenerateImage(generation.id)}
                               className="p-2 text-gray-400 hover:text-primary-500 transition"
-                              title="Regenerate"
+                              title={t('generations.details.regenerate')}
                             >
                               <RefreshCw className="w-4 h-4" />
                             </button>
@@ -571,7 +608,7 @@ const ProfilePage = () => {
                           <button
                             onClick={() => handleDeleteGeneration(generation.id)}
                             className="p-2 text-gray-400 hover:text-red-500 transition"
-                            title="Delete"
+                            title={t('generations.details.delete')}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -595,7 +632,7 @@ const ProfilePage = () => {
                       
                       {generation.negativePrompt && (
                         <div className="mt-3 text-sm">
-                          <span className="text-gray-500">Negative prompt: </span>
+                          <span className="text-gray-500">{t('generations.details.negative_prompt')} </span>
                           <span className="text-gray-700">{generation.negativePrompt}</span>
                         </div>
                       )}
@@ -605,8 +642,8 @@ const ProfilePage = () => {
               ) : (
                 <div className="card p-20 text-center">
                   <Grid3x3 className="w-24 h-24 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600 text-lg">No generation history</p>
-                  <p className="text-gray-500 text-sm mt-2">Start generating to see your history here</p>
+                  <p className="text-gray-600 text-lg">{t('generations.empty_title')}</p>
+                  <p className="text-gray-500 text-sm mt-2">{t('generations.empty_description')}</p>
                 </div>
               )}
 
@@ -619,17 +656,17 @@ const ProfilePage = () => {
                     className="btn btn-outline disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="w-4 h-4 mr-2" />
-                    Previous
+                    {t('generations.pagination.previous')}
                   </button>
                   <span className="text-gray-600">
-                    Page {generationFilters.page} of {generationsData.pagination.pages}
+                    {t('generations.pagination.page_of', { current: generationFilters.page, total: generationsData.pagination.pages })}
                   </span>
                   <button
                     onClick={() => handlePageChange(generationFilters.page + 1)}
                     disabled={generationFilters.page >= generationsData.pagination.pages}
                     className="btn btn-outline disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Next
+                    {t('generations.pagination.next')}
                     <ChevronRight className="w-4 h-4 ml-2" />
                   </button>
                 </div>
@@ -639,73 +676,73 @@ const ProfilePage = () => {
 
           {activeTab === 'settings' && (
             <div className="card" style={{ padding: '1.5rem' }}>
-              <h2 className="text-2xl font-bold mb-6">Account Settings</h2>
+              <h2 className="text-2xl font-bold mb-6">{t('settings.title')}</h2>
               <form onSubmit={handleSaveSettings} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label className="label">Email</label>
+                    <label className="label">{t('settings.form.email')}</label>
                     <input
                       type="email"
                       value={user?.email || ''}
                       disabled
                       className="input bg-gray-50"
                     />
-                    <p className="text-sm text-gray-500 mt-1">Cannot be changed</p>
+                    <p className="text-sm text-gray-500 mt-1">{t('settings.form.email_note')}</p>
                   </div>
                   <div>
-                    <label className="label">Username</label>
+                    <label className="label">{t('settings.form.username')}</label>
                     <input
                       type="text"
                       value={user?.username || ''}
                       disabled
                       className="input bg-gray-50"
                     />
-                    <p className="text-sm text-gray-500 mt-1">Cannot be changed</p>
+                    <p className="text-sm text-gray-500 mt-1">{t('settings.form.username_note')}</p>
                   </div>
                 </div>
                 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label className="label">Full Name</label>
+                    <label className="label">{t('settings.form.full_name')}</label>
                     <input
                       type="text"
                       value={settingsForm.fullName}
                       onChange={(e) => handleSettingsChange('fullName', e.target.value)}
                       className="input"
-                      placeholder="Enter your full name"
+                      placeholder={t('settings.form.full_name_placeholder')}
                     />
                   </div>
                   <div>
-                    <label className="label">Location</label>
+                    <label className="label">{t('settings.form.location')}</label>
                     <input
                       type="text"
                       value={settingsForm.location}
                       onChange={(e) => handleSettingsChange('location', e.target.value)}
                       className="input"
-                      placeholder="City, Country"
+                      placeholder={t('settings.form.location_placeholder')}
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <label className="label">About</label>
+                  <label className="label">{t('settings.form.bio')}</label>
                   <textarea
                     value={settingsForm.bio}
                     onChange={(e) => handleSettingsChange('bio', e.target.value)}
                     className="input min-h-[100px] resize-none"
-                    placeholder="Tell us about yourself..."
+                    placeholder={t('settings.form.bio_placeholder')}
                     rows={4}
                   />
                 </div>
                 
                 <div>
-                  <label className="label">Website</label>
+                  <label className="label">{t('settings.form.website')}</label>
                   <input
                     type="url"
                     value={settingsForm.website}
                     onChange={(e) => handleSettingsChange('website', e.target.value)}
                     className="input"
-                    placeholder="https://your-website.com"
+                    placeholder={t('settings.form.website_placeholder')}
                   />
                 </div>
                 
@@ -718,12 +755,12 @@ const ProfilePage = () => {
                     {updateSettingsMutation.isLoading ? (
                       <>
                         <Loader className="w-4 h-4 mr-2 animate-spin" />
-                        Saving...
+                        {t('settings.buttons.saving')}
                       </>
                     ) : (
                       <>
                         <Save className="w-4 h-4 mr-2" />
-                        Save Changes
+                        {t('settings.buttons.save')}
                       </>
                     )}
                   </button>
@@ -733,7 +770,7 @@ const ProfilePage = () => {
                     className="btn btn-outline text-red-600 border-red-600 hover:bg-red-50"
                   >
                     <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
+                    {t('settings.buttons.logout')}
                   </button>
                 </div>
               </form>

@@ -6,34 +6,68 @@
   },
   "images": {
     "title": "Мої зображення",
-    "empty_title": "Поки немає зображень",
-    "empty_description": "Почніть генерувати, щоб побачити ваші творіння тут",
+    "empty_title": "Поки немає збережених зображень",
+    "empty_description": "Генеруйте зображення, щоб побачити їх тут назавжди збережені",
     "loading": "Завантаження зображень...",
+    "premium_feature": "Преміум функція",
+    "premium_collection": "Моя колекція зображень",
+    "images_saved": "{{count}} зображень назавжди збережено",
+    "premium_access": "✓ Преміум доступ",
+    "public": "Публічне",
     "actions": {
       "make_public": "Зробити публічним",
       "make_private": "Зробити приватним",
+      "view": "Переглянути зображення",
       "download": "Завантажити",
       "delete": "Видалити"
     },
+    "buttons": {
+      "view_history": "Переглянути історію генерацій",
+      "upgrade_plan": "Оновити план",
+      "start_generating": "Почати генерувати"
+    },
     "delete_confirm": "Ви впевнені, що хочете видалити це зображення?",
-    "visibility_success": "Зображення {{action}} успішно",
-    "delete_success": "Зображення видалено успішно",
-    "error": "Помилка оновлення зображення"
+    "visibility_success": "Зображення стало {{action}}",
+    "delete_success": "Зображення видалено",
+    "error": "Не вдалося оновити видимість зображення"
   },
   "generations": {
     "title": "Історія генерацій",
     "empty_title": "Немає історії генерацій",
-    "empty_description": "Ваша історія генерацій з'явиться тут",
+    "empty_description": "Почніть генерувати, щоб побачити вашу історію тут",
     "loading": "Завантаження історії...",
-    "status": {
+    "stats": {
+      "total_generations": "Всього генерацій",
+      "credits_used": "Використано кредитів",
       "completed": "Завершено",
-      "failed": "Помилка",
-      "processing": "Обробка"
+      "processing": "Обробляється"
+    },
+    "filters": {
+      "search_placeholder": "Шукати промпти...",
+      "all_status": "Всі статуси",
+      "all_models": "Всі моделі",
+      "sort_by_date": "Дата",
+      "sort_by_credits": "Кредити",
+      "sort_by_status": "Статус"
+    },
+    "status": {
+      "COMPLETED": "Завершено",
+      "FAILED": "Помилка", 
+      "PROCESSING": "Обробляється"
     },
     "details": {
       "images_count": "{{count}} зображень",
-      "credits_used": "{{count}} кредитів"
-    }
+      "credits_used": "{{count}} кредитів",
+      "negative_prompt": "Негативний промпт:",
+      "regenerate": "Перегенерувати",
+      "delete": "Видалити"
+    },
+    "pagination": {
+      "previous": "Попередня",
+      "next": "Наступна",
+      "page_of": "Сторінка {{current}} з {{total}}"
+    },
+    "delete_confirm": "Ви впевнені, що хочете видалити цю генерацію?"
   },
   "settings": {
     "title": "Налаштування акаунту",
@@ -57,11 +91,19 @@
       "logout": "Вийти"
     },
     "messages": {
-      "save_success": "Налаштування збережено успішно!",
+      "save_success": "Налаштування збережено!",
       "save_error": "Помилка збереження налаштувань"
     }
   },
   "header": {
-    "plan": "План {{plan}}"
+    "plan": "План {{plan}}",
+    "credits": "{{count}} кредитів",
+    "images_count": "{{count}} зображень"
+  },
+  "subscription": {
+    "cancel_button": "Скасувати підписку",
+    "cancel_confirm": "Ви впевнені, що хочете скасувати підписку? Ви втратите доступ до преміум функцій в кінці поточного періоду.",
+    "cancel_success": "Підписку успішно скасовано",
+    "cancel_error": "Помилка скасування підписки"
   }
 }
