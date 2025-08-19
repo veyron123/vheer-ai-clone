@@ -37,20 +37,20 @@ export const IMAGE_ASPECT_RATIOS = [
 export const IMAGE_EXAMPLE_IMAGES = [
   {
     id: 1,
-    original: '/Screenshot (62).png',
-    generated: '/il_794xN.6989129759_igne.webp',
+    original: '/Image to Image images/Screenshot (62).png',
+    generated: '/Image to Image images/il_794xN.6989129759_igne.webp',
     prompt: 'Professional business portrait'
   },
   {
     id: 2,
-    original: '/Screenshot (62).png',
-    generated: '/image-to-image-ai-generator.avif',
+    original: '/Image to Image images/Screenshot (62).png',
+    generated: '/Image to Image images/image-to-image-ai-generator.avif',
     prompt: 'Artistic style transfer'
   },
   {
     id: 3,
-    original: '/Screenshot (62).png',
-    generated: '/Screenshot (59).png',
+    original: '/Image to Image images/Screenshot (62).png',
+    generated: '/Image to Image images/Screenshot (59).png',
     prompt: 'Creative transformation'
   }
 ];

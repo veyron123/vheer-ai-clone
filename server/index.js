@@ -19,6 +19,7 @@ import creditRoutes from './routes/credit.routes.js';
 import fluxRoutes from './routes/flux.routes.js';
 import gptimageRoutes from './routes/gptimage.routes.js';
 import midjourneyRoutes from './routes/midjourney.routes.js';
+import wayforpayRoutes from './routes/wayforpay.routes.js';
 
 // Middleware
 import { errorHandler } from './middleware/error.middleware.js';
@@ -101,6 +102,7 @@ app.use('/api/credits', creditRoutes);
 app.use('/api/flux', fluxRoutes);
 app.use('/api/gptimage', gptimageRoutes);
 app.use('/api/midjourney', midjourneyRoutes);
+app.use('/api/payments/wayforpay', wayforpayRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

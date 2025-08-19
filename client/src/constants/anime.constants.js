@@ -1,24 +1,20 @@
 // Anime Styles Configuration
 export const ANIME_STYLES = [
-  { id: 'disney', name: 'Disney', image: 'https://images.unsplash.com/photo-1635322966219-b75ed372eb01?w=200&h=200&fit=crop' },
-  { id: 'pixar', name: 'Pixar', image: 'https://images.unsplash.com/photo-1635322966219-b75ed372eb01?w=200&h=200&fit=crop' },
-  { id: 'dc-comics', name: 'DC Comics', image: 'https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?w=200&h=200&fit=crop' },
-  { id: 'cyberpunk', name: 'Cyberpunk', image: 'https://images.unsplash.com/photo-1636955816868-fcb881e57954?w=200&h=200&fit=crop' },
-  { id: 'pop-art', name: 'Pop Art', image: 'https://images.unsplash.com/photo-1578321272176-b7bbc0679853?w=200&h=200&fit=crop' },
-  { id: 'black-white', name: 'Black and White Comic', image: 'https://images.unsplash.com/photo-1578321272176-b7bbc0679853?w=200&h=200&fit=crop' },
-  { id: 'bright-realistic', name: 'Bright and Realistic', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc27?w=200&h=200&fit=crop' },
-  { id: 'fantasy', name: 'Fantasy Anime Style', image: 'https://images.unsplash.com/photo-1578632292335-df3abbb0d586?w=200&h=200&fit=crop' },
-  { id: 'cartoon-poster', name: 'Cartoon Poster', image: 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=200&h=200&fit=crop' },
-  { id: 'inkpunk', name: 'Inkpunk', image: 'https://images.unsplash.com/photo-1578321272176-b7bbc0679853?w=200&h=200&fit=crop' },
-  { id: 'springfield', name: 'Springfield', image: 'https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=200&h=200&fit=crop' },
-  { id: 'claymation', name: 'Claymation', image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&h=200&fit=crop' },
-  { id: 'anime-sketch', name: 'Pencil Anime', image: 'https://images.unsplash.com/photo-1578632292335-df3abbb0d586?w=200&h=200&fit=crop' },
-  { id: 'manga', name: 'Manga', image: 'https://images.unsplash.com/photo-1612178537253-bccd437b730e?w=200&h=200&fit=crop' },
-  { id: 'voxel', name: 'Voxel', image: 'https://images.unsplash.com/photo-1542751110-97427bbecf20?w=200&h=200&fit=crop' },
-  { id: 'abstract-expressionist', name: 'Abstract Expressionist', image: 'https://images.unsplash.com/photo-1578321272176-b7bbc0679853?w=200&h=200&fit=crop' },
-  { id: 'cubist', name: 'Cubist Artwork', image: 'https://images.unsplash.com/photo-1578321272176-b7bbc0679853?w=200&h=200&fit=crop' },
-  { id: 'caricature', name: 'Caricature', image: 'https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=200&h=200&fit=crop' },
-  { id: 'chinese-paper-cutting', name: 'Chinese Paper Cutting', image: 'https://images.unsplash.com/photo-1578321272176-b7bbc0679853?w=200&h=200&fit=crop' }
+  { id: 'disney', name: 'Disney', image: '/Anime Portraite images/Disney.png' },
+  { id: 'pixar', name: 'Pixar', image: '/Anime Portraite images/Pixar.png' },
+  { id: 'dc-comics', name: 'DC Comics', image: '/Anime Portraite images/DC.png' },
+  { id: 'cyberpunk', name: 'Cyberpunk', image: '/Anime Portraite images/Cyberpunk.png' },
+  { id: 'pop-art', name: 'Pop Art', image: '/Anime Portraite images/Pop art.png' },
+  { id: 'black-white', name: 'Black and White Comic', image: '/Anime Portraite images/Black and White.png' },
+  { id: 'anime', name: 'Anime Style', image: '/Anime Portraite images/Anime.png' },
+  { id: 'cartoon', name: 'Cartoon Style', image: '/Anime Portraite images/cartoon.png' },
+  { id: 'inkpunk', name: 'Inkpunk', image: '/Anime Portraite images/inkpunk.webp' },
+  { id: 'claymation', name: 'Claymation', image: '/Anime Portraite images/Claymation.png' },
+  { id: 'manga', name: 'Manga', image: '/Anime Portraite images/Manga.png' },
+  { id: 'voxel', name: 'Voxel', image: '/Anime Portraite images/Voxel.png' },
+  { id: 'expressionist', name: 'Abstract Expressionist', image: '/Anime Portraite images/Expressionist.jpeg' },
+  { id: 'caricature', name: 'Caricature', image: '/Anime Portraite images/Caricature.png' },
+  { id: 'chinese-paper-cutting', name: 'Chinese Paper Cutting', image: '/Anime Portraite images/Chinese Paper Cutting.png' }
 ];
 
 // Aspect Ratio Options

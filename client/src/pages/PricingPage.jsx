@@ -18,8 +18,8 @@ const PricingPage = () => {
   // Get current language from path
   const currentLang = getLanguageFromPath(location.pathname) || 'en';
 
-  const { data: plans } = useQuery('plans', () =>
-    api.get('/subscriptions/plans').then(res => res.data)
+  const { data: plans } = useQuery(['plans', currentLang], () =>
+    api.get(`/subscriptions/plans?lang=${currentLang}`).then(res => res.data)
   );
 
   const planIcons = {
@@ -33,8 +33,21 @@ const PricingPage = () => {
     if (!isAuthenticated) {
       navigate('/register');
     } else if (plan.id !== 'FREE') {
-      // Navigate to payment page
-      toast.info('Payment integration coming soon!');
+      // For Ukrainian version, use WayForPay
+      if (currentLang === 'uk') {
+        if (plan.id === 'BASIC') {
+          // Redirect to WayForPay button URL for Basic plan
+          window.location.href = 'https://secure.wayforpay.com/button/b85dd73ba8317';
+        } else if (plan.id === 'PRO') {
+          // For Pro and Enterprise, show coming soon
+          toast.info('Цей план буде доступний незабаром!');
+        } else if (plan.id === 'ENTERPRISE') {
+          toast.info('Цей план буде доступний незабаром!');
+        }
+      } else {
+        // For English version, show coming soon
+        toast.info('Payment integration coming soon!');
+      }
     }
   };
 

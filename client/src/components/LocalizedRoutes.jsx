@@ -22,6 +22,8 @@ import MockupCanvasPage from '../pages/MockupCanvasPage';
 import MockupCSSPage from '../pages/MockupCSSPage';
 import MockupLibraryPage from '../pages/MockupLibraryPage';
 import MockupTestPage from '../pages/MockupTestPage';
+import PaymentSuccess from '../pages/PaymentSuccess';
+import PaymentFailure from '../pages/PaymentFailure';
 
 const LocalizedRoutes = () => {
   const location = useLocation();
@@ -101,6 +103,10 @@ const LanguageRoutes = () => {
       
       {/* Auth routes */}
       <Route path="/auth/callback" element={<AuthCallback />} />
+      
+      {/* Payment routes */}
+      <Route path="/payment/success" element={<PaymentSuccess />} />
+      <Route path="/payment/failure" element={<PaymentFailure />} />
       
       {/* Protected routes */}
       <Route path="/profile" element={
