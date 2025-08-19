@@ -106,5 +106,11 @@
     "cancel_confirm": "Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your current period.",
     "cancel_success": "Subscription cancelled successfully",
     "cancel_error": "Failed to cancel subscription"
+  },
+  "plans": {
+    "free": "Free",
+    "basic": "Basic",
+    "pro": "Pro", 
+    "premium": "Premium"
   }
 }

@@ -35,6 +35,17 @@ const ProfilePage = () => {
   const { user, logout, updateUser } = useAuthStore();
   const { t } = useTranslation('profile');
   const [activeTab, setActiveTab] = useState('images');
+  
+  // Function to translate plan names
+  const translatePlan = (plan) => {
+    const planTranslations = {
+      'FREE': t('plans.free', { defaultValue: 'Безкоштовний' }),
+      'BASIC': t('plans.basic', { defaultValue: 'Базовий' }),
+      'PRO': t('plans.pro', { defaultValue: 'Професійний' }),
+      'PREMIUM': t('plans.premium', { defaultValue: 'Преміум' })
+    };
+    return planTranslations[plan] || plan;
+  };
   const [settingsForm, setSettingsForm] = useState({
     fullName: '',
     bio: '',
@@ -287,15 +298,8 @@ const ProfilePage = () => {
                     <span className="font-medium text-primary-600">{t('header.credits', { count: user?.totalCredits || 0 })}</span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <div className={`px-3 py-1 rounded-full font-medium ${
-                      user?.subscription?.status === 'CANCELLED' 
-                        ? 'bg-gray-100 text-gray-700' 
-                        : 'bg-primary-100 text-primary-700'
-                    }`}>
-                      {user?.subscription?.status === 'CANCELLED' 
-                        ? t('header.plan_cancelled', { plan: user?.subscription?.plan || 'FREE' })
-                        : t('header.plan', { plan: user?.subscription?.plan || 'FREE' })
-                      }
+                    <div className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full font-medium">
+                      {t('header.plan', { plan: translatePlan(user?.subscription?.plan || 'FREE') })}
                     </div>
                     {user?.subscription?.plan && 
                      user?.subscription?.plan !== 'FREE' && 

@@ -475,11 +475,12 @@ export const cancelSubscription = async (req, res) => {
     
     console.log(`🎯 Cancelling ${subscription.plan} subscription...`);
     
-    // Update subscription status
+    // Update subscription status and plan
     const updatedSubscription = await prisma.subscription.update({
       where: { userId },
       data: {
         status: 'CANCELLED',
+        plan: 'FREE',
         cancelledAt: new Date()
       }
     });
@@ -492,9 +493,37 @@ export const cancelSubscription = async (req, res) => {
       include: { subscription: true }
     });
     
-    console.log('🔄 TODO: Implement WayForPay subscription cancellation API call');
-    // TODO: Add WayForPay API call here to cancel recurring payments
-    // This requires WayForPay recurring payment cancellation endpoint
+    console.log('🔄 Attempting to cancel WayForPay subscription...');
+    
+    // WayForPay subscription cancellation API call
+    try {
+      // Note: This requires the subscription ID from WayForPay
+      // For now, we log this as a TODO until we implement the full API call
+      console.log('⚠️ WayForPay API call needed:');
+      console.log('- Endpoint: https://api.wayforpay.com/regularApi');
+      console.log('- Method: Delete recurrent payment');
+      console.log('- Required: merchant login, subscription ID, signature');
+      console.log('- Current status: Not implemented - WayForPay subscription remains active');
+      
+      // TODO: Implement actual WayForPay API call
+      /*
+      const wayforpayResponse = await fetch('https://api.wayforpay.com/regularApi', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          transactionType: 'DELETE_SUBSCRIPTION',
+          merchantAccount: MERCHANT_LOGIN,
+          orderReference: subscription.wayforpaySubscriptionId, // Need to store this
+          merchantSignature: generateSubscriptionSignature(...)
+        })
+      });
+      */
+      
+    } catch (error) {
+      console.error('❌ WayForPay cancellation error:', error);
+    }
     
     res.json({
       success: true,
