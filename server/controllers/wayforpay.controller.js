@@ -174,7 +174,17 @@ export const handleCallback = async (req, res) => {
     }
     
     console.log('Processed callback data:', JSON.stringify(callbackData, null, 2));
-    console.log('Available fields in callbackData:', Object.keys(callbackData));
+    console.log('📋 Available fields in callbackData:', Object.keys(callbackData));
+    console.log('📋 Field values preview:', {
+      merchantAccount: callbackData.merchantAccount,
+      orderReference: callbackData.orderReference,
+      merchantSignature: callbackData.merchantSignature,
+      amount: callbackData.amount,
+      currency: callbackData.currency,
+      authCode: callbackData.authCode,
+      transactionStatus: callbackData.transactionStatus,
+      reasonCode: callbackData.reasonCode
+    });
     
     const {
       orderReference,
