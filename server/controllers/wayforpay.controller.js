@@ -161,15 +161,46 @@ export const handleCallback = async (req, res) => {
     
     // Check if data comes as JSON string in the key (common WayForPay format)
     const bodyKeys = Object.keys(req.body);
-    if (bodyKeys.length === 1 && bodyKeys[0].startsWith('{')) {
+    if (bodyKeys.length >= 1 && bodyKeys[0].startsWith('{')) {
       try {
-        callbackData = JSON.parse(bodyKeys[0]);
-        console.log('✅ Parsed callback data from JSON key');
+        // Get the JSON string key (first key that starts with '{')
+        const jsonKey = bodyKeys.find(key => key.startsWith('{'));
+        
+        // Handle truncated JSON by trying to repair it
+        let jsonString = jsonKey;
+        
+        // If the JSON is truncated (doesn't end with '}'), try to find complete fields
+        if (!jsonString.endsWith('}')) {
+          // Find the last complete field before truncation
+          const lastCompleteField = jsonString.lastIndexOf('","');
+          if (lastCompleteField > 0) {
+            // Add closing quote and brace to make valid JSON
+            jsonString = jsonString.substring(0, lastCompleteField + 1) + '}';
+          } else {
+            // Try to find the last field with a value
+            const lastFieldMatch = jsonString.match(/,"([^"]+)":([^,}]+)$/);
+            if (lastFieldMatch) {
+              jsonString = jsonString + '}';
+            } else {
+              // As last resort, try to close at the last quote
+              const lastQuote = jsonString.lastIndexOf('"');
+              if (lastQuote > 0) {
+                jsonString = jsonString.substring(0, lastQuote + 1) + '}';
+              }
+            }
+          }
+        }
+        
+        console.log('🔧 Attempting to parse JSON:', jsonString.substring(0, 200) + '...');
+        callbackData = JSON.parse(jsonString);
+        console.log('✅ Successfully parsed callback data from JSON key');
       } catch (parseError) {
-        console.log('❌ Failed to parse JSON from key, using req.body directly');
+        console.log('❌ Failed to parse JSON from key:', parseError.message);
+        console.log('❌ Using req.body directly (this will likely fail field extraction)');
         callbackData = req.body;
       }
     } else {
+      console.log('📝 Using req.body directly (standard format)');
       callbackData = req.body;
     }
     
