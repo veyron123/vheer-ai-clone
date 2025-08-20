@@ -1,32 +1,67 @@
 import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
+import WayForPayRecurringService from '../services/wayforpayRecurringService.js';
 
 const prisma = new PrismaClient();
+const recurringService = new WayForPayRecurringService();
 
 // Get credentials from environment
 const MERCHANT_LOGIN = process.env.WAYFORPAY_MERCHANT_LOGIN;
 const MERCHANT_SECRET = process.env.WAYFORPAY_MERCHANT_SECRET;
 const MERCHANT_PASSWORD = process.env.WAYFORPAY_MERCHANT_PASSWORD;
 
-// Plan configurations with updated credit amounts
-const PLAN_CONFIG = {
-  BASIC: {
-    amount: 400,
-    credits: 800,
-    name: 'Basic Plan',
-    buttonUrl: process.env.WAYFORPAY_BASIC_BUTTON_URL
-  },
-  PRO: {
-    amount: 1200,
-    credits: 3000,
-    name: 'Pro Plan',
-    buttonUrl: process.env.WAYFORPAY_PRO_BUTTON_URL
-  },
-  ENTERPRISE: {
-    amount: 4000,
-    credits: 15000,
-    name: 'Максимальний Plan',
-    buttonUrl: process.env.WAYFORPAY_ENTERPRISE_BUTTON_URL
+// Plan configurations with language-specific pricing and URLs
+const getPlanConfig = (language = 'en') => {
+  if (language === 'uk' || language === 'ua') {
+    // Ukrainian pricing (₴ - hryvnia)
+    return {
+      BASIC: {
+        amount: 400,
+        currency: 'UAH',
+        credits: 800,
+        name: 'Базовий план',
+        buttonUrl: process.env.WAYFORPAY_BASIC_BUTTON_URL_UK
+      },
+      PRO: {
+        amount: 1200,
+        currency: 'UAH', 
+        credits: 3000,
+        name: 'ПРО план',
+        buttonUrl: process.env.WAYFORPAY_PRO_BUTTON_URL_UK
+      },
+      ENTERPRISE: {
+        amount: 4000,
+        currency: 'UAH',
+        credits: 15000,
+        name: 'Максимальний план',
+        buttonUrl: process.env.WAYFORPAY_ENTERPRISE_BUTTON_URL_UK
+      }
+    };
+  } else {
+    // English pricing ($ - USD equivalent)  
+    return {
+      BASIC: {
+        amount: 400,
+        currency: 'UAH', // WayForPay works in UAH
+        credits: 800,
+        name: 'Basic Plan',
+        buttonUrl: process.env.WAYFORPAY_BASIC_BUTTON_URL
+      },
+      PRO: {
+        amount: 1200,
+        currency: 'UAH',
+        credits: 3000,
+        name: 'Pro Plan',
+        buttonUrl: process.env.WAYFORPAY_PRO_BUTTON_URL
+      },
+      ENTERPRISE: {
+        amount: 4000,
+        currency: 'UAH',
+        credits: 15000,
+        name: 'Maximum Plan',
+        buttonUrl: process.env.WAYFORPAY_ENTERPRISE_BUTTON_URL
+      }
+    };
   }
 };
 
@@ -112,8 +147,11 @@ const generateRemoveSignature = (orderReference) => {
  */
 export const initializePayment = async (req, res) => {
   try {
-    const { planId } = req.body;
+    const { planId, language } = req.body;
     const userId = req.user.id;
+    
+    // Get language-specific plan configuration
+    const PLAN_CONFIG = getPlanConfig(language);
     
     // Validate plan
     if (!PLAN_CONFIG[planId]) {
@@ -256,7 +294,8 @@ export const handleCallback = async (req, res) => {
       cardPan,
       email: clientEmail,
       clientFirstName,
-      clientLastName
+      clientLastName,
+      recToken // Recurring payment token from WayForPay
     } = callbackData;
     
     console.log('🔍 Extracted field values:', {
@@ -371,30 +410,49 @@ export const handleCallback = async (req, res) => {
     
     // Process successful payment
     if (transactionStatus === 'Approved') {
-      // Determine plan type and credits
+      // Determine plan type and credits based on amount
       const planType = amount == 400 ? 'BASIC' : 
                       amount == 1200 ? 'PRO' : 
                       amount == 4000 ? 'ENTERPRISE' : 'BASIC';
       
-      const credits = PLAN_CONFIG[planType].credits;
+      // Get credits from default config (same for all languages)
+      const defaultConfig = getPlanConfig('en');
+      const credits = defaultConfig[planType].credits;
       
       console.log(`💰 Processing payment: ${planType} plan, ${credits} credits`);
       
-      // Update user subscription and save orderReference for future cancellation
+      // Calculate next payment date (30 days from now)
+      const nextPaymentDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      
+      // Update user subscription with recurring payment support
       await prisma.subscription.upsert({
         where: { userId: user.id },
         update: {
           plan: planType,
           status: 'ACTIVE',
-          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-          wayforpayOrderReference: orderReference
+          currentPeriodEnd: nextPaymentDate,
+          wayforpayOrderReference: orderReference,
+          // Recurring payment fields
+          isRecurring: !!recToken, // Enable recurring if we have a token
+          recurringToken: recToken || null,
+          recurringMode: 'MONTHLY', // Default to monthly billing
+          nextPaymentDate: recToken ? nextPaymentDate : null,
+          lastPaymentDate: new Date(),
+          failedPaymentAttempts: 0
         },
         create: {
           userId: user.id,
           plan: planType,
           status: 'ACTIVE',
-          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          wayforpayOrderReference: orderReference
+          currentPeriodEnd: nextPaymentDate,
+          wayforpayOrderReference: orderReference,
+          // Recurring payment fields
+          isRecurring: !!recToken,
+          recurringToken: recToken || null,
+          recurringMode: 'MONTHLY',
+          nextPaymentDate: recToken ? nextPaymentDate : null,
+          lastPaymentDate: new Date(),
+          failedPaymentAttempts: 0
         }
       });
       
@@ -537,7 +595,11 @@ export const cancelSubscription = async (req, res) => {
         data: {
           status: 'CANCELLED',
           plan: 'FREE',
-          cancelledAt: new Date()
+          cancelledAt: new Date(),
+          // Disable recurring payments
+          isRecurring: false,
+          nextPaymentDate: null,
+          failedPaymentAttempts: 0
         }
       });
       

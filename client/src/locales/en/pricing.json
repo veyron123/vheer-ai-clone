@@ -7,7 +7,14 @@
   "credits": "credits",
   "currency": "$",
   "getStarted": "Get Started",
-  "upgradeNow": "Upgrade Now",
+  "upgradeNow": "Upgrade Plan",
+  "subscribeNow": "Subscribe Now",
+  "currentPlan": "Current Plan",
+  "downgradeLocked": "Downgrade Locked",
+  "canDowngradeAfterExpiry": "Can change after subscription expires",
+  "cancelToUpgrade": "Cancel current subscription to upgrade",
+  "upgradeRequiresCancellation": "Please cancel your current subscription to upgrade your plan. Your current credits will be preserved.",
+  "upgradeNotAllowed": "Plan Upgrade",
   "plans": {
     "free": {
       "name": "Free",

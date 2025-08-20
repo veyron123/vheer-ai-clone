@@ -46,6 +46,31 @@ const ProfilePage = () => {
     };
     return planTranslations[plan] || plan;
   };
+
+  // Function to format subscription expiry date
+  const formatExpiryDate = (expiryDate) => {
+    if (!expiryDate) return null;
+    
+    const now = new Date();
+    const expiry = new Date(expiryDate);
+    const diffInDays = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
+    
+    if (diffInDays < 0) {
+      return { text: t('subscription.expired'), color: 'text-red-600', urgent: true };
+    } else if (diffInDays === 0) {
+      return { text: t('subscription.expires_today'), color: 'text-red-600', urgent: true };
+    } else if (diffInDays === 1) {
+      return { text: t('subscription.expires_tomorrow'), color: 'text-orange-600', urgent: true };
+    } else if (diffInDays <= 7) {
+      return { text: `${diffInDays} ${t('subscription.days_left')}`, color: 'text-orange-600', urgent: false };
+    } else {
+      return { 
+        text: `${t('subscription.expires_on')} ${expiry.toLocaleDateString()}`, 
+        color: 'text-gray-600', 
+        urgent: false 
+      };
+    }
+  };
   const [settingsForm, setSettingsForm] = useState({
     fullName: '',
     bio: '',
@@ -272,6 +297,7 @@ const ProfilePage = () => {
   const tabs = [
     { id: 'images', label: t('tabs.images'), icon: Image },
     { id: 'generations', label: t('tabs.generations'), icon: Grid3x3 },
+    { id: 'subscription', label: t('tabs.subscription'), icon: CreditCard },
     { id: 'settings', label: t('tabs.settings'), icon: Settings }
   ];
 
@@ -297,10 +323,38 @@ const ProfilePage = () => {
                     <CreditCard className="w-4 h-4 text-gray-500" />
                     <span className="font-medium text-primary-600">{t('header.credits', { count: user?.totalCredits || 0 })}</span>
                   </div>
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-3 flex-wrap">
                     <div className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full font-medium">
                       {t('header.plan', { plan: translatePlan(user?.subscription?.plan || 'FREE') })}
                     </div>
+                    
+                    {/* Expiry Date Display - Only for Cancelled Subscriptions */}
+                    {user?.subscription?.plan && 
+                     user?.subscription?.plan !== 'FREE' && 
+                     user?.subscription?.status === 'CANCELLED' && 
+                     user?.subscription?.currentPeriodEnd && (() => {
+                       const now = new Date();
+                       const endDate = new Date(user.subscription.currentPeriodEnd);
+                       
+                       // Show only if subscription hasn't expired yet
+                       if (endDate > now) {
+                         const expiryInfo = formatExpiryDate(user.subscription.currentPeriodEnd);
+                         if (expiryInfo) {
+                           return (
+                             <div className={`px-3 py-1 rounded-full text-xs font-medium flex items-center space-x-1 ${
+                               expiryInfo.urgent 
+                                 ? 'bg-red-100 text-red-700' 
+                                 : 'bg-gray-100 text-gray-700'
+                             }`}>
+                               <Calendar className="w-3 h-3" />
+                               <span>{expiryInfo.text}</span>
+                             </div>
+                           );
+                         }
+                       }
+                       return null;
+                     })()}
+                    
                     {user?.subscription?.plan && 
                      user?.subscription?.plan !== 'FREE' && 
                      user?.subscription?.status === 'ACTIVE' && (
@@ -688,6 +742,129 @@ const ProfilePage = () => {
                   </button>
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === 'subscription' && (
+            <div className="card p-8">
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold mb-2">{t('subscription.title')}</h2>
+                <p className="text-gray-600">{t('subscription.subtitle')}</p>
+              </div>
+
+              <div className="space-y-6">
+                {/* Current Plan */}
+                <div className="flex items-center justify-between py-3">
+                  <div className="flex items-center space-x-3">
+                    <User className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-gray-900">{t('subscription.current_plan')}</span>
+                  </div>
+                  <span className="text-gray-700 font-medium">
+                    {translatePlan(user?.subscription?.plan || 'FREE')}
+                  </span>
+                </div>
+
+                {/* Subscription Date */}
+                <div className="flex items-center justify-between py-3">
+                  <div className="flex items-center space-x-3">
+                    <Calendar className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-gray-900">{t('subscription.subscription_date')}</span>
+                  </div>
+                  <span className="text-gray-700">
+                    {user?.subscription?.createdAt 
+                      ? new Date(user.subscription.createdAt).toLocaleDateString() 
+                      : 'N/A'
+                    }
+                  </span>
+                </div>
+
+                {/* Subscription ID */}
+                <div className="flex items-center justify-between py-3">
+                  <div className="flex items-center space-x-3">
+                    <CreditCard className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-gray-900">{t('subscription.subscription_id')}</span>
+                  </div>
+                  <span className="text-gray-700 font-mono text-sm">
+                    {user?.subscription?.id 
+                      ? user.subscription.id.slice(-8)
+                      : 'N/A'
+                    }
+                  </span>
+                </div>
+
+                {/* Subscription Status */}
+                <div className="flex items-center justify-between py-3">
+                  <div className="flex items-center space-x-3">
+                    <Calendar className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-gray-900">{t('subscription.subscription_status')}</span>
+                  </div>
+                  <span className="text-gray-700 font-medium lowercase">
+                    {t(`subscription.status.${user?.subscription?.status || 'EXPIRED'}`).toLowerCase()}
+                  </span>
+                </div>
+
+                {/* Next Billing Date / Expiry Date - Show for all paid subscriptions */}
+                {user?.subscription?.plan && user?.subscription?.plan !== 'FREE' && (
+                  <div className="flex items-center justify-between py-3">
+                    <div className="flex items-center space-x-3">
+                      <Clock className="w-5 h-5 text-gray-600" />
+                      <span className="font-medium text-gray-900">
+                        {user?.subscription?.status === 'CANCELLED' 
+                          ? t('subscription.expires_on')  // "Expires on" for cancelled subscriptions
+                          : t('subscription.next_billing_date')  // "Next Billing Date" for active subscriptions
+                        }
+                      </span>
+                    </div>
+                    <span className="text-gray-700">
+                      {(() => {
+                        // Show date only for ACTIVE subscriptions or CANCELLED subscriptions that haven't expired yet
+                        if (user?.subscription?.currentPeriodEnd) {
+                          const endDate = new Date(user.subscription.currentPeriodEnd);
+                          const now = new Date();
+                          
+                          if (user?.subscription?.status === 'ACTIVE') {
+                            // For active subscriptions, always show next billing date
+                            return endDate.toLocaleDateString();
+                          } else if (user?.subscription?.status === 'CANCELLED' && endDate > now) {
+                            // For cancelled subscriptions that haven't expired yet, show expiry date
+                            return endDate.toLocaleDateString();
+                          }
+                        }
+                        return 'N/A';
+                      })()}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Button - Only Cancel Subscription */}
+              <div className="mt-8 pt-6">
+                {user?.subscription?.plan && 
+                 user?.subscription?.plan !== 'FREE' && 
+                 user?.subscription?.status === 'ACTIVE' && (
+                  <button
+                    onClick={handleCancelSubscription}
+                    disabled={cancelSubscriptionMutation.isLoading}
+                    className="bg-red-100 text-red-600 hover:bg-red-200 px-6 py-2 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {cancelSubscriptionMutation.isLoading ? (
+                      <>
+                        <Loader className="w-4 h-4 mr-2 animate-spin inline" />
+                        Cancelling...
+                      </>
+                    ) : (
+                      t('subscription.cancel_button')
+                    )}
+                  </button>
+                )}
+              </div>
+
+              {/* Disclaimer */}
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  {t('subscription.disclaimer')}
+                </p>
+              </div>
             </div>
           )}
 

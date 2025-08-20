@@ -7,7 +7,14 @@
   "credits": "кредитів",
   "currency": "₴",
   "getStarted": "Розпочати",
-  "upgradeNow": "Покращити зараз",
+  "upgradeNow": "Покращити план",
+  "subscribeNow": "Підписатися зараз",
+  "currentPlan": "Поточний план",
+  "downgradeLocked": "Зниження недоступне",
+  "canDowngradeAfterExpiry": "Можна змінити після закінчення підписки",
+  "cancelToUpgrade": "Скасуйте поточну підписку для підвищення",
+  "upgradeRequiresCancellation": "Будь ласка, скасуйте поточну підписку, щоб підвищити план. Ваші поточні кредити зберігаються.",
+  "upgradeNotAllowed": "Підвищення плану",
   "plans": {
     "free": {
       "name": "Безкоштовний",

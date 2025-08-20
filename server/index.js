@@ -20,11 +20,14 @@ import fluxRoutes from './routes/flux.routes.js';
 import gptimageRoutes from './routes/gptimage.routes.js';
 import midjourneyRoutes from './routes/midjourney.routes.js';
 import wayforpayRoutes from './routes/wayforpay.routes.js';
+import testSubscriptionRoutes from './routes/test-subscription-expiry.js';
 
 // Middleware
 import { errorHandler } from './middleware/error.middleware.js';
 import { checkDailyCredits } from './middleware/credit.middleware.js';
 import CreditCronJob from './jobs/creditCronJob.js';
+import initializeSubscriptionExpiryJobs from './jobs/subscriptionExpiryJob.js';
+import initializeAutoPaymentJobs from './jobs/autoPaymentJob.js';
 
 // Load environment variables first
 dotenv.config();
@@ -104,6 +107,11 @@ app.use('/api/gptimage', gptimageRoutes);
 app.use('/api/midjourney', midjourneyRoutes);
 app.use('/api/payments/wayforpay', wayforpayRoutes);
 
+// Test routes (only in development)
+if (process.env.NODE_ENV === 'development') {
+  app.use('/api/test', testSubscriptionRoutes);
+}
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
@@ -153,6 +161,10 @@ app.use(errorHandler);
 
 // Initialize credit cron jobs
 CreditCronJob.init();
+
+// Initialize subscription expiry cron jobs
+initializeSubscriptionExpiryJobs();
+initializeAutoPaymentJobs();
 
 // Start server with increased timeout
 const server = app.listen(PORT, () => {

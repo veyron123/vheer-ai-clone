@@ -1,7 +1,8 @@
 {
   "tabs": {
     "images": "My Images",
-    "generations": "Generation History", 
+    "generations": "Generation History",
+    "subscription": "Subscription", 
     "settings": "Settings"
   },
   "images": {
@@ -97,15 +98,36 @@
   },
   "header": {
     "plan": "{{plan}} Plan",
+    "plan_expires": "expires {{date}}",
+    "plan_expired": "plan expired",
     "plan_cancelled": "{{plan}} Plan (cancelled)",
     "credits": "{{count}} Credits",
     "images_count": "{{count}} Images"
   },
   "subscription": {
+    "title": "Subscription Information",
+    "subtitle": "Manage your subscription information and cancel it at anytime.",
+    "current_plan": "Current Plan",
+    "subscription_date": "Subscription Date",
+    "subscription_id": "Subscription ID",
+    "subscription_status": "Subscription Status",
+    "next_billing_date": "Next Billing Date",
+    "status": {
+      "ACTIVE": "Active",
+      "CANCELLED": "Cancelled",
+      "EXPIRED": "Expired",
+      "PENDING": "Pending"
+    },
     "cancel_button": "Cancel Subscription",
     "cancel_confirm": "Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your current period.",
     "cancel_success": "Subscription cancelled successfully",
-    "cancel_error": "Failed to cancel subscription"
+    "cancel_error": "Failed to cancel subscription",
+    "expires_on": "Expires on",
+    "expired": "Expired",
+    "days_left": "days left",
+    "expires_today": "expires today",
+    "expires_tomorrow": "expires tomorrow",
+    "disclaimer": "* Your payment will be automatically renewed each month / yearly if you have active subscription. Credits will also renewed with the payment. * VAT & local taxes may applied"
   },
   "plans": {
     "free": "Free",

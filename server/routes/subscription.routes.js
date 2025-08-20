@@ -3,8 +3,31 @@ import { authenticate } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
+// Get payment button URLs based on language
+const getPaymentUrls = (lang) => {
+  if (lang === 'uk' || lang === 'ua') {
+    return {
+      BASIC: process.env.WAYFORPAY_BASIC_BUTTON_URL_UK,
+      PRO: process.env.WAYFORPAY_PRO_BUTTON_URL_UK,
+      ENTERPRISE: process.env.WAYFORPAY_ENTERPRISE_BUTTON_URL_UK
+    };
+  } else {
+    return {
+      BASIC: process.env.WAYFORPAY_BASIC_BUTTON_URL,
+      PRO: process.env.WAYFORPAY_PRO_BUTTON_URL,
+      ENTERPRISE: process.env.WAYFORPAY_ENTERPRISE_BUTTON_URL
+    };
+  }
+};
+
 // Get subscription plans
 router.get('/plans', (req, res) => {
+  console.log('📋 Plans request received:', {
+    lang: req.query.lang,
+    headers: req.headers,
+    origin: req.get('origin')
+  });
+  
   // Get language from query params or headers
   const lang = req.query.lang || req.headers['accept-language']?.split(',')[0]?.split('-')[0] || 'uk';
   
@@ -21,6 +44,7 @@ router.get('/plans', (req, res) => {
   };
   
   const currentPricing = pricing[lang] || pricing.uk;
+  const paymentUrls = getPaymentUrls(lang);
   
   const plans = [
     {
@@ -29,6 +53,7 @@ router.get('/plans', (req, res) => {
       price: currentPricing.prices.FREE,
       currency: currentPricing.currency,
       credits: 100,
+      paymentUrl: null, // FREE plan doesn't need payment URL
       features: [
         '100 free credits daily',
         'Basic models',
@@ -42,6 +67,7 @@ router.get('/plans', (req, res) => {
       price: currentPricing.prices.BASIC,
       currency: currentPricing.currency,
       credits: 800,
+      paymentUrl: paymentUrls.BASIC,
       features: [
         '800 credits monthly',
         'All models',
@@ -56,6 +82,7 @@ router.get('/plans', (req, res) => {
       price: currentPricing.prices.PRO,
       currency: currentPricing.currency,
       credits: 3000,
+      paymentUrl: paymentUrls.PRO,
       features: [
         '3000 credits monthly',
         'All models',
@@ -71,6 +98,7 @@ router.get('/plans', (req, res) => {
       price: currentPricing.prices.ENTERPRISE,
       currency: currentPricing.currency,
       credits: 15000,
+      paymentUrl: paymentUrls.ENTERPRISE,
       features: [
         '15000 credits monthly',
         'Custom models',

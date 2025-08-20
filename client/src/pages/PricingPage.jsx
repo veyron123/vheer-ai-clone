@@ -12,15 +12,61 @@ import { useAuthStore } from '../stores/authStore';
 const PricingPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const { t } = useTranslation('pricing');
   
   // Get current language from path
   const currentLang = getLanguageFromPath(location.pathname) || 'en';
 
-  const { data: plans } = useQuery(['plans', currentLang], () =>
-    api.get(`/subscriptions/plans?lang=${currentLang}`).then(res => res.data)
+  // Temporary fallback data in case API is not available
+  const fallbackPlans = [
+    {
+      id: 'FREE',
+      name: 'Free',
+      price: 0,
+      currency: currentLang === 'uk' ? '₴' : '$',
+      credits: 100,
+      features: []
+    },
+    {
+      id: 'BASIC',
+      name: 'Basic',
+      price: currentLang === 'uk' ? 400 : 10,
+      currency: currentLang === 'uk' ? '₴' : '$',
+      credits: 800,
+      features: []
+    },
+    {
+      id: 'PRO',
+      name: 'Pro',
+      price: currentLang === 'uk' ? 1200 : 30,
+      currency: currentLang === 'uk' ? '₴' : '$',
+      credits: 3000,
+      features: []
+    },
+    {
+      id: 'ENTERPRISE',
+      name: 'Maximum',
+      price: currentLang === 'uk' ? 4000 : 99,
+      currency: currentLang === 'uk' ? '₴' : '$',
+      credits: 15000,
+      features: []
+    }
+  ];
+
+  const { data: plans, error, isLoading } = useQuery(
+    ['plans', currentLang], 
+    () => api.get(`/subscriptions/plans?lang=${currentLang}`).then(res => res.data),
+    {
+      retry: 2,
+      onError: (error) => {
+        console.error('Error fetching plans:', error);
+      }
+    }
   );
+
+  // Use fallback data if API fails
+  const displayPlans = plans || fallbackPlans;
 
   const planIcons = {
     FREE: Sparkles,
@@ -29,10 +75,80 @@ const PricingPage = () => {
     ENTERPRISE: Building
   };
 
+  // Plan hierarchy for comparison (lower index = lower tier)
+  const planHierarchy = ['FREE', 'BASIC', 'PRO', 'ENTERPRISE'];
+  
+  // Get current user plan
+  const currentUserPlan = user?.subscription?.plan || 'FREE';
+  const currentUserPlanIndex = planHierarchy.indexOf(currentUserPlan);
+  
+  // Function to determine button state and text
+  const getButtonConfig = (plan) => {
+    const planIndex = planHierarchy.indexOf(plan.id);
+    
+    if (plan.id === 'FREE') {
+      return {
+        text: t('getStarted'),
+        disabled: false,
+        className: 'btn btn-outline',
+        onClick: () => handleSelectPlan(plan)
+      };
+    }
+    
+    if (plan.id === currentUserPlan) {
+      return {
+        text: t('currentPlan'),
+        disabled: true,
+        className: 'btn btn-outline opacity-60 cursor-not-allowed',
+        onClick: () => {}
+      };
+    }
+    
+    if (planIndex > currentUserPlanIndex) {
+      // Higher tier plan - can upgrade (but may show popup if active subscription)
+      return {
+        text: t('upgradeNow'),
+        disabled: false,
+        className: `btn ${plan.id === 'PRO' ? 'btn-primary' : 'btn-secondary'}`,
+        onClick: () => handleSelectPlan(plan)
+      };
+    } else {
+      // Lower tier plan - cannot downgrade during active subscription
+      const isActiveSubscription = user?.subscription?.status === 'ACTIVE' && currentUserPlan !== 'FREE';
+      return {
+        text: isActiveSubscription ? t('downgradeLocked') : t('subscribeNow'),
+        disabled: isActiveSubscription,
+        className: isActiveSubscription 
+          ? 'btn btn-outline opacity-50 cursor-not-allowed'
+          : 'btn btn-secondary',
+        onClick: isActiveSubscription ? () => {} : () => handleSelectPlan(plan)
+      };
+    }
+  };
+
   const handleSelectPlan = (plan) => {
     if (!isAuthenticated) {
       navigate('/register');
-    } else if (plan.id !== 'FREE') {
+      return;
+    }
+    
+    // Check if user is trying to upgrade while having an active subscription
+    const hasActiveSubscription = user?.subscription?.status === 'ACTIVE' && currentUserPlan !== 'FREE';
+    const planIndex = planHierarchy.indexOf(plan.id);
+    const isUpgrade = planIndex > currentUserPlanIndex;
+    
+    if (hasActiveSubscription && isUpgrade) {
+      // Show popup message about cancelling current subscription first
+      toast.error(t('upgradeRequiresCancellation'), {
+        duration: 6000,
+        style: {
+          maxWidth: '400px',
+        }
+      });
+      return;
+    }
+    
+    if (plan.id !== 'FREE') {
       // For Ukrainian version, use WayForPay
       if (currentLang === 'uk') {
         if (plan.id === 'BASIC') {
@@ -62,9 +178,18 @@ const PricingPage = () => {
           </p>
         </div>
 
+        {/* Debug info */}
+        {error && (
+          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+            <strong>API Error:</strong> {error.message}
+            <br />
+            <small>Using fallback data. Check network tab for details.</small>
+          </div>
+        )}
+
         {/* Pricing Cards */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
-          {plans?.map((plan, index) => {
+          {displayPlans?.map((plan, index) => {
             const Icon = planIcons[plan.id];
             const isPopular = plan.id === 'PRO';
 
@@ -131,25 +256,57 @@ const PricingPage = () => {
                   </ul>
 
                   {/* CTA Button */}
-                  <button
-                    onClick={() => handleSelectPlan(plan)}
-                    className={`w-full py-3 rounded-lg font-medium transition mt-auto ${
-                      plan.id === 'FREE' 
-                        ? 'btn btn-outline'
-                        : isPopular
-                        ? 'btn btn-primary'
-                        : 'btn btn-secondary'
-                    }`}
-                  >
-                    {plan.id === 'FREE' ? t('getStarted') : t('upgradeNow')}
-                  </button>
+                  {(() => {
+                    const buttonConfig = getButtonConfig(plan);
+                    return (
+                      <button
+                        onClick={buttonConfig.onClick}
+                        disabled={buttonConfig.disabled}
+                        className={`w-full py-3 rounded-lg font-medium transition mt-auto ${buttonConfig.className}`}
+                        title={buttonConfig.disabled ? (plan.id === currentUserPlan ? t('currentPlan') : t('downgradeLocked')) : ''}
+                      >
+                        {buttonConfig.text}
+                      </button>
+                    );
+                  })()}
                   
-                  {/* Auto-renew text for paid plans */}
-                  {plan.id !== 'FREE' && (
-                    <p className="text-xs text-gray-500 text-center mt-2">
-                      Auto-Renew. Cancel Anytime
-                    </p>
-                  )}
+                  {/* Helpful message based on plan comparison */}
+                  {(() => {
+                    const planIndex = planHierarchy.indexOf(plan.id);
+                    const isActiveSubscription = user?.subscription?.status === 'ACTIVE' && currentUserPlan !== 'FREE';
+                    
+                    if (plan.id === 'FREE') {
+                      return null; // No message for FREE plan
+                    }
+                    
+                    if (plan.id === currentUserPlan) {
+                      return (
+                        <p className="text-xs text-blue-600 text-center mt-2 font-medium">
+                          ✓ {t('currentPlan')}
+                        </p>
+                      );
+                    }
+                    
+                    if (planIndex > currentUserPlanIndex) {
+                      return isActiveSubscription ? (
+                        <p className="text-xs text-orange-600 text-center mt-2">
+                          {t('cancelToUpgrade')}
+                        </p>
+                      ) : null;
+                    } else if (isActiveSubscription) {
+                      return (
+                        <p className="text-xs text-gray-500 text-center mt-2">
+                          {t('canDowngradeAfterExpiry')}
+                        </p>
+                      );
+                    } else {
+                      return (
+                        <p className="text-xs text-gray-500 text-center mt-2">
+                          Auto-Renew. Cancel Anytime
+                        </p>
+                      );
+                    }
+                  })()}
                 </div>
               </motion.div>
             );

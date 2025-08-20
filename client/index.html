@@ -34,12 +34,22 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="https://vheer.ai/" />
     
-    <!-- CSP Fixed according to user specification -->
-    <meta http-equiv="Content-Security-Policy" content="font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https: http:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' http://localhost:* ws://localhost:* https://vheer-api.onrender.com https://api.openai.com https://api.anthropic.com https://api.imgbb.com; default-src 'self' https://vheer-client.onrender.com;">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4YRCTLBJ8J"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-4YRCTLBJ8J');
+    </script>
+    
+    <!-- CSP Fixed according to user specification with Google Analytics support -->
+    <meta http-equiv="Content-Security-Policy" content="font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https: http: https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; connect-src 'self' http://localhost:* ws://localhost:* https://vheer-api.onrender.com https://api.openai.com https://api.anthropic.com https://api.imgbb.com https://www.google-analytics.com https://analytics.google.com; default-src 'self' https://vheer-client.onrender.com;">
     
     <script>
       // Log CSP application for debugging
-      console.log('CSP applied with font-src self data: for font loading');
+      console.log('CSP applied with Google Analytics and font-src self data: for font loading');
     </script>
     
     <!-- Favicon -->
