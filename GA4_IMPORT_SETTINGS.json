@@ -1,0 +1,135 @@
+{
+  "ga4_conversions": {
+    "instructions": "GA4 → Администрирование → События → Создать конверсию",
+    "conversions_to_create": [
+      {
+        "event_name": "purchase",
+        "description": "Покупка подписки",
+        "value": "Да"
+      },
+      {
+        "event_name": "ai_generation_completed", 
+        "description": "Завершенная AI-генерация",
+        "value": "Да"
+      },
+      {
+        "event_name": "sign_up",
+        "description": "Регистрация пользователя", 
+        "value": "Да"
+      },
+      {
+        "event_name": "subscription_purchase",
+        "description": "Покупка подписки (цель)",
+        "value": "Да"
+      },
+      {
+        "event_name": "image_downloaded",
+        "description": "Скачивание изображения",
+        "value": "Нет"
+      }
+    ]
+  },
+  "ga4_audiences": {
+    "instructions": "GA4 → Администрирование → Аудитории → Создать аудиторию",
+    "audiences_to_create": [
+      {
+        "name": "Активные AI-пользователи",
+        "description": "Пользователи с 5+ генерациями за 30 дней",
+        "conditions": "Событие ai_generation_started >= 5 за последние 30 дней"
+      },
+      {
+        "name": "Потенциальные покупатели", 
+        "description": "Смотрели pricing, но не покупали",
+        "conditions": "Событие view_item И НЕ purchase за последние 7 дней"
+      },
+      {
+        "name": "Неактивные пользователи",
+        "description": "Без активности 14+ дней",
+        "conditions": "НЕ page_view за последние 14 дней"
+      },
+      {
+        "name": "VIP пользователи",
+        "description": "С платной подпиской",
+        "conditions": "Событие purchase существует"
+      }
+    ]
+  },
+  "ga4_custom_dimensions": {
+    "instructions": "GA4 → Администрирование → Пользовательские определения",
+    "event_parameters": [
+      {
+        "parameter": "model_type",
+        "display_name": "AI Модель",
+        "description": "Тип AI модели (flux-pro, gpt-image)",
+        "scope": "EVENT"
+      },
+      {
+        "parameter": "style_selected", 
+        "display_name": "Выбранный стиль",
+        "description": "Стиль генерации (anime, cartoon, etc)",
+        "scope": "EVENT"
+      },
+      {
+        "parameter": "generation_time",
+        "display_name": "Время генерации", 
+        "description": "Время генерации в миллисекундах",
+        "scope": "EVENT"
+      },
+      {
+        "parameter": "credits_used",
+        "display_name": "Потрачено кредитов",
+        "description": "Количество потраченных кредитов",
+        "scope": "EVENT"
+      }
+    ],
+    "user_properties": [
+      {
+        "property": "user_type",
+        "display_name": "Тип пользователя",
+        "description": "Тип подписки пользователя"
+      },
+      {
+        "property": "subscription_status",
+        "display_name": "Статус подписки", 
+        "description": "Активная подписка или бесплатный план"
+      }
+    ]
+  },
+  "ga4_reports": {
+    "instructions": "GA4 → Исследования → Создать",
+    "reports_to_create": [
+      {
+        "name": "AI Performance Dashboard",
+        "type": "Произвольный отчет",
+        "dimensions": ["model_type", "style_selected"],
+        "metrics": ["Событий ai_generation_completed", "Среднее generation_time"],
+        "filters": "Название события = ai_generation_completed"
+      },
+      {
+        "name": "Revenue Funnel",
+        "type": "Анализ воронки",
+        "steps": [
+          "page_view (home)",
+          "ai_generation_started", 
+          "view_item (pricing)",
+          "begin_checkout",
+          "purchase"
+        ]
+      },
+      {
+        "name": "User Engagement",
+        "type": "Произвольный отчет",
+        "dimensions": ["date", "user_type"],
+        "metrics": ["Активные пользователи", "Новые пользователи", "Доход"]
+      }
+    ]
+  },
+  "quick_setup_checklist": {
+    "step_1": "✅ Создай 5 конверсий (purchase, ai_generation_completed, sign_up, subscription_purchase, image_downloaded)",
+    "step_2": "✅ Создай 4 аудитории (Активные AI-пользователи, Потенциальные покупатели, Неактивные, VIP)",
+    "step_3": "✅ Добавь 4 параметра событий (model_type, style_selected, generation_time, credits_used)", 
+    "step_4": "✅ Добавь 2 пользовательских свойства (user_type, subscription_status)",
+    "step_5": "✅ Создай 3 отчета (AI Performance, Revenue Funnel, User Engagement)",
+    "estimated_time": "15 минут общего времени"
+  }
+}
