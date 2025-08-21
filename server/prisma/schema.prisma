@@ -159,3 +159,12 @@ model Tag {
 
   @@map("colibrrri_tags")
 }
+
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt DateTime
+
+  @@map("colibrrri_sessions")
+}
