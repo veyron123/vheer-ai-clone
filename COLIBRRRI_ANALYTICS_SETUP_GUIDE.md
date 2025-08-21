@@ -194,9 +194,11 @@ total_credits - Общие кредиты (число)
 
 ### Интеграция с WayForPay
 
+**🌐 ВАЖНО: Основной домен проекта - colibrrri.com**
+
 Добавь параметры в URL успешного платежа:
 ```
-https://vheer.ai/payment-success?transactionId={{transactionId}}&amount={{amount}}&plan={{plan}}
+https://colibrrri.com/payment-success?transactionId={{transactionId}}&amount={{amount}}&plan={{plan}}
 ```
 
 ## 🎯 ПЛАН ДЕЙСТВИЙ НА ПЕРВУЮ НЕДЕЛЮ
