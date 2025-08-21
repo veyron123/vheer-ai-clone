@@ -1,5 +1,6 @@
 import React from 'react';
 import { Info } from 'lucide-react';
+import analytics from '../../services/analytics';
 
 const StyleSelector = ({ 
   styles, 
@@ -22,7 +23,11 @@ const StyleSelector = ({
           {styles.map((style) => (
             <button
               key={style.id}
-              onClick={() => onStyleChange(style.id)}
+              onClick={() => {
+                onStyleChange(style.id);
+                // 📊 Track style selection
+                analytics.aiStyleSelected(style.id, 'anime');
+              }}
               className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all ${
                 selectedStyle === style.id 
                   ? 'border-primary-500 shadow-md scale-[1.02]' 

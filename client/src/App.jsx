@@ -4,9 +4,13 @@ import { useAuthStore } from './stores/authStore';
 // Layout
 import Layout from './components/Layout';
 import LocalizedRoutes from './components/LocalizedRoutes';
+import { useGlobalAnalytics } from './hooks/useGlobalAnalytics';
 
 function App() {
   const checkAuth = useAuthStore(state => state.checkAuth);
+  
+  // 📊 Initialize global analytics
+  useGlobalAnalytics();
 
   // Check authentication on app load
   useEffect(() => {

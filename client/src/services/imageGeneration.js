@@ -2,6 +2,7 @@ import { fal } from "@fal-ai/client";
 import { getApiUrl } from '../config/api.config';
 import { useAuthStore } from '../stores/authStore';
 import { urlToBase64 } from '../utils/imageUtils';
+import analytics from './analytics';
 
 // Configure API key from environment variable
 fal.config({
@@ -369,6 +370,18 @@ const animeStylePrompts = {
  * @returns {Promise} Generated image data
  */
 export async function generateWithFlux(imageBase64, style = 'disney', model = 'flux-pro', aspectRatio = '1:1', abortSignal = null, customPrompt = null) {
+  const startTime = Date.now();
+  
+  // 📊 Track AI generation start
+  analytics.aiGenerationStarted({
+    model: model,
+    style: style,
+    prompt: customPrompt || 'image_to_image',
+    aspectRatio: aspectRatio,
+    userCredits: useAuthStore.getState().user?.totalCredits || 0,
+    creditCost: model === 'flux-pro' ? 10 : 5
+  });
+
   try {
     const styleConfig = animeStylePrompts[style] || animeStylePrompts.disney;
     
@@ -456,6 +469,16 @@ export async function generateWithFlux(imageBase64, style = 'disney', model = 'f
     const result = await response.json();
     
     if (result.success && result.image) {
+      // 📊 Track successful generation
+      analytics.aiGenerationCompleted({
+        model: model,
+        style: style,
+        generationTime: Date.now() - startTime,
+        success: true,
+        imagesCount: 1,
+        creditsUsed: model === 'flux-pro' ? 10 : 5
+      });
+
       return {
         images: [{
           url: result.image,
@@ -468,6 +491,17 @@ export async function generateWithFlux(imageBase64, style = 'disney', model = 'f
     
     throw new Error(result.error || 'Failed to generate image');
   } catch (error) {
+    // 📊 Track failed generation
+    analytics.aiGenerationCompleted({
+      model: model,
+      style: style,
+      generationTime: Date.now() - startTime,
+      success: false,
+      error: error.message,
+      imagesCount: 0,
+      creditsUsed: 0
+    });
+
     console.error('Error generating with Flux:', error);
     throw error;
   }

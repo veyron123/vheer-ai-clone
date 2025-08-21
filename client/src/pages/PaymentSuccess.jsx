@@ -1,15 +1,31 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import analytics from '../services/analytics';
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t, i18n } = useTranslation();
   const isUkrainian = i18n.language === 'uk';
 
   useEffect(() => {
+    // 📊 Track successful purchase
+    const transactionId = searchParams.get('transactionId') || `wp_${Date.now()}`;
+    const amount = searchParams.get('amount') || 400; // Default BASIC plan price
+    const plan = searchParams.get('plan') || 'BASIC';
+
+    analytics.subscriptionPurchased({
+      plan: plan,
+      amount: parseFloat(amount),
+      paymentMethod: 'wayforpay',
+      transactionId: transactionId
+    });
+
+    analytics.goalCompleted('subscription_purchase', parseFloat(amount));
+
     // Show success notification
     toast.success(isUkrainian ? 'Оплата успішна!' : 'Payment successful!');
     
