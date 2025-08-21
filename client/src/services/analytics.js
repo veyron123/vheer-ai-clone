@@ -216,6 +216,80 @@ class AnalyticsService {
     });
   }
 
+  // 🎯 GOOGLE ADS CONVERSIONS
+  trackGoogleAdsConversion(conversionId, conversionLabel, value = null, currency = 'USD', transactionId = null) {
+    if (!this.isInitialized) return;
+    
+    const conversionData = {
+      'send_to': `${conversionId}/${conversionLabel}`
+    };
+    
+    if (value) {
+      conversionData.value = value;
+      conversionData.currency = currency;
+    }
+    
+    if (transactionId) {
+      conversionData.transaction_id = transactionId;
+    }
+    
+    window.gtag('event', 'conversion', conversionData);
+    
+    if (this.debugMode) {
+      console.log('🎯 Google Ads conversion tracked:', {
+        conversionId,
+        conversionLabel,
+        value,
+        currency,
+        transactionId
+      });
+    }
+  }
+
+  // 💰 SUBSCRIPTION PURCHASE CONVERSION (GA4 + Google Ads)
+  trackSubscriptionPurchase(subscriptionPrice, transactionId, plan = 'unknown') {
+    // GA4 Enhanced E-commerce
+    this.subscriptionPurchased({
+      plan: plan,
+      amount: subscriptionPrice,
+      paymentMethod: 'wayforpay',
+      transactionId: transactionId
+    });
+    
+    // Google Ads Conversion (заменить на реальные ID после настройки)
+    // this.trackGoogleAdsConversion('AW-XXXXXXXXX', 'SUBSCRIPTION_CONVERSION_LABEL', subscriptionPrice, 'USD', transactionId);
+    
+    if (this.debugMode) {
+      console.log('💰 Subscription purchase tracked:', { subscriptionPrice, transactionId, plan });
+    }
+  }
+
+  // 📝 USER SIGNUP CONVERSION (GA4 + Google Ads)
+  trackUserSignUp(method = 'email') {
+    // GA4
+    this.userRegistered(method);
+    
+    // Google Ads Conversion (заменить на реальные ID после настройки)
+    // this.trackGoogleAdsConversion('AW-XXXXXXXXX', 'SIGNUP_CONVERSION_LABEL');
+    
+    if (this.debugMode) {
+      console.log('📝 User signup tracked:', { method });
+    }
+  }
+
+  // 🎨 AI GENERATION COMPLETED CONVERSION (GA4 + Google Ads)
+  trackAIGenerationCompleted(data) {
+    // GA4
+    this.aiGenerationCompleted(data);
+    
+    // Google Ads Conversion (заменить на реальные ID после настройки)
+    // this.trackGoogleAdsConversion('AW-XXXXXXXXX', 'AI_GENERATION_CONVERSION_LABEL');
+    
+    if (this.debugMode) {
+      console.log('🎨 AI generation completed tracked:', data);
+    }
+  }
+
   // 📊 CUSTOM DIMENSIONS
   setUserProperties(properties) {
     if (!this.isInitialized) return;
@@ -306,19 +380,22 @@ analytics.aiGenerationStarted({
   creditCost: 10
 });
 
-// E-commerce
-analytics.subscriptionPurchased({
-  plan: 'pro',
-  amount: 19.99,
-  paymentMethod: 'wayforpay',
-  transactionId: 'wp_12345'
-});
+// E-commerce with Google Ads Conversion
+analytics.trackSubscriptionPurchase(19.99, 'wp_12345', 'pro');
 
-// User Engagement
-analytics.imageDownloaded({
-  imageId: 'img_123',
+// User Registration with Google Ads Conversion
+analytics.trackUserSignUp('google');
+
+// AI Generation with Google Ads Conversion
+analytics.trackAIGenerationCompleted({
   model: 'flux-pro',
   style: 'anime',
-  format: 'png'
+  generationTime: 15000,
+  success: true,
+  imagesCount: 1,
+  creditsUsed: 10
 });
+
+// Direct Google Ads Conversion
+analytics.trackGoogleAdsConversion('AW-XXXXXXXXX', 'CONVERSION_LABEL', 29.99, 'USD', 'txn_123');
 */

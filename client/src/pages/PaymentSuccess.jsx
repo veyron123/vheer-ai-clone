@@ -17,13 +17,10 @@ const PaymentSuccess = () => {
     const amount = searchParams.get('amount') || 400; // Default BASIC plan price
     const plan = searchParams.get('plan') || 'BASIC';
 
-    analytics.subscriptionPurchased({
-      plan: plan,
-      amount: parseFloat(amount),
-      paymentMethod: 'wayforpay',
-      transactionId: transactionId
-    });
-
+    // Track subscription purchase with Google Ads conversion
+    analytics.trackSubscriptionPurchase(parseFloat(amount), transactionId, plan);
+    
+    // Additional goal completed event
     analytics.goalCompleted('subscription_purchase', parseFloat(amount));
 
     // Show success notification
