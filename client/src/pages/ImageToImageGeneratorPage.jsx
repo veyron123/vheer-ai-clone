@@ -50,7 +50,7 @@ const ImageToImageGeneratorPage = () => {
   const canShowMockupButton = () => {
     return (
       generatedImage &&
-      aiModel === 'gpt-image' &&
+      (aiModel === 'gpt-image' || aiModel === 'qwen-image') &&
       (aspectRatio === '1:1' || aspectRatio === '4:3')
     );
   };
@@ -140,7 +140,7 @@ const ImageToImageGeneratorPage = () => {
                 <ImageAspectRatioSelector
                   selectedRatio={aspectRatio}
                   onRatioChange={setAspectRatio}
-                  disabled={aiModel !== 'gpt-image' && aiModel !== 'midjourney'}
+                  disabled={aiModel !== 'gpt-image' && aiModel !== 'midjourney' && aiModel !== 'qwen-image'}
                 />
                 
                 <ImageGenerateButton

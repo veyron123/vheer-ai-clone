@@ -43,6 +43,11 @@ export const AI_MODELS = {
     id: 'gpt-image',
     name: 'GPT Image',
     badge: { text: '👑', color: 'bg-red-500 text-white' }
+  },
+  QWEN_IMAGE: {
+    id: 'qwen-image',
+    name: 'Qwen Image',
+    badge: { text: 'NEW', color: 'bg-green-500 text-white' }
   }
 };
 

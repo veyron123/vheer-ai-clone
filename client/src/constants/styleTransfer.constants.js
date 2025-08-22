@@ -1,3 +1,27 @@
+// AI Models Configuration for Style Transfer
+export const STYLE_TRANSFER_AI_MODELS = {
+  FLUX_PRO: {
+    id: 'flux-pro',
+    name: 'Flux Pro',
+    badge: { text: 'Fast', color: 'bg-yellow-400 text-black' }
+  },
+  FLUX_MAX: {
+    id: 'flux-max',
+    name: 'Flux Max',
+    badge: { text: 'Quality', color: 'bg-primary-400 text-white' }
+  },
+  GPT_IMAGE: {
+    id: 'gpt-image',
+    name: 'GPT Image',
+    badge: { text: '👑', color: 'bg-red-500 text-white' }
+  },
+  QWEN_IMAGE: {
+    id: 'qwen-image',
+    name: 'Qwen Image',
+    badge: { text: 'NEW', color: 'bg-green-500 text-white' }
+  }
+};
+
 // Style Transfer Configuration
 export const STYLE_TRANSFER_STYLES = [
   { id: 'studio-ghibli', name: 'Studio Ghibli Style', image: '/Style Transfer images/studio-ghibli.jpg' },

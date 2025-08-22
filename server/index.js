@@ -20,6 +20,7 @@ import paymentRoutes from './routes/payment.routes.js';
 import creditRoutes from './routes/credit.routes.js';
 import fluxRoutes from './routes/flux.routes.js';
 import gptimageRoutes from './routes/gptimage.routes.js';
+import qwenRoutes from './routes/qwen.routes.js';
 import midjourneyRoutes from './routes/midjourney.routes.js';
 import wayforpayRoutes from './routes/wayforpay.routes.js';
 import testSubscriptionRoutes from './routes/test-subscription-expiry.js';
@@ -119,6 +120,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/credits', creditRoutes);
 app.use('/api/flux', fluxRoutes);
 app.use('/api/gptimage', gptimageRoutes);
+app.use('/api/qwen', qwenRoutes);
 app.use('/api/midjourney', midjourneyRoutes);
 app.use('/api/payments/wayforpay', wayforpayRoutes);
 

@@ -522,6 +522,111 @@ export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = '
     return await generateWithFlux(imageUrl, style, aiModel, aspectRatio, abortSignal, customPrompt);
   }
   
+  // Use Qwen Image for generation
+  if (aiModel === 'qwen-image') {
+    try {
+      const styleConfig = animeStylePrompts[style] || animeStylePrompts.disney;
+      
+      // Get auth token from store
+      const token = useAuthStore.getState().token;
+      
+      // Upload image to FAL storage first
+      let uploadedImageUrl;
+      
+      if (imageUrl.startsWith('http')) {
+        // If it's already a URL, use it directly
+        uploadedImageUrl = imageUrl;
+      } else {
+        // If it's base64, convert to blob and upload to FAL storage
+        let base64Data = imageUrl;
+        if (!imageUrl.startsWith('data:')) {
+          base64Data = await urlToBase64(imageUrl);
+        }
+        
+        // Convert base64 to blob without using fetch
+        // Extract the base64 content and mime type
+        const [header, base64Content] = base64Data.split(',');
+        const mimeMatch = header.match(/:(.*?);/);
+        const mimeType = mimeMatch ? mimeMatch[1] : 'image/png';
+        
+        // Decode base64 to binary
+        const binaryString = atob(base64Content);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        
+        // Create blob from binary data
+        const blob = new Blob([bytes], { type: mimeType });
+        
+        // Create a File object from blob
+        const file = new File([blob], 'image.png', { type: mimeType });
+        
+        // Upload to FAL storage
+        console.log('Uploading image to FAL storage...');
+        uploadedImageUrl = await fal.storage.upload(file);
+        console.log('Image uploaded to FAL:', uploadedImageUrl);
+      }
+      
+      // Construct the prompt for Qwen Image
+      let prompt;
+      if (customPrompt && style === 'custom') {
+        prompt = `Transform this photo with custom style: ${customPrompt}`;
+      } else {
+        prompt = `Transform this photo into ${styleConfig.prefix} style, ${styleConfig.suffix}, high quality, masterpiece`;
+      }
+      
+      // Setup headers
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      // Add authorization header if user is logged in
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      // Use our backend proxy for Qwen Image API with the uploaded URL
+      const response = await fetch(getApiUrl('/qwen/edit'), {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          prompt: prompt,
+          input_image: uploadedImageUrl,
+          style: style,
+          aspectRatio: aspectRatio,
+          negativePrompt: 'blurry, ugly, low quality'
+        }),
+        signal: abortSignal
+      });
+      
+      if (!response.ok) {
+        // Handle authentication errors
+        if (response.status === 401) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Authentication required');
+        }
+        
+        // Handle other errors
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || errorData.error || `Server error: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.success && result.images && result.images.length > 0) {
+        return {
+          images: result.images
+        };
+      }
+      
+      throw new Error(result.error || 'Failed to generate image');
+    } catch (error) {
+      console.error("Error generating with Qwen Image:", error);
+      throw error;
+    }
+  }
+
   // Use GPT IMAGE for image-to-image generation
   if (aiModel === 'gpt-image') {
     try {

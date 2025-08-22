@@ -18,6 +18,13 @@ export const MODEL_PRICING = {
     credits: 30,
     description: 'Advanced AI'
   },
+
+  // Qwen Image Models
+  'qwen-image': {
+    name: 'Qwen Image',
+    credits: 30,
+    description: 'High-quality AI'
+  },
   
   // Midjourney Models (future)
   'midjourney': {

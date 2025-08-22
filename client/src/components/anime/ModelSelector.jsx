@@ -10,7 +10,7 @@ const ModelSelector = ({ selectedModel, onModelChange }) => {
         <span className="text-sm font-medium">Model</span>
       </label>
       
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {models.map((model) => (
           <button
             key={model.id}

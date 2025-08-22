@@ -215,6 +215,144 @@ export async function generateWithMidjourneyImageToImage(imageBase64, positivePr
 }
 
 /**
+ * Generate image-to-image transformation using Qwen Image
+ * @param {string} imageBase64 - Base64 encoded image
+ * @param {string} positivePrompt - Positive prompt for generation
+ * @param {string} negativePrompt - Negative prompt for generation
+ * @param {number} creativeStrength - Creative strength (1-10)
+ * @param {number} controlStrength - Control strength (0-5)
+ * @param {string} aspectRatio - Aspect ratio for generation
+ * @returns {Promise} Generated image data
+ */
+export async function generateWithQwenImageToImage(imageBase64, positivePrompt, negativePrompt, creativeStrength, controlStrength, aspectRatio = '1:1', abortSignal = null) {
+  try {
+    // Upload image to FAL storage first
+    let uploadedImageUrl;
+    
+    if (imageBase64.startsWith('http')) {
+      // If it's already a URL, use it directly
+      uploadedImageUrl = imageBase64;
+    } else {
+      // If it's base64, convert to blob and upload to FAL storage
+      let base64Data = imageBase64;
+      if (!imageBase64.startsWith('data:')) {
+        base64Data = await urlToBase64(imageBase64);
+      }
+      
+      // Convert base64 to blob without using fetch (avoids CSP issues)
+      // Extract the base64 content and mime type
+      const [header, base64Content] = base64Data.split(',');
+      const mimeMatch = header.match(/:(.*?);/);
+      const mimeType = mimeMatch ? mimeMatch[1] : 'image/png';
+      
+      // Decode base64 to binary
+      const binaryString = atob(base64Content);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      
+      // Create blob from binary data
+      const blob = new Blob([bytes], { type: mimeType });
+      
+      // Create a File object from blob
+      const file = new File([blob], 'image.png', { type: mimeType });
+      
+      // Upload to FAL storage
+      console.log('Uploading image to FAL storage for Qwen...');
+      uploadedImageUrl = await fal.storage.upload(file);
+      console.log('Image uploaded to FAL:', uploadedImageUrl);
+    }
+    
+    // Construct the prompt for Qwen Image
+    const fullPrompt = positivePrompt || "Transform this image with high quality, detailed, professional";
+    
+    // Get auth token from store
+    const token = useAuthStore.getState().token;
+    
+    // Setup headers
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    
+    // Add authorization header if user is logged in
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    // Use provided abort signal or create timeout controller
+    let controller = null;
+    let timeoutId = null;
+    
+    if (abortSignal) {
+      // Use the provided abort signal
+      if (abortSignal.aborted) {
+        throw new DOMException('Request was aborted', 'AbortError');
+      }
+    } else {
+      // Create timeout controller if no abort signal provided
+      controller = new AbortController();
+      timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes timeout
+    }
+    
+    const finalSignal = abortSignal || controller.signal;
+
+    // Use our backend proxy for Qwen Image API with the uploaded URL
+    const response = await fetch(getApiUrl('/qwen/edit'), {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        prompt: fullPrompt,
+        negative_prompt: negativePrompt,
+        input_image: uploadedImageUrl,
+        aspectRatio: aspectRatio
+      }),
+      signal: finalSignal
+    }).finally(() => {
+      if (timeoutId) clearTimeout(timeoutId);
+    });
+    
+    if (!response.ok) {
+      // Handle cancelled requests
+      if (response.status === 499) {
+        const errorData = await response.json().catch(() => ({}));
+        if (errorData.cancelled) {
+          throw new DOMException('Request was cancelled', 'AbortError');
+        }
+      }
+      
+      // Handle authentication errors
+      if (response.status === 401) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Authentication required');
+      }
+      
+      // Handle other errors
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || `Server error: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    
+    if (result.success && result.images && result.images.length > 0) {
+      return {
+        images: result.images.map(img => ({
+          url: img.url,
+          width: img.width || 1024,
+          height: img.height || 1024,
+          content_type: img.content_type || 'image/png'
+        }))
+      };
+    }
+    
+    throw new Error(result.error || 'Failed to generate image');
+  } catch (error) {
+    console.error("Error generating with Qwen Image:", error);
+    throw error;
+  }
+}
+
+/**
  * Generate image-to-image transformation using GPT IMAGE
  * @param {string} imageBase64 - Base64 encoded image
  * @param {string} positivePrompt - Positive prompt for generation
@@ -332,7 +470,7 @@ export async function generateWithGPTImageToImage(imageBase64, positivePrompt, n
  * @param {string} negativePrompt - Negative prompt for generation
  * @param {number} creativeStrength - Creative strength (1-10)
  * @param {number} controlStrength - Control strength (0-5)
- * @param {string} aiModel - AI model to use ('flux-pro', 'flux-max', or 'gpt-image')
+ * @param {string} aiModel - AI model to use ('flux-pro', 'flux-max', 'gpt-image', or 'qwen-image')
  * @param {string} aspectRatio - Aspect ratio for generation ('1:1', '16:9', etc.)
  * @returns {Promise} Generated image data
  */
@@ -345,6 +483,11 @@ export async function generateImageToImage(imageUrl, positivePrompt, negativePro
   // Use GPT IMAGE for image-to-image generation
   if (aiModel === 'gpt-image') {
     return await generateWithGPTImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aspectRatio, abortSignal);
+  }
+  
+  // Use Qwen Image for image-to-image generation
+  if (aiModel === 'qwen-image') {
+    return await generateWithQwenImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aspectRatio, abortSignal);
   }
   
   // Use Midjourney for image-to-image generation (temporarily disabled)

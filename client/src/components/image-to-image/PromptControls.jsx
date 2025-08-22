@@ -31,16 +31,6 @@ const PromptControls = ({
 
   return (
     <div className="space-y-6">
-      {/* Tips Section */}
-      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
-          <div className="text-sm text-gray-700">
-            <p className="font-medium mb-1">💡 Tips:</p>
-            <p>Use this tool to generate variations of original image by adjusting the prompts and parameters. For consistent characters, try the <span className="font-medium">Kontext Editor</span>, powered by Kontext models.</p>
-          </div>
-        </div>
-      </div>
 
       {/* Positive Prompts */}
       <div>

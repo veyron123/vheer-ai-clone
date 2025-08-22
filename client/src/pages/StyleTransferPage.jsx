@@ -13,7 +13,7 @@ import SEO from '../components/SEO';
 import CreditDisplay from '../components/CreditDisplay';
 
 // Constants
-import { STYLE_TRANSFER_STYLES } from '../constants/styleTransfer.constants';
+import { STYLE_TRANSFER_STYLES, STYLE_TRANSFER_AI_MODELS } from '../constants/styleTransfer.constants';
 
 // Hooks
 import { useImageGeneration } from '../hooks/useImageGeneration';
@@ -96,10 +96,30 @@ const StyleTransferPage = () => {
               onCustomStyleChange={setCustomStyle}
             />
             
-            <ModelSelector
-              selectedModel={aiModel}
-              onModelChange={setAiModel}
-            />
+            <div className="mb-6">
+              <label className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium">AI Model</span>
+              </label>
+              
+              <div className="grid grid-cols-2 gap-2">
+                {Object.values(STYLE_TRANSFER_AI_MODELS).map((model) => (
+                  <button
+                    key={model.id}
+                    onClick={() => setAiModel(model.id)}
+                    className={`relative py-2 px-3 rounded-lg border text-sm font-medium transition-all ${
+                      aiModel === model.id
+                        ? 'border-primary-500 bg-primary-50 text-primary-700'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    {model.name}
+                    <span className={`absolute -top-3 -right-2 ${model.badge.color} text-sm px-2 py-0.5 rounded-full font-bold`}>
+                      {model.badge.text}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
             
             <AspectRatioSelector
               selectedRatio={aspectRatio}

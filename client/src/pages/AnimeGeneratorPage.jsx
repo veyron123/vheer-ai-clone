@@ -47,7 +47,7 @@ const AnimeGeneratorPage = () => {
   const canShowMockupButton = () => {
     return (
       generatedImage &&
-      aiModel === 'gpt-image' &&
+      (aiModel === 'gpt-image' || aiModel === 'qwen-image') &&
       (aspectRatio === '1:1' || aspectRatio === '4:3')
     );
   };
@@ -110,7 +110,7 @@ const AnimeGeneratorPage = () => {
             <AspectRatioSelector
               selectedRatio={aspectRatio}
               onRatioChange={setAspectRatio}
-              disabled={aiModel !== 'gpt-image'}
+              disabled={aiModel !== 'gpt-image' && aiModel !== 'qwen-image'}
               aiModel={aiModel}
             />
             
