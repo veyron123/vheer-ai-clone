@@ -93,7 +93,7 @@ const LanguageRoutes = () => {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/anime-generator" element={<AnimeGeneratorPage />} />
       <Route path="/image-to-image-generator" element={<ImageToImageGeneratorPage />} />
-      <Route path="/generate" element={<StyleTransferPage />} />
+      <Route path="/image-style-transfer" element={<StyleTransferPage />} />
       
       {/* Mockup test pages */}
       <Route path="/mockup-test" element={<MockupTestPage />} />

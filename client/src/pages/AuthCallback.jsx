@@ -29,7 +29,7 @@ const AuthCallback = () => {
           setAuthData(user, token);
           
           toast.success(`Welcome ${user.fullName || user.username}!`);
-          navigate('/generate');
+          navigate('/image-style-transfer');
         } catch (error) {
           console.error('Error parsing OAuth response:', error);
           toast.error('Authentication failed. Please try again.');

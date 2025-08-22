@@ -23,7 +23,7 @@ const LoginPage = () => {
     try {
       await login(data.email, data.password);
       toast.success('Welcome back!');
-      navigate('/generate');
+      navigate('/image-style-transfer');
     } catch (error) {
       toast.error(error.response?.data?.error || 'Login failed');
     }

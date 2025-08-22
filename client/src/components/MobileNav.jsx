@@ -42,7 +42,7 @@ const MobileNav = () => {
 
   const menuItems = [
     { path: '/', label: 'Home', icon: Home },
-    { path: '/generate', label: 'Generate', icon: Sparkles },
+    { path: '/image-style-transfer', label: 'Generate', icon: Sparkles },
     { path: '/anime-generator', label: 'Anime', icon: Image },
     { path: '/image-to-image', label: 'Transform', icon: Palette },
     { path: '/gallery', label: 'Gallery', icon: Grid3x3 },

@@ -524,7 +524,7 @@ const ProfilePage = () => {
                     {t('images.empty_description')}
                   </p>
                   <button 
-                    onClick={() => window.location.href = '/generate'}
+                    onClick={() => window.location.href = '/image-style-transfer'}
                     className="btn btn-primary"
                   >
                     {t('images.buttons.start_generating')}

@@ -96,7 +96,7 @@ function getPageName(pathname) {
   
   const pageMap = {
     '/': 'home',
-    '/generate': 'ai_generator',
+    '/image-style-transfer': 'ai_generator',
     '/anime': 'anime_generator', 
     '/image-to-image': 'image_to_image',
     '/style-transfer': 'style_transfer',

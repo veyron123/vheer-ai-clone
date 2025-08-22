@@ -64,7 +64,7 @@ const HomePage = () => {
       image: '/style-transfer.webp',
       icon: <Brush className="w-5 h-5" />,
       color: 'from-blue-400 to-cyan-500',
-      link: '/generate'
+      link: '/image-style-transfer'
     }
   ];
 
@@ -286,7 +286,7 @@ const HomePage = () => {
             transition={{ duration: 0.5, delay: 0.6 }}
             className="flex justify-center mt-12"
           >
-            <Link to={createLocalizedLink('/generate')} className="btn btn-primary text-lg px-8 py-4">
+            <Link to={createLocalizedLink('/image-style-transfer')} className="btn btn-primary text-lg px-8 py-4">
               <Sparkles className="w-5 h-5 mr-2" />
               {t('buttons.start_creating')}
             </Link>
@@ -554,7 +554,7 @@ const HomePage = () => {
                         <div className="flex items-center justify-between">
                           <span className="text-white/80 text-sm">AI Generated</span>
                           <Link 
-                            to={activeCategory === 'anime' ? createLocalizedLink('/anime-generator') : createLocalizedLink('/generate')} 
+                            to={activeCategory === 'anime' ? createLocalizedLink('/anime-generator') : createLocalizedLink('/image-style-transfer')} 
                             className="text-white bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm hover:bg-white/30 transition-colors"
                           >
                             {t('buttons.try_now')} →

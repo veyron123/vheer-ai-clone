@@ -61,7 +61,7 @@ const Layout = ({ children }) => {
 
             {/* Desktop Navigation */}
             <div className="flex items-center space-x-8">
-              <Link to={createLocalizedLink('/generate')} className="flex items-center space-x-1 text-gray-700 hover:text-blue-500 transition group">
+              <Link to={createLocalizedLink('/image-style-transfer')} className="flex items-center space-x-1 text-gray-700 hover:text-blue-500 transition group">
                 <Sparkles className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
                 <span>{t('navigation.generate')}</span>
               </Link>
@@ -204,9 +204,9 @@ const Layout = ({ children }) => {
             <div>
               <h3 className="font-semibold text-gray-900 mb-4 uppercase text-sm">{t('footer.tools.title')}</h3>
               <ul className="space-y-2 text-gray-600 text-sm">
-                <li><Link to={createLocalizedLink('/generate')} className="hover:text-gray-900 transition">{t('footer.tools.anime_portrait')}</Link></li>
-                <li><Link to={createLocalizedLink('/generate')} className="hover:text-gray-900 transition">{t('footer.tools.image_to_image')}</Link></li>
-                <li><Link to={createLocalizedLink('/generate')} className="hover:text-gray-900 transition">{t('footer.tools.style_transfer')}</Link></li>
+                <li><Link to={createLocalizedLink('/image-style-transfer')} className="hover:text-gray-900 transition">{t('footer.tools.anime_portrait')}</Link></li>
+                <li><Link to={createLocalizedLink('/image-style-transfer')} className="hover:text-gray-900 transition">{t('footer.tools.image_to_image')}</Link></li>
+                <li><Link to={createLocalizedLink('/image-style-transfer')} className="hover:text-gray-900 transition">{t('footer.tools.style_transfer')}</Link></li>
               </ul>
             </div>
           </div>

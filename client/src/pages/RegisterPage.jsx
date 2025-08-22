@@ -31,7 +31,7 @@ const RegisterPage = () => {
         fullName: data.fullName
       });
       toast.success('Account created successfully!');
-      navigate('/generate');
+      navigate('/image-style-transfer');
     } catch (error) {
       toast.error(error.response?.data?.error || 'Registration failed');
     }
