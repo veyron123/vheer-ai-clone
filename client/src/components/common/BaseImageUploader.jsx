@@ -246,6 +246,7 @@ const BaseImageUploader = ({
             )}
           </div>
         </div>
+        
       </div>
     );
   }
@@ -349,6 +350,7 @@ const BaseImageUploader = ({
           <p className="text-sm text-gray-400">{allowedFormats}</p>
         </>
       )}
+      
       
       <input 
         ref={inputRef}

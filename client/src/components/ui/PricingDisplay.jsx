@@ -12,17 +12,22 @@ import { useAuthStore } from '../../stores/authStore';
  */
 const PricingDisplay = ({ 
   modelId, 
+  numImages = 1,
   className = '', 
   showAffordability = true 
 }) => {
   const user = useAuthStore(state => state.user);
   const pricing = getModelPricing(modelId);
   const userCredits = user?.totalCredits || 0;
-  const canAfford = canAffordGeneration(userCredits, modelId);
+  const totalCost = pricing.credits * numImages;
+  const canAfford = userCredits >= totalCost;
 
-  // Format the pricing text to match screenshot: "20 / image, faster & better"
+  // Format the pricing text to match screenshot: "20 credits/image" or "60 credits (20×3)"
   const getPricingText = () => {
-    return `${pricing.credits} / image, ${pricing.description}`;
+    if (numImages === 1) {
+      return `${pricing.credits} credits/image`;
+    }
+    return `${totalCost} credits (${pricing.credits}×${numImages})`;
   };
 
   // Get color based on affordability

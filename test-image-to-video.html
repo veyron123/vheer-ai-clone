@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image-to-Video Test - Runway AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .container {
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        h1 {
+            color: #4CAF50;
+            text-align: center;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #333;
+            border-radius: 8px;
+        }
+        .video-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        video {
+            width: 100%;
+            max-width: 600px;
+            border-radius: 8px;
+            background: #000;
+        }
+        .info {
+            background: #444;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .url {
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 12px;
+            color: #64B5F6;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .source-image {
+            max-width: 300px;
+            border-radius: 8px;
+            margin: 10px;
+        }
+        .comparison {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .arrow {
+            font-size: 24px;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬➡️🖼️ Image-to-Video Generation Test</h1>
+        
+        <div class="test-section">
+            <h2 class="success">✅ Test Results: Portrait Animation</h2>
+            <div class="info">
+                <p><strong>Source Image:</strong> Portrait from Unsplash</p>
+                <p><strong>Animation Prompt:</strong> "The person blinks naturally and breathes gently"</p>
+                <p><strong>Task ID:</strong> 1c35e246-917e-4e2a-bd7a-522e0b135610</p>
+                <p><strong>Duration:</strong> 5 seconds</p>
+                <p><strong>Resolution:</strong> 1280x720 (720p)</p>
+                <p><strong>Mode:</strong> Image-to-Video</p>
+            </div>
+
+            <div class="comparison">
+                <div>
+                    <h3>Source Image</h3>
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500" 
+                         alt="Source Image" class="source-image">
+                </div>
+                
+                <div class="arrow">➡️</div>
+                
+                <div>
+                    <h3>Generated Video</h3>
+                    <video controls autoplay muted loop>
+                        <source src="https://res.cloudinary.com/df9joii9s/video/upload/v1755971295/vheer-ai/runway-videos/runway_1c35e246-917e-4e2a-bd7a-522e0b135610.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            </div>
+
+            <div class="info">
+                <h4>Video URLs:</h4>
+                <p><strong>Cloudinary:</strong></p>
+                <p class="url">https://res.cloudinary.com/df9joii9s/video/upload/v1755971295/vheer-ai/runway-videos/runway_1c35e246-917e-4e2a-bd7a-522e0b135610.mp4</p>
+                <p><strong>Thumbnail:</strong></p>
+                <p class="url">https://tempfile.aiquickdraw.com/p/ddc62b28-bb35-4fa2-ab6f-388daa547c3d.jpg</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🧪 Test New Image-to-Video Generation</h2>
+            <div style="display: grid; gap: 15px;">
+                <div>
+                    <label>Image URL:</label>
+                    <input type="url" id="imageUrl" placeholder="https://example.com/image.jpg" style="width: 100%; padding: 8px; margin-top: 5px;">
+                </div>
+                <div>
+                    <label>Animation Prompt:</label>
+                    <textarea id="animationPrompt" rows="3" placeholder="Describe how to animate the image..." style="width: 100%; padding: 8px; margin-top: 5px;">The subject slowly comes to life with gentle movement</textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                    <div>
+                        <label>Duration:</label>
+                        <select id="duration" style="width: 100%; padding: 8px; margin-top: 5px;">
+                            <option value="5">5 seconds</option>
+                            <option value="8">8 seconds</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Quality:</label>
+                        <select id="quality" style="width: 100%; padding: 8px; margin-top: 5px;">
+                            <option value="720p">720p HD</option>
+                            <option value="1080p">1080p Full HD</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Aspect Ratio:</label>
+                        <select id="aspectRatio" style="width: 100%; padding: 8px; margin-top: 5px;">
+                            <option value="16:9">16:9 Landscape</option>
+                            <option value="9:16">9:16 Portrait</option>
+                            <option value="1:1">1:1 Square</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="generateImageToVideo()">🎬 Generate Image-to-Video</button>
+                <button onclick="useExampleImage()">📷 Use Example Image</button>
+            </div>
+            
+            <div id="generationStatus" style="margin-top: 20px;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>💡 Image-to-Video Example Prompts</h2>
+            <div style="display: grid; gap: 15px;">
+                <div>
+                    <h3>Animation Styles</h3>
+                    <ul>
+                        <li>The subject slowly comes to life with gentle movement</li>
+                        <li>Camera slowly zooms in while keeping the focus sharp</li>
+                        <li>Add subtle motion blur and flowing movement</li>
+                        <li>Create a parallax effect with background separation</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Environmental Effects</h3>
+                    <ul>
+                        <li>Add falling leaves and gentle wind effects around the scene</li>
+                        <li>Rain starts falling with realistic water droplets</li>
+                        <li>Smoke or mist slowly rolls through the scene</li>
+                        <li>Sunlight filters through and creates moving shadows</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Character Animation</h3>
+                    <ul>
+                        <li>The person blinks naturally and breathes gently</li>
+                        <li>Hair and clothing move slightly in a gentle breeze</li>
+                        <li>Eyes follow a moving object with subtle head movement</li>
+                        <li>Facial expression gradually changes from neutral to smiling</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function useExampleImage() {
+            document.getElementById('imageUrl').value = 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=500';
+            document.getElementById('animationPrompt').value = 'Hair and clothing move slightly in a gentle breeze, eyes blink naturally';
+        }
+
+        async function generateImageToVideo() {
+            const imageUrl = document.getElementById('imageUrl').value;
+            const prompt = document.getElementById('animationPrompt').value;
+            const duration = parseInt(document.getElementById('duration').value);
+            const quality = document.getElementById('quality').value;
+            const aspectRatio = document.getElementById('aspectRatio').value;
+            
+            if (!imageUrl || !prompt) {
+                alert('Please provide both image URL and animation prompt');
+                return;
+            }
+
+            const statusDiv = document.getElementById('generationStatus');
+            statusDiv.innerHTML = '<p style="color: #4CAF50;">🚀 Starting image-to-video generation...</p>';
+
+            try {
+                const response = await fetch('http://localhost:5000/api/runway-video/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt,
+                        imageUrl,
+                        duration,
+                        quality,
+                        aspectRatio
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusDiv.innerHTML = `
+                        <div style="background: #4CAF50; padding: 10px; border-radius: 5px; margin: 10px 0;">
+                            <p><strong>✅ Generation Started!</strong></p>
+                            <p>Task ID: ${data.taskId}</p>
+                            <p>Credits Used: ${data.creditsUsed}</p>
+                            <p>Estimated Time: ${data.estimatedTime}</p>
+                        </div>
+                        <p>Check status in 2-3 minutes by refreshing this page with the task ID.</p>
+                    `;
+                    
+                    // Start checking status
+                    checkStatus(data.taskId);
+                } else {
+                    statusDiv.innerHTML = `<p style="color: red;">❌ Error: ${data.message}</p>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function checkStatus(taskId) {
+            const statusDiv = document.getElementById('generationStatus');
+            let attempts = 0;
+            const maxAttempts = 60; // 5 minutes
+            
+            const statusCheck = async () => {
+                attempts++;
+                
+                try {
+                    const response = await fetch(`http://localhost:5000/api/runway-video/status/${taskId}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        if (data.status === 'completed' && data.videoUrl) {
+                            statusDiv.innerHTML = `
+                                <div style="background: #4CAF50; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                                    <p><strong>🎉 Video Generated Successfully!</strong></p>
+                                    <video controls style="width: 100%; max-width: 400px; margin: 10px 0;">
+                                        <source src="${data.videoUrl}" type="video/mp4">
+                                    </video>
+                                    <p><strong>URL:</strong> <a href="${data.videoUrl}" target="_blank" style="color: #64B5F6;">${data.videoUrl}</a></p>
+                                </div>
+                            `;
+                            return;
+                        } else if (data.status === 'failed') {
+                            statusDiv.innerHTML = `<p style="color: red;">❌ Generation Failed: ${data.error}</p>`;
+                            return;
+                        } else {
+                            statusDiv.innerHTML = `
+                                <p style="color: #FFC107;">⏳ ${data.message} (${data.progress}%)</p>
+                                <div style="background: #333; height: 10px; border-radius: 5px; margin: 10px 0;">
+                                    <div style="background: #4CAF50; height: 100%; width: ${data.progress}%; border-radius: 5px; transition: width 0.3s;"></div>
+                                </div>
+                                <p>Attempt ${attempts}/${maxAttempts}</p>
+                            `;
+                        }
+                    }
+                    
+                    if (attempts < maxAttempts) {
+                        setTimeout(statusCheck, 10000); // Check every 10 seconds
+                    } else {
+                        statusDiv.innerHTML += '<p style="color: #FFC107;">⚠️ Status checking timed out. Video may still be processing.</p>';
+                    }
+                } catch (error) {
+                    if (attempts < maxAttempts) {
+                        setTimeout(statusCheck, 10000);
+                    }
+                }
+            };
+            
+            setTimeout(statusCheck, 10000); // Start checking after 10 seconds
+        }
+    </script>
+</body>
+</html>

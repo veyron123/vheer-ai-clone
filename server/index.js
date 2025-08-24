@@ -21,9 +21,14 @@ import creditRoutes from './routes/credit.routes.js';
 import fluxRoutes from './routes/flux.routes.js';
 import gptimageRoutes from './routes/gptimage.routes.js';
 import qwenRoutes from './routes/qwen.routes.js';
+import gptImageTextToImageRoutes from './routes/gptImageTextToImage.routes.js';
 import midjourneyRoutes from './routes/midjourney.routes.js';
+// Video generator moved to .ignore folder
+// import lumaVideoRoutes from './routes/lumaVideoRoutes.js';
+import runwayVideoRoutes from './routes/runwayVideo.routes.js';
 import wayforpayRoutes from './routes/wayforpay.routes.js';
 import testSubscriptionRoutes from './routes/test-subscription-expiry.js';
+import adminRoutes from './routes/admin.routes.js';
 
 // Middleware
 import { errorHandler } from './middleware/error.middleware.js';
@@ -121,13 +126,20 @@ app.use('/api/credits', creditRoutes);
 app.use('/api/flux', fluxRoutes);
 app.use('/api/gptimage', gptimageRoutes);
 app.use('/api/qwen', qwenRoutes);
+app.use('/api/gpt-image-text', gptImageTextToImageRoutes);
 app.use('/api/midjourney', midjourneyRoutes);
+// Video generator moved to .ignore folder
+// app.use('/api/video', lumaVideoRoutes);
+app.use('/api/runway-video', runwayVideoRoutes);
 app.use('/api/payments/wayforpay', wayforpayRoutes);
 
 // Test routes (only in development)
 if (process.env.NODE_ENV === 'development') {
   app.use('/api/test', testSubscriptionRoutes);
 }
+
+// Admin routes
+app.use('/api/admin', adminRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

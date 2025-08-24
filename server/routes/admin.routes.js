@@ -1,213 +1,276 @@
 import express from 'express';
-import { authenticate } from '../middleware/auth.middleware.js';
-import queueManager from '../services/QueueService.js';
-import CacheService from '../services/CacheService.js';
-import logger from '../utils/logger.js';
+import { PrismaClient } from '@prisma/client';
+import { authenticate as authenticateUser } from '../middleware/auth.middleware.js';
+import { isAdmin } from '../middleware/admin.middleware.js';
 
 const router = express.Router();
-const cache = new CacheService();
+const prisma = new PrismaClient();
 
-/**
- * Admin routes for monitoring and management
- * Should be protected with admin authentication in production
- */
-
-// Middleware to check admin role (simplified for now)
-const requireAdmin = (req, res, next) => {
-  if (req.user && req.user.email === process.env.ADMIN_EMAIL) {
-    next();
-  } else {
-    res.status(403).json({ error: 'Admin access required' });
-  }
-};
-
-/**
- * Get queue statistics
- */
-router.get('/queues/stats', authenticate, requireAdmin, (req, res) => {
+// Get all users with pagination and filters
+router.get('/users', authenticateUser, isAdmin, async (req, res) => {
   try {
-    const stats = queueManager.getAllStats();
-    res.json(stats);
-  } catch (error) {
-    logger.error('Failed to get queue stats', error);
-    res.status(500).json({ error: 'Failed to get queue statistics' });
-  }
-});
+    const { 
+      page = 1, 
+      limit = 20, 
+      search = '', 
+      sortBy = 'createdAt', 
+      sortOrder = 'desc',
+      plan = ''
+    } = req.query;
 
-/**
- * Get specific queue details
- */
-router.get('/queues/:name', authenticate, requireAdmin, (req, res) => {
-  try {
-    const { name } = req.params;
-    const queue = queueManager.getQueue(name);
-    const stats = queue.getStats();
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // Build where clause for filtering
+    const where = {};
     
+    if (search) {
+      where.OR = [
+        { email: { contains: search, mode: 'insensitive' } },
+        { username: { contains: search, mode: 'insensitive' } },
+        { fullName: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    if (plan) {
+      where.subscription = {
+        plan: plan
+      };
+    }
+
+    // Get total count
+    const totalUsers = await prisma.user.count({ where });
+
+    // Get users with related data
+    const users = await prisma.user.findMany({
+      where,
+      skip,
+      take: parseInt(limit),
+      orderBy: {
+        [sortBy]: sortOrder
+      },
+      include: {
+        subscription: true,
+        _count: {
+          select: {
+            images: true,
+            generations: true,
+            payments: true
+          }
+        }
+      }
+    });
+
+    // Calculate stats
+    const stats = await prisma.user.aggregate({
+      _count: true,
+      _sum: {
+        totalCredits: true
+      }
+    });
+
+    const subscriptionStats = await prisma.subscription.groupBy({
+      by: ['plan'],
+      _count: true
+    });
+
     res.json({
-      ...stats,
-      jobs: {
-        waiting: queue.queue.slice(0, 10), // First 10 waiting jobs
-        processing: Array.from(queue.processing.values()).slice(0, 10),
-        completed: Array.from(queue.completed.values()).slice(-10), // Last 10 completed
-        failed: Array.from(queue.failed.values()).slice(-10) // Last 10 failed
+      users,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: totalUsers,
+        pages: Math.ceil(totalUsers / parseInt(limit))
+      },
+      stats: {
+        totalUsers: stats._count,
+        totalCredits: stats._sum.totalCredits || 0,
+        subscriptions: subscriptionStats
       }
     });
   } catch (error) {
-    logger.error('Failed to get queue details', error);
-    res.status(500).json({ error: 'Failed to get queue details' });
+    console.error('Get users error:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
   }
 });
 
-/**
- * Clear completed jobs in queue
- */
-router.delete('/queues/:name/completed', authenticate, requireAdmin, (req, res) => {
+// Get single user details
+router.get('/users/:id', authenticateUser, isAdmin, async (req, res) => {
   try {
-    const { name } = req.params;
-    const queue = queueManager.getQueue(name);
-    const cleared = queue.clearCompleted();
-    
-    res.json({ 
-      message: 'Completed jobs cleared',
-      count: cleared 
+    const { id } = req.params;
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        subscription: true,
+        images: {
+          take: 10,
+          orderBy: { createdAt: 'desc' }
+        },
+        generations: {
+          take: 10,
+          orderBy: { createdAt: 'desc' }
+        },
+        payments: {
+          take: 10,
+          orderBy: { createdAt: 'desc' }
+        },
+        credits: {
+          take: 20,
+          orderBy: { createdAt: 'desc' }
+        }
+      }
     });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(user);
   } catch (error) {
-    logger.error('Failed to clear completed jobs', error);
-    res.status(500).json({ error: 'Failed to clear completed jobs' });
+    console.error('Get user details error:', error);
+    res.status(500).json({ error: 'Failed to fetch user details' });
   }
 });
 
-/**
- * Clear failed jobs in queue
- */
-router.delete('/queues/:name/failed', authenticate, requireAdmin, (req, res) => {
+// Update user (admin actions)
+router.patch('/users/:id', authenticateUser, isAdmin, async (req, res) => {
   try {
-    const { name } = req.params;
-    const queue = queueManager.getQueue(name);
-    const cleared = queue.clearFailed();
+    const { id } = req.params;
+    const { totalCredits, emailVerified, subscription } = req.body;
+
+    const updates = {};
     
-    res.json({ 
-      message: 'Failed jobs cleared',
-      count: cleared 
-    });
-  } catch (error) {
-    logger.error('Failed to clear failed jobs', error);
-    res.status(500).json({ error: 'Failed to clear failed jobs' });
-  }
-});
-
-/**
- * Retry failed job
- */
-router.post('/queues/:name/retry/:jobId', authenticate, requireAdmin, (req, res) => {
-  try {
-    const { name, jobId } = req.params;
-    const queue = queueManager.getQueue(name);
-    const job = queue.retryJob(jobId);
-    
-    res.json({ 
-      message: 'Job retry scheduled',
-      job 
-    });
-  } catch (error) {
-    logger.error('Failed to retry job', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-/**
- * Get cache statistics
- */
-router.get('/cache/stats', authenticate, requireAdmin, (req, res) => {
-  try {
-    const stats = cache.getStats();
-    res.json(stats);
-  } catch (error) {
-    logger.error('Failed to get cache stats', error);
-    res.status(500).json({ error: 'Failed to get cache statistics' });
-  }
-});
-
-/**
- * Clear all cache
- */
-router.delete('/cache/clear', authenticate, requireAdmin, async (req, res) => {
-  try {
-    await cache.clear();
-    res.json({ message: 'Cache cleared successfully' });
-  } catch (error) {
-    logger.error('Failed to clear cache', error);
-    res.status(500).json({ error: 'Failed to clear cache' });
-  }
-});
-
-/**
- * Delete cache by pattern
- */
-router.delete('/cache/pattern', authenticate, requireAdmin, async (req, res) => {
-  try {
-    const { pattern } = req.body;
-    
-    if (!pattern) {
-      return res.status(400).json({ error: 'Pattern is required' });
+    if (totalCredits !== undefined) {
+      updates.totalCredits = totalCredits;
     }
     
-    const deleted = await cache.deletePattern(pattern);
-    res.json({ 
-      message: 'Cache entries deleted',
-      count: deleted 
+    if (emailVerified !== undefined) {
+      updates.emailVerified = emailVerified;
+    }
+
+    const user = await prisma.user.update({
+      where: { id },
+      data: updates,
+      include: {
+        subscription: true
+      }
     });
+
+    // Update subscription if provided
+    if (subscription && user.subscription) {
+      await prisma.subscription.update({
+        where: { id: user.subscription.id },
+        data: {
+          plan: subscription.plan || user.subscription.plan,
+          status: subscription.status || user.subscription.status
+        }
+      });
+    }
+
+    res.json({ message: 'User updated successfully', user });
   } catch (error) {
-    logger.error('Failed to delete cache pattern', error);
-    res.status(500).json({ error: 'Failed to delete cache pattern' });
+    console.error('Update user error:', error);
+    res.status(500).json({ error: 'Failed to update user' });
   }
 });
 
-/**
- * Get system health
- */
-router.get('/health', authenticate, requireAdmin, (req, res) => {
+// Get dashboard statistics
+router.get('/stats', authenticateUser, isAdmin, async (req, res) => {
   try {
-    const queueStats = queueManager.getAllStats();
-    const cacheStats = cache.getStats();
-    
-    // Calculate health score
-    let healthScore = 100;
-    let issues = [];
-    
-    // Check queues
-    Object.entries(queueStats).forEach(([name, stats]) => {
-      if (stats.failed > 10) {
-        healthScore -= 10;
-        issues.push(`Queue ${name} has ${stats.failed} failed jobs`);
-      }
-      if (stats.waiting > 100) {
-        healthScore -= 5;
-        issues.push(`Queue ${name} has ${stats.waiting} waiting jobs`);
+    // User stats
+    const userStats = await prisma.user.aggregate({
+      _count: true,
+      _sum: {
+        totalCredits: true
       }
     });
+
+    // New users (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
-    // Check cache
-    const hitRate = parseFloat(cacheStats.hitRate);
-    if (hitRate < 50) {
-      healthScore -= 5;
-      issues.push(`Low cache hit rate: ${cacheStats.hitRate}`);
-    }
-    
+    const newUsers = await prisma.user.count({
+      where: {
+        createdAt: {
+          gte: thirtyDaysAgo
+        }
+      }
+    });
+
+    // Subscription breakdown
+    const subscriptions = await prisma.subscription.groupBy({
+      by: ['plan', 'status'],
+      _count: true
+    });
+
+    // Generation stats
+    const generationStats = await prisma.generation.aggregate({
+      _count: true,
+      _sum: {
+        creditsUsed: true
+      }
+    });
+
+    // Payment stats
+    const paymentStats = await prisma.payment.aggregate({
+      where: {
+        status: 'SUCCESS'
+      },
+      _sum: {
+        amount: true
+      },
+      _count: true
+    });
+
+    // Recent activity
+    const recentUsers = await prisma.user.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        fullName: true,
+        createdAt: true
+      }
+    });
+
+    const recentGenerations = await prisma.generation.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: {
+            username: true,
+            email: true
+          }
+        }
+      }
+    });
+
     res.json({
-      status: healthScore >= 80 ? 'healthy' : healthScore >= 50 ? 'degraded' : 'unhealthy',
-      score: healthScore,
-      issues,
-      metrics: {
-        queues: queueStats,
-        cache: cacheStats,
-        uptime: process.uptime(),
-        memory: process.memoryUsage()
+      users: {
+        total: userStats._count,
+        newThisMonth: newUsers,
+        totalCredits: userStats._sum.totalCredits || 0
+      },
+      subscriptions,
+      generations: {
+        total: generationStats._count,
+        creditsUsed: generationStats._sum.creditsUsed || 0
+      },
+      payments: {
+        total: paymentStats._count,
+        revenue: paymentStats._sum.amount || 0
+      },
+      recent: {
+        users: recentUsers,
+        generations: recentGenerations
       }
     });
   } catch (error) {
-    logger.error('Failed to get system health', error);
-    res.status(500).json({ error: 'Failed to get system health' });
+    console.error('Get stats error:', error);
+    res.status(500).json({ error: 'Failed to fetch statistics' });
   }
 });
 

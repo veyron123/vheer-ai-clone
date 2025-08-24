@@ -28,7 +28,7 @@ const AuthCallback = () => {
           // Set authentication data
           setAuthData(user, token);
           
-          toast.success(`Welcome ${user.fullName || user.username}!`);
+          // Welcome message removed to prevent duplicate with LoginPage
           navigate('/image-style-transfer');
         } catch (error) {
           console.error('Error parsing OAuth response:', error);

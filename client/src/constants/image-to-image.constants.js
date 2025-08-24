@@ -12,7 +12,7 @@ export const IMAGE_AI_MODELS = {
   },
   GPT_IMAGE: {
     id: 'gpt-image',
-    name: 'Chat GPT Image',
+    name: 'GPT Image',
     badge: { text: '👑', color: 'bg-red-500 text-white' }
   },
   QWEN_IMAGE: {

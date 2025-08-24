@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Frame } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 // Components
 import ImageToImageUploader from '../components/image-to-image/ImageToImageUploader';
@@ -9,8 +9,8 @@ import ImageModelSelector from '../components/image-to-image/ImageModelSelector'
 import ImageAspectRatioSelector from '../components/image-to-image/ImageAspectRatioSelector';
 import ImageGenerateButton from '../components/image-to-image/ImageGenerateButton';
 import ImageExampleGallery from '../components/image-to-image/ImageExampleGallery';
-import MockupGenerator from '../components/image-to-image/MockupGenerator';
 import SEO from '../components/SEO';
+import MockupSection from '../components/common/MockupSection';
 
 // Hooks
 import { useImageToImageGeneration } from '../hooks/useImageToImageGeneration';
@@ -18,7 +18,6 @@ import { useImageToImageGeneration } from '../hooks/useImageToImageGeneration';
 const ImageToImageGeneratorPage = () => {
   const [aiModel, setAiModel] = useState('flux-pro');
   const [aspectRatio, setAspectRatio] = useState('match');
-  const [showMockupGenerator, setShowMockupGenerator] = useState(false);
   
   const {
     uploadedImage,
@@ -26,14 +25,8 @@ const ImageToImageGeneratorPage = () => {
     isGenerating,
     generationTime,
     positivePrompt,
-    negativePrompt,
-    creativeStrength,
-    controlStrength,
     fileInputRef,
     setPositivePrompt,
-    setNegativePrompt,
-    setCreativeStrength,
-    setControlStrength,
     handleImageUpload,
     handleImageRemove,
     generateImage,
@@ -46,20 +39,12 @@ const ImageToImageGeneratorPage = () => {
     generateImage(aiModel, aspectRatio);
   };
 
-  // Проверяем условия для показа кнопки мокапа
-  const canShowMockupButton = () => {
-    return (
-      generatedImage &&
-      (aiModel === 'gpt-image' || aiModel === 'qwen-image') &&
-      (aspectRatio === '1:1' || aspectRatio === '4:3')
-    );
-  };
 
   return (
     <>
       <SEO 
         title="AI Image to Image Generator - Transform Photos with AI Magic"
-        description="Reimagine any photo with AI magic. Keep facial features intact while exploring endless creative possibilities. Use Flux Pro, Flux Max, and Chat GPT Image models."
+        description="Reimagine any photo with AI magic. Keep facial features intact while exploring endless creative possibilities. Use Flux Pro, Flux Max, and GPT Image models."
         keywords="image to image generator, AI image transformation, photo editor AI, style transfer, image variation generator, AI photo enhancer"
         url="https://colibrrri.com/image-to-image-generator"
       />
@@ -108,10 +93,21 @@ const ImageToImageGeneratorPage = () => {
                   onPaste={handlePaste}
                   fileInputRef={fileInputRef}
                   isGenerating={isGenerating}
+                  aspectRatio={aspectRatio}
+                  aiModel={aiModel}
+                  autoShowMockup={true}
                 />
               </div>
               
-              <ImageExampleGallery />
+              {!generatedImage && <ImageExampleGallery />}
+              
+              {/* Mockup Generator Section */}
+              <MockupSection
+                imageUrl={generatedImage}
+                aspectRatio={aspectRatio}
+                aiModel={aiModel}
+                autoShow={true}
+              />
             </div>
 
             {/* Right Column - Settings */}
@@ -120,13 +116,7 @@ const ImageToImageGeneratorPage = () => {
               <div className="bg-white rounded-2xl shadow-sm p-6">
                 <PromptControls
                   positivePrompt={positivePrompt}
-                  negativePrompt={negativePrompt}
-                  creativeStrength={creativeStrength}
-                  controlStrength={controlStrength}
                   onPositivePromptChange={setPositivePrompt}
-                  onNegativePromptChange={setNegativePrompt}
-                  onCreativeStrengthChange={setCreativeStrength}
-                  onControlStrengthChange={setControlStrength}
                 />
               </div>
 
@@ -151,31 +141,14 @@ const ImageToImageGeneratorPage = () => {
                   aiModel={aiModel}
                 />
 
-                {/* Кнопка создания мокапа */}
-                {canShowMockupButton() && (
-                  <button
-                    onClick={() => setShowMockupGenerator(true)}
-                    className="w-full px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02]"
-                  >
-                    <Frame className="w-5 h-5" />
-                    Создать мокап
-                  </button>
-                )}
                 
               </div>
             </div>
           </div>
         </div>
+
       </div>
 
-      {/* Модальное окно с генератором мокапов */}
-      {showMockupGenerator && (
-        <MockupGenerator
-          imageUrl={generatedImage}
-          aspectRatio={aspectRatio}
-          onClose={() => setShowMockupGenerator(false)}
-        />
-      )}
     </>
   );
 };

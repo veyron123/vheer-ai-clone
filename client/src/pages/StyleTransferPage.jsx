@@ -9,6 +9,7 @@ import ModelSelector from '../components/anime/ModelSelector';
 import AspectRatioSelector from '../components/anime/AspectRatioSelector';
 import GenerateButton from '../components/anime/GenerateButton';
 import ExampleGallery from '../components/anime/ExampleGallery';
+import MockupSection from '../components/common/MockupSection';
 import SEO from '../components/SEO';
 import CreditDisplay from '../components/CreditDisplay';
 
@@ -76,10 +77,21 @@ const StyleTransferPage = () => {
                 onCancel={cancelGeneration}
                 fileInputRef={fileInputRef}
                 isGenerating={isGenerating}
+                aspectRatio={aspectRatio}
+                aiModel={aiModel}
+                autoShowMockup={true}
               />
             </div>
             
-            <ExampleGallery />
+            {!generatedImage && <ExampleGallery />}
+            
+            {/* Mockup Generator Section */}
+            <MockupSection
+              imageUrl={generatedImage}
+              aspectRatio={aspectRatio}
+              aiModel={aiModel}
+              autoShow={true}
+            />
           </div>
 
           {/* Right Column - Settings */}
@@ -138,6 +150,7 @@ const StyleTransferPage = () => {
           </div>
         </div>
       </div>
+
     </div>
     </>
   );

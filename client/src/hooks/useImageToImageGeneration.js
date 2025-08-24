@@ -9,9 +9,6 @@ export const useImageToImageGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationTime, setGenerationTime] = useState(null);
   const [positivePrompt, setPositivePrompt] = useState('');
-  const [negativePrompt, setNegativePrompt] = useState('');
-  const [creativeStrength, setCreativeStrength] = useState(5);
-  const [controlStrength, setControlStrength] = useState(2);
   const fileInputRef = useRef(null);
   const abortControllerRef = useRef(null);
 
@@ -48,8 +45,8 @@ export const useImageToImageGeneration = () => {
       return;
     }
 
-    if (!positivePrompt && !negativePrompt) {
-      toast.error('Please add some prompts or generate them automatically');
+    if (!positivePrompt) {
+      toast.error('Please add a prompt or generate one automatically');
       return;
     }
 
@@ -73,9 +70,9 @@ export const useImageToImageGeneration = () => {
       const result = await generateImageToImage(
         imageUrl,
         positivePrompt,
-        negativePrompt,
-        creativeStrength,
-        controlStrength,
+        '',  // empty negative prompt
+        5,   // default creative strength
+        2,   // default control strength
         aiModel,
         aspectRatio,
         abortControllerRef.current.signal
@@ -161,9 +158,6 @@ export const useImageToImageGeneration = () => {
     setGeneratedImage(null);
     setGenerationTime(null);
     setPositivePrompt('');
-    setNegativePrompt('');
-    setCreativeStrength(5);
-    setControlStrength(2);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -175,14 +169,8 @@ export const useImageToImageGeneration = () => {
     isGenerating,
     generationTime,
     positivePrompt,
-    negativePrompt,
-    creativeStrength,
-    controlStrength,
     fileInputRef,
     setPositivePrompt,
-    setNegativePrompt,
-    setCreativeStrength,
-    setControlStrength,
     handleImageUpload,
     handleImageRemove,
     generateImage,

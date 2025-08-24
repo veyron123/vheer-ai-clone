@@ -33,30 +33,53 @@ class QwenImageService {
         numImages = 1,
         seed,
         outputFormat = 'png',
-        acceleration = 'regular'
+        acceleration = 'regular',
+        enableSafetyChecker = true,
+        syncMode = true
       } = options;
 
       // Convert aspect ratio to image size
       const imageSize = this.getImageSize(aspectRatio);
+      console.log(`📐 Aspect ratio conversion: ${aspectRatio} -> ${JSON.stringify(imageSize)}`);
+      
+      // For custom sizes, use width/height object instead of enum
+      let imageSizeParam = imageSize;
+      
+      // Map enum values to specific dimensions
+      const sizeMap = {
+        'square_hd': { width: 1024, height: 1024 },
+        'square': { width: 512, height: 512 },
+        'landscape_16_9': { width: 1920, height: 1080 },
+        'portrait_16_9': { width: 1080, height: 1920 },
+        'landscape_4_3': { width: 1024, height: 768 },
+        'portrait_4_3': { width: 768, height: 1024 }
+      };
+      
+      // Use dimension object if it's a known format
+      if (sizeMap[imageSize]) {
+        imageSizeParam = sizeMap[imageSize];
+        console.log(`📐 Using custom dimensions for ${imageSize}:`, imageSizeParam);
+      }
       
       const input = {
         prompt,
-        image_size: imageSize,
+        image_size: imageSizeParam,
         negative_prompt: negativePrompt,
         num_inference_steps: numInferenceSteps,
         guidance_scale: guidanceScale,
         num_images: numImages,
         output_format: outputFormat,
         acceleration,
-        enable_safety_checker: true,
-        sync_mode: true
+        enable_safety_checker: enableSafetyChecker,
+        sync_mode: syncMode
       };
 
       if (seed) {
         input.seed = parseInt(seed);
       }
 
-      console.log('Input parameters:', input);
+      console.log('🔍 Full FAL API Input parameters for text-to-image:');
+      console.log(JSON.stringify(input, null, 2));
 
       const result = await fal.subscribe(this.modelName, {
         input,
@@ -69,6 +92,8 @@ class QwenImageService {
       });
 
       console.log('✅ Qwen generation completed');
+      console.log('🔍 FAL API Response:');
+      console.log(JSON.stringify(result.data, null, 2));
       
       return this.formatResponse(result.data, prompt, negativePrompt);
       
@@ -106,7 +131,9 @@ class QwenImageService {
         numImages = 1,
         seed,
         outputFormat = 'png',
-        acceleration = 'regular'
+        acceleration = 'regular',
+        enableSafetyChecker = true,
+        syncMode = true
       } = options;
 
       const input = {
@@ -118,8 +145,8 @@ class QwenImageService {
         num_images: numImages,
         output_format: outputFormat,
         acceleration,
-        enable_safety_checker: true,
-        sync_mode: true
+        enable_safety_checker: enableSafetyChecker,
+        sync_mode: syncMode
       };
 
       // Only set image_size if not matching input
@@ -157,21 +184,30 @@ class QwenImageService {
   }
 
   /**
-   * Convert aspect ratio to image size object
+   * Convert aspect ratio to FAL API image size format
+   * Based on official FAL AI documentation enum values:
+   * square_hd, square, portrait_4_3, portrait_16_9, landscape_4_3, landscape_16_9
    */
   getImageSize(aspectRatio) {
+    console.log(`🔍 Converting aspect ratio: "${aspectRatio}"`);
+    
+    // FAL API predefined formats (as per official docs)
     const sizeMap = {
-      '1:1': { width: 1024, height: 1024 },
-      '16:9': { width: 1344, height: 768 },
-      '9:16': { width: 768, height: 1344 },
-      '4:3': { width: 1152, height: 896 },
-      '3:4': { width: 896, height: 1152 },
-      'square': { width: 1024, height: 1024 },
-      'landscape': { width: 1344, height: 768 },
-      'portrait': { width: 768, height: 1344 }
+      '1:1': 'square_hd', // High definition square
+      '16:9': 'landscape_16_9', // Landscape 16:9  
+      '9:16': 'portrait_16_9', // Portrait 16:9
+      '4:3': 'landscape_4_3', // Landscape 4:3
+      '3:4': 'portrait_4_3', // Portrait 4:3
+      'square': 'square_hd',
+      'landscape': 'landscape_4_3', 
+      'portrait': 'portrait_4_3',
+      'match': 'square_hd' // Default for match in text-to-image
     };
 
-    return sizeMap[aspectRatio] || sizeMap['1:1'];
+    const result = sizeMap[aspectRatio] || 'square_hd'; // Default to square_hd
+    console.log(`🔍 Mapped to FAL format: "${result}"`);
+    
+    return result;
   }
 
   /**

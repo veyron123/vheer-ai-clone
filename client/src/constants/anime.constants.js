@@ -20,11 +20,11 @@ export const ANIME_STYLES = [
 // Aspect Ratio Options
 export const ASPECT_RATIOS = [
   { id: 'match', name: 'Match input image', description: 'Auto-detect from input' },
-  { id: '1:1', name: 'Square (1:1)', description: '1024×1024', gptSupported: true },
-  { id: '16:9', name: 'Landscape (16:9)', description: '1344×768', gptMappedTo: '3:2' },
-  { id: '9:16', name: 'Portrait (9:16)', description: '768×1344', gptMappedTo: '2:3' },
-  { id: '4:3', name: 'Album (4:3)', description: '1152×896', gptMappedTo: '3:2' },
-  { id: '3:4', name: 'Portrait (3:4)', description: '896×1152', gptMappedTo: '2:3' }
+  { id: '1:1', name: '1:1 (Square)', description: 'Perfect for social media', gptSupported: true },
+  { id: '16:9', name: '16:9 (Landscape)', description: 'Wide format', gptMappedTo: '3:2' },
+  { id: '9:16', name: '9:16 (Portrait)', description: 'Vertical format', gptMappedTo: '2:3' },
+  { id: '4:3', name: '4:3 (Album)', description: 'Classic photo format', gptMappedTo: '3:2' },
+  { id: '3:4', name: '3:4 (Portrait)', description: 'Portrait format', gptMappedTo: '2:3' }
 ];
 
 // AI Models Configuration

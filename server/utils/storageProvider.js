@@ -42,7 +42,8 @@ class StorageProvider {
     const uploadDirs = [
       'uploads/images/originals',
       'uploads/images/generated', 
-      'uploads/images/thumbnails'
+      'uploads/images/thumbnails',
+      'uploads/videos'
     ];
 
     uploadDirs.forEach(dir => {
@@ -357,6 +358,143 @@ class StorageProvider {
     return await this.deleteAWS(imagePath);
   }
 
+  /**
+   * VIDEO UPLOAD METHODS
+   */
+  async uploadVideo(filePath, options = {}) {
+    const filename = `${uuidv4()}.mp4`;
+    
+    switch (this.provider) {
+      case 'cloudinary':
+        return await this.uploadVideoCloudinary(filePath, options);
+      case 'aws':
+        return await this.uploadVideoAWS(filePath, filename, options);
+      case 'digitalocean':
+        return await this.uploadVideoDigitalOcean(filePath, filename, options);
+      default:
+        return await this.uploadVideoLocal(filePath, filename);
+    }
+  }
+
+  async uploadVideoLocal(filePath, filename) {
+    const localPath = path.join('uploads', 'videos', filename);
+    const fullPath = path.resolve(localPath);
+    
+    // Copy file to uploads directory
+    fs.copyFileSync(filePath, fullPath);
+    
+    return {
+      secure_url: `${process.env.SERVER_URL || 'http://localhost:5000'}/${localPath.replace(/\\/g, '/')}`,
+      path: localPath.replace(/\\/g, '/'),
+      filename
+    };
+  }
+
+  async uploadVideoCloudinary(filePath, options = {}) {
+    if (!this.cloudinary) {
+      const cloudinary = await import('cloudinary');
+      this.cloudinary = cloudinary.v2;
+      
+      this.cloudinary.config({
+        cloud_name: this.cloudName,
+        api_key: this.apiKey,
+        api_secret: this.apiSecret
+      });
+    }
+
+    const uploadOptions = {
+      resource_type: 'video',
+      folder: options.folder || 'vheer-ai/videos',
+      quality: 'auto',
+      ...options
+    };
+
+    return new Promise((resolve, reject) => {
+      this.cloudinary.uploader.upload(filePath, uploadOptions, (error, result) => {
+        if (error) {
+          console.error('Cloudinary video upload error:', error);
+          reject(error);
+        } else {
+          console.log('Video uploaded to Cloudinary:', result.secure_url);
+          resolve({
+            secure_url: result.secure_url,
+            public_id: result.public_id,
+            resource_type: result.resource_type
+          });
+        }
+      });
+    });
+  }
+
+  async uploadVideoAWS(filePath, filename, options = {}) {
+    if (!this.s3Client) {
+      const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
+      this.s3Client = new S3Client({ 
+        region: this.region,
+        credentials: {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+        }
+      });
+    }
+
+    const buffer = fs.readFileSync(filePath);
+    const key = `videos/${filename}`;
+    
+    const command = new PutObjectCommand({
+      Bucket: this.bucketName,
+      Key: key,
+      Body: buffer,
+      ContentType: 'video/mp4',
+      ACL: 'public-read'
+    });
+
+    await this.s3Client.send(command);
+    
+    const url = `https://${this.bucketName}.s3.${this.region}.amazonaws.com/${key}`;
+    
+    return {
+      secure_url: url,
+      path: key,
+      filename
+    };
+  }
+
+  async uploadVideoDigitalOcean(filePath, filename, options = {}) {
+    if (!this.s3Client) {
+      const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
+      this.s3Client = new S3Client({
+        region: this.region,
+        endpoint: this.endpoint,
+        credentials: {
+          accessKeyId: process.env.DO_SPACES_KEY,
+          secretAccessKey: process.env.DO_SPACES_SECRET
+        }
+      });
+    }
+
+    const buffer = fs.readFileSync(filePath);
+    const key = `videos/${filename}`;
+    
+    const command = new PutObjectCommand({
+      Bucket: this.spaceName,
+      Key: key,
+      Body: buffer,
+      ContentType: 'video/mp4',
+      ACL: 'public-read'
+    });
+
+    await this.s3Client.send(command);
+    
+    const url = `https://${this.spaceName}.${this.region}.cdn.digitaloceanspaces.com/${key}`;
+    
+    return {
+      secure_url: url,
+      path: key,
+      filename
+    };
+  }
+
   getContentType(filename) {
     const ext = path.extname(filename).toLowerCase();
     const types = {
@@ -364,7 +502,11 @@ class StorageProvider {
       '.jpg': 'image/jpeg',
       '.jpeg': 'image/jpeg',
       '.webp': 'image/webp',
-      '.gif': 'image/gif'
+      '.gif': 'image/gif',
+      '.mp4': 'video/mp4',
+      '.mov': 'video/quicktime',
+      '.avi': 'video/x-msvideo',
+      '.webm': 'video/webm'
     };
     return types[ext] || 'image/png';
   }
@@ -386,13 +528,16 @@ class StorageProvider {
 }
 
 // Singleton instance
-let storageProvider = null;
+let storageProviderInstance = null;
 
 export function getStorageProvider(config = {}) {
-  if (!storageProvider) {
-    storageProvider = new StorageProvider(config);
+  if (!storageProviderInstance) {
+    storageProviderInstance = new StorageProvider(config);
   }
-  return storageProvider;
+  return storageProviderInstance;
 }
+
+// Export singleton instance for direct use
+export const storageProvider = getStorageProvider();
 
 export default StorageProvider;

@@ -13,7 +13,8 @@ import {
   User,
   LogOut,
   Settings,
-  ChevronRight
+  ChevronRight,
+  Frame
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import ColorfulLogo from './ColorfulLogo';
@@ -43,8 +44,14 @@ const MobileNav = () => {
   const menuItems = [
     { path: '/', label: 'Home', icon: Home },
     { path: '/image-style-transfer', label: 'Generate', icon: Sparkles },
+    { path: '/mockup-generator', label: 'Mockup', icon: Frame },
     { path: '/anime-generator', label: 'Anime', icon: Image },
-    { path: '/image-to-image', label: 'Transform', icon: Palette },
+    { path: '/image-to-image-generator', label: 'Image to Image', icon: Palette },
+    { path: '/pet-portrait-generator', label: 'Pet Portraits', icon: Image },
+    { path: '/text-to-image-generator', label: 'Text to Image', icon: Sparkles },
+    // Video generator moved to .ignore folder
+    // { path: '/video-modification-generator', label: 'Video Modification', icon: Image },
+    { path: '/ai-video-generator', label: 'AI Video Generator', icon: Image },
     { path: '/gallery', label: 'Gallery', icon: Grid3x3 },
     { path: '/pricing', label: 'Pricing', icon: CreditCard },
   ];

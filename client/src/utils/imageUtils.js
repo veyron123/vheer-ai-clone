@@ -67,3 +67,46 @@ export const getImageDimensions = (url) => {
     img.src = url;
   });
 };
+
+/**
+ * Download image with proxy handling
+ * @param {string} imageUrl - URL of the image to download
+ * @param {string} filename - Name for the downloaded file
+ */
+export const downloadImageWithProxy = async (imageUrl, filename = 'image.png') => {
+  try {
+    let downloadUrl = imageUrl;
+    
+    // For data URLs, create blob and download directly
+    if (imageUrl.startsWith('data:')) {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      downloadUrl = URL.createObjectURL(blob);
+    }
+    
+    // Create download link
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Clean up object URL if created
+    if (downloadUrl !== imageUrl) {
+      URL.revokeObjectURL(downloadUrl);
+    }
+  } catch (error) {
+    console.error('Error downloading image:', error);
+    // Fallback: open in new tab
+    window.open(imageUrl, '_blank');
+  }
+};
+
+/**
+ * Open image in new tab/window
+ * @param {string} imageUrl - URL of the image to view
+ */
+export const viewImage = (imageUrl) => {
+  window.open(imageUrl, '_blank');
+};

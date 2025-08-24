@@ -16,15 +16,31 @@ export const generateImage = async (req, res) => {
   let generation = null;
   
   try {
-    const { prompt, style, aspectRatio = '1:1', negativePrompt, seed } = req.body;
+    const { 
+      prompt, 
+      style, 
+      aspectRatio = '1:1', 
+      negativePrompt, 
+      seed, 
+      baseImage, 
+      mode = 'text-to-image',
+      numInferenceSteps = 30,
+      guidanceScale = 4,
+      numImages = 1,
+      outputFormat = 'png',
+      acceleration = 'regular',
+      enableSafetyChecker = true,
+      syncMode = true
+    } = req.body;
     const userId = req.user?.id;
 
-    console.log('🎨 Starting Qwen Image generation:', { prompt, style, aspectRatio });
+    console.log('🎨 Starting Qwen Image generation:', { prompt, style, aspectRatio, mode });
 
     // Check credits if user is authenticated
     if (userId) {
       const modelId = 'qwen-image';
-      const requiredCredits = 30; // Fixed cost for Qwen Image
+      const creditsPerImage = 20; // 20 кредитов за изображение
+      const requiredCredits = creditsPerImage * (numImages || 1); // Умножаем на количество изображений
       
       try {
         const creditCheckResponse = await axios.post('http://localhost:5000/api/users/check-credits', {
@@ -57,7 +73,7 @@ export const generateImage = async (req, res) => {
           negativePrompt: negativePrompt || 'blurry, ugly, low quality',
           model: 'qwen-image',
           style: style || 'none',
-          creditsUsed: 30,
+          creditsUsed: requiredCredits,
           status: 'processing'
         }
       });
@@ -69,15 +85,37 @@ export const generateImage = async (req, res) => {
       finalPrompt = `${prompt} in ${style} style`;
     }
 
-    // Generate image
-    const result = await qwenService.generateImage(finalPrompt, {
-      aspectRatio,
-      negativePrompt: negativePrompt || 'blurry, ugly, low quality',
-      seed: seed ? parseInt(seed) : undefined,
-      numInferenceSteps: 30,
-      guidanceScale: 4,
-      acceleration: 'regular'
-    });
+    // Generate image based on mode
+    let result;
+    if (mode === 'image-to-image' && baseImage) {
+      console.log('🖼️ Using image-to-image mode');
+      result = await qwenService.editImage(baseImage, finalPrompt, {
+        aspectRatio,
+        negativePrompt: negativePrompt || 'blurry, ugly, low quality',
+        seed: seed ? parseInt(seed) : undefined,
+        numInferenceSteps,
+        guidanceScale,
+        numImages,
+        outputFormat,
+        acceleration,
+        enableSafetyChecker,
+        syncMode
+      });
+    } else {
+      console.log('📝 Using text-to-image mode');
+      result = await qwenService.generateImage(finalPrompt, {
+        aspectRatio,
+        negativePrompt: negativePrompt || 'blurry, ugly, low quality',
+        seed: seed ? parseInt(seed) : undefined,
+        numInferenceSteps,
+        guidanceScale,
+        numImages,
+        outputFormat,
+        acceleration,
+        enableSafetyChecker,
+        syncMode
+      });
+    }
 
     // Update generation with results
     if (generation?.id) {
@@ -162,7 +200,21 @@ export const editImage = async (req, res) => {
   let generation = null;
   
   try {
-    const { prompt, input_image, style, aspectRatio = 'match', negativePrompt, seed } = req.body;
+    const { 
+      prompt, 
+      input_image, 
+      style, 
+      aspectRatio = 'match', 
+      negativePrompt, 
+      seed,
+      numInferenceSteps = 30,
+      guidanceScale = 4,
+      numImages = 1,
+      outputFormat = 'png',
+      acceleration = 'regular',
+      enableSafetyChecker = true,
+      syncMode = true
+    } = req.body;
     const userId = req.user?.id;
 
     console.log('🎨 Starting Qwen Image editing:', { prompt, style, aspectRatio });
@@ -174,7 +226,8 @@ export const editImage = async (req, res) => {
     // Check credits if user is authenticated
     if (userId) {
       const modelId = 'qwen-image';
-      const requiredCredits = 30; // Fixed cost for Qwen Image
+      const creditsPerImage = 20; // 20 кредитов за изображение
+      const requiredCredits = creditsPerImage * (numImages || 1); // Умножаем на количество изображений
       
       try {
         const creditCheckResponse = await axios.post('http://localhost:5000/api/users/check-credits', {
@@ -207,7 +260,7 @@ export const editImage = async (req, res) => {
           negativePrompt: negativePrompt || 'blurry, ugly, low quality',
           model: 'qwen-image',
           style: style || 'none',
-          creditsUsed: 30,
+          creditsUsed: requiredCredits,
           status: 'processing'
         }
       });
@@ -224,9 +277,13 @@ export const editImage = async (req, res) => {
       aspectRatio,
       negativePrompt: negativePrompt || 'blurry, ugly, low quality',
       seed: seed ? parseInt(seed) : undefined,
-      numInferenceSteps: 30,
-      guidanceScale: 4,
-      acceleration: 'regular'
+      numInferenceSteps,
+      guidanceScale,
+      numImages,
+      outputFormat,
+      acceleration,
+      enableSafetyChecker,
+      syncMode
     });
 
     // Update generation with results

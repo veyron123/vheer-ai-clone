@@ -18,12 +18,19 @@ import AuthCallback from '../pages/AuthCallback';
 import AnimeGeneratorPage from '../pages/AnimeGeneratorPage';
 import ImageToImageGeneratorPage from '../pages/ImageToImageGeneratorPage';
 import StyleTransferPage from '../pages/StyleTransferPage';
+import PetPortraitGeneratorPage from '../pages/PetPortraitGeneratorPage';
+import TextToImageGeneratorPage from '../pages/TextToImageGeneratorPage';
+// Video generator moved to .ignore folder
+// import VideoModificationGeneratorPage from '../pages/VideoModificationGeneratorPage';
+import RunwayVideoGeneratorPage from '../pages/RunwayVideoGeneratorPage';
+import MockupGeneratorPage from '../pages/MockupGeneratorPage';
 import MockupCanvasPage from '../pages/MockupCanvasPage';
 import MockupCSSPage from '../pages/MockupCSSPage';
 import MockupLibraryPage from '../pages/MockupLibraryPage';
 import MockupTestPage from '../pages/MockupTestPage';
 import PaymentSuccess from '../pages/PaymentSuccess';
 import PaymentFailure from '../pages/PaymentFailure';
+import AdminDashboard from '../pages/AdminDashboard';
 
 const LocalizedRoutes = () => {
   const location = useLocation();
@@ -94,6 +101,12 @@ const LanguageRoutes = () => {
       <Route path="/anime-generator" element={<AnimeGeneratorPage />} />
       <Route path="/image-to-image-generator" element={<ImageToImageGeneratorPage />} />
       <Route path="/image-style-transfer" element={<StyleTransferPage />} />
+      <Route path="/pet-portrait-generator" element={<PetPortraitGeneratorPage />} />
+      <Route path="/text-to-image-generator" element={<TextToImageGeneratorPage />} />
+      {/* Video generator moved to .ignore folder */}
+      {/* <Route path="/video-modification-generator" element={<VideoModificationGeneratorPage />} /> */}
+      <Route path="/ai-video-generator" element={<RunwayVideoGeneratorPage />} />
+      <Route path="/mockup-generator" element={<MockupGeneratorPage />} />
       
       {/* Mockup test pages */}
       <Route path="/mockup-test" element={<MockupTestPage />} />
@@ -112,6 +125,13 @@ const LanguageRoutes = () => {
       <Route path="/profile" element={
         <ProtectedRoute>
           <ProfilePage />
+        </ProtectedRoute>
+      } />
+      
+      {/* Admin route - only for admin users */}
+      <Route path="/admin" element={
+        <ProtectedRoute>
+          <AdminDashboard />
         </ProtectedRoute>
       } />
       

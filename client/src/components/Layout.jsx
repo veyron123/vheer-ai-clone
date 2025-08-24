@@ -17,7 +17,9 @@ import {
   User, 
   CreditCard,
   LogOut,
-  Settings
+  Settings,
+  Frame,
+  Shield
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
@@ -64,6 +66,10 @@ const Layout = ({ children }) => {
               <Link to={createLocalizedLink('/image-style-transfer')} className="flex items-center space-x-1 text-gray-700 hover:text-blue-500 transition group">
                 <Sparkles className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
                 <span>{t('navigation.generate')}</span>
+              </Link>
+              <Link to={createLocalizedLink('/mockup-generator')} className="flex items-center space-x-1 text-gray-700 hover:text-purple-500 transition group">
+                <Frame className="w-4 h-4 text-purple-500 group-hover:text-purple-600" />
+                <span>Mockup</span>
               </Link>
 {/* Временно отключено
               <Link to="/gallery" className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition group">
@@ -117,6 +123,17 @@ const Layout = ({ children }) => {
                         <Settings className="w-4 h-4" />
                         <span>{t('navigation.settings')}</span>
                       </button>
+                      {user?.email === 'unitradecargo@gmail.com' && (
+                        <button 
+                          onClick={() => {
+                            navigate(createLocalizedLink('/admin'));
+                          }} 
+                          className="dropdown-item"
+                        >
+                          <Shield className="w-4 h-4" />
+                          <span>Admin Panel</span>
+                        </button>
+                      )}
                       <div className="dropdown-divider" />
                       <button onClick={handleLogout} className="dropdown-item text-red-600">
                         <LogOut className="w-4 h-4" />
@@ -204,9 +221,14 @@ const Layout = ({ children }) => {
             <div>
               <h3 className="font-semibold text-gray-900 mb-4 uppercase text-sm">{t('footer.tools.title')}</h3>
               <ul className="space-y-2 text-gray-600 text-sm">
-                <li><Link to={createLocalizedLink('/image-style-transfer')} className="hover:text-gray-900 transition">{t('footer.tools.anime_portrait')}</Link></li>
-                <li><Link to={createLocalizedLink('/image-style-transfer')} className="hover:text-gray-900 transition">{t('footer.tools.image_to_image')}</Link></li>
+                <li><Link to={createLocalizedLink('/anime-generator')} className="hover:text-gray-900 transition">{t('footer.tools.anime_portrait')}</Link></li>
+                <li><Link to={createLocalizedLink('/image-to-image-generator')} className="hover:text-gray-900 transition">{t('footer.tools.image_to_image')}</Link></li>
                 <li><Link to={createLocalizedLink('/image-style-transfer')} className="hover:text-gray-900 transition">{t('footer.tools.style_transfer')}</Link></li>
+                <li><Link to={createLocalizedLink('/mockup-generator')} className="hover:text-gray-900 transition">AI Mockup Generator</Link></li>
+                <li><Link to={createLocalizedLink('/pet-portrait-generator')} className="hover:text-gray-900 transition">AI Pet Portrait Generator</Link></li>
+                <li><Link to={createLocalizedLink('/text-to-image-generator')} className="hover:text-gray-900 transition">AI Text To Image Generator</Link></li>
+                <li><Link to={createLocalizedLink('/ai-video-generator')} className="hover:text-gray-900 transition">AI Video Generator</Link></li>
+                <li><Link to={createLocalizedLink('/video-modification-generator')} className="hover:text-gray-900 transition">AI Video Modification Generator</Link></li>
               </ul>
             </div>
           </div>

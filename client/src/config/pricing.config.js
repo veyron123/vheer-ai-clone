@@ -22,7 +22,7 @@ export const MODEL_PRICING = {
   // Qwen Image Models
   'qwen-image': {
     name: 'Qwen Image',
-    credits: 30,
+    credits: 20,
     description: 'High-quality AI'
   },
   

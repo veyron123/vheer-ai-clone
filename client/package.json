@@ -17,6 +17,7 @@
     "autoprefixer": "^10.4.16",
     "axios": "^1.6.2",
     "clsx": "^2.0.0",
+    "date-fns": "^4.1.0",
     "dayjs": "^1.11.10",
     "framer-motion": "^10.16.16",
     "html2canvas": "^1.4.1",

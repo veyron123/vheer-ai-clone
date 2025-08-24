@@ -14,6 +14,7 @@ const UniversalGenerateButton = ({
   isGenerating = false,
   disabled = false,
   aiModel = 'flux-pro',
+  numImages = 1,
   showClearButton = false,
   generateText = 'Generate',
   clearText = 'Clear all',
@@ -74,6 +75,7 @@ const UniversalGenerateButton = ({
       {isAuthenticated && (
         <PricingDisplay 
           modelId={aiModel} 
+          numImages={numImages}
           className="mt-1" 
           showAffordability={true} 
         />
