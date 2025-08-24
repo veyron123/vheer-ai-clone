@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingCart, Plus, Minus, Trash2, ShieldCheck, Image } from 'lucide-react';
 import useCartStore from '../stores/cartStore';
@@ -8,31 +8,72 @@ import toast from 'react-hot-toast';
 const CartItemImage = ({ src, alt }) => {
   const [imageError, setImageError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
 
-  return (
-    <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
-      {imageError || !src ? (
+  // Функция для повторной попытки загрузки
+  const retryLoad = () => {
+    if (retryCount < 2) { // Максимум 2 попытки
+      setImageError(false);
+      setLoading(true);
+      setRetryCount(prev => prev + 1);
+    }
+  };
+
+  // Сброс состояния при изменении src
+  useEffect(() => {
+    setImageError(false);
+    setLoading(true);
+    setRetryCount(0);
+  }, [src]);
+
+  if (!src) {
+    return (
+      <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100">
           <Image className="w-8 h-8 text-gray-400" />
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden relative">
+      {loading && !imageError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500"></div>
+        </div>
+      )}
+      
+      {imageError && retryCount >= 2 ? (
+        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100 p-2">
+          <Image className="w-6 h-6 text-gray-400 mb-1" />
+          <span className="text-xs text-gray-400 text-center">Image unavailable</span>
+        </div>
       ) : (
-        <>
-          {loading && (
-            <div className="w-full h-full flex items-center justify-center">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500"></div>
-            </div>
-          )}
-          <img
-            src={src}
-            alt={alt}
-            className={`w-full h-full object-cover ${loading ? 'hidden' : ''}`}
-            onError={() => {
+        <img
+          key={`${src}-${retryCount}`} // Принудительное обновление при retry
+          src={src}
+          alt={alt}
+          className="w-full h-full object-cover"
+          onLoad={() => {
+            setLoading(false);
+            setImageError(false);
+          }}
+          onError={(e) => {
+            console.log('Image load error:', e.target.src);
+            setLoading(false);
+            
+            if (retryCount < 2) {
+              // Задержка перед повторной попыткой
+              setTimeout(() => {
+                retryLoad();
+              }, 1000);
+            } else {
               setImageError(true);
-              setLoading(false);
-            }}
-            onLoad={() => setLoading(false)}
-          />
-        </>
+            }
+          }}
+          crossOrigin="anonymous"
+        />
       )}
     </div>
   );
