@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Frame, ShoppingCart, RotateCw, Move, Maximize, X, ChevronUp, ChevronDown, Palette, Ruler, Download } from 'lucide-react';
+import { Frame, ShoppingCart, RotateCw, Move, Maximize, X, ChevronUp, ChevronDown, Palette, Ruler } from 'lucide-react';
 import useCartStore from '../../stores/cartStore';
 import toast from 'react-hot-toast';
 
@@ -18,8 +18,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
   // Конфигурация цветов рамок
   const frameColors = [
     { id: 'black', name: 'Black', color: '#1a1a1a', borderColor: '#000000' },
-    { id: 'white', name: 'White', color: '#ffffff', borderColor: '#e5e5e5' },
-    { id: 'redoak', name: 'Red Oak', color: '#8b4513', borderColor: '#6b3410' }
+    { id: 'white', name: 'White', color: '#ffffff', borderColor: '#e5e5e5' }
   ];
 
   // Конфигурация размеров и цен
@@ -158,17 +157,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       
       ctx.restore();
       
-      // 5. Добавляем декоративные элементы для глубины
-      if (selectedColor === 'redoak') {
-        // Для дерева добавляем текстуру
-        ctx.strokeStyle = 'rgba(107, 52, 16, 0.3)';
-        ctx.lineWidth = 1;
-        for (let i = 10; i < 40; i += 10) {
-          ctx.strokeRect(i, i, canvas.width - i * 2, canvas.height - i * 2);
-        }
-      }
-      
-      // 6. Внутренняя тень для объема
+      // 5. Внутренняя тень для объема
       ctx.save();
       ctx.shadowColor = 'rgba(0,0,0,0.2)';
       ctx.shadowBlur = 8;
@@ -480,14 +469,6 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
                 >
                   <ShoppingCart className="w-5 h-5" />
                   ADD TO CART
-                </button>
-                
-                <button
-                  onClick={downloadMockup}
-                  className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-2 transition-colors text-sm"
-                >
-                  <Download className="w-4 h-4" />
-                  Download Preview
                 </button>
               </div>
             </div>
