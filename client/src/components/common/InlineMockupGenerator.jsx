@@ -36,14 +36,14 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       name: 'Square Frame 1:1',
       width: 600,
       height: 600,
-      frame: '/mockups/frame-1x1.png',
+      frame: '/Mockup images/frame-1x1.png',
       screen: { x: 50, y: 50, width: 500, height: 500 }
     },
     '4:3': {
       name: 'Landscape Frame 4:3',
       width: 800,
       height: 600,
-      frame: '/mockups/frame-4x3.png',
+      frame: '/Mockup images/frame-4x3.png',
       screen: { x: 80, y: 60, width: 640, height: 480 }
     }
   };
@@ -106,47 +106,28 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
     };
     
     const renderImageOnCanvas = (img) => {
-      // Получаем выбранный цвет рамки
-      const selectedFrameColor = frameColors.find(c => c.id === selectedColor);
-      const screen = currentFrame.screen;
-      
-      // 1. Сначала рисуем фон рамки
-      ctx.fillStyle = selectedFrameColor.color;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // 2. Внешняя граница рамки
-      ctx.strokeStyle = selectedFrameColor.borderColor;
-      ctx.lineWidth = 3;
-      ctx.strokeRect(1.5, 1.5, canvas.width - 3, canvas.height - 3);
-      
-      // 3. Внутренняя рамка вокруг изображения
-      ctx.strokeStyle = selectedFrameColor.borderColor;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(screen.x - 2, screen.y - 2, screen.width + 4, screen.height + 4);
-      
-      // 4. Рисуем изображение
       ctx.save();
       
-      // Обрезаем по области экрана
+      const screen = currentFrame.screen;
+      const selectedFrameColor = frameColors.find(c => c.id === selectedColor);
+      
+      // Сначала рисуем изображение пользователя
       ctx.beginPath();
       ctx.rect(screen.x, screen.y, screen.width, screen.height);
       ctx.clip();
       
-      // Применяем трансформации
       ctx.translate(
         screen.x + screen.width / 2 + position.x,
         screen.y + screen.height / 2 + position.y
       );
       ctx.rotate((rotation * Math.PI) / 180);
       
-      // Вычисляем масштаб
       const autoScale = Math.max(
         screen.width / img.width,
         screen.height / img.height
       );
       const finalScale = autoScale * scale;
       
-      // Рисуем изображение
       ctx.drawImage(
         img,
         -img.width * finalScale / 2,
@@ -157,18 +138,37 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       
       ctx.restore();
       
-      // 5. Внутренняя тень для объема
-      ctx.save();
-      ctx.shadowColor = 'rgba(0,0,0,0.2)';
-      ctx.shadowBlur = 8;
-      ctx.shadowOffsetX = -2;
-      ctx.shadowOffsetY = -2;
-      ctx.strokeStyle = 'transparent';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(screen.x + 2, screen.y + 2, screen.width - 4, screen.height - 4);
-      ctx.restore();
-      
-      setIsLoading(false);
+      // Теперь загружаем и рисуем рамку поверх
+      const frameImg = new Image();
+      frameImg.onload = () => {
+        // Применяем цветовой фильтр к рамке если нужно
+        if (selectedColor === 'black') {
+          // Для черной рамки делаем изображение темнее
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+          
+          // Добавляем темный оттенок
+          ctx.globalCompositeOperation = 'multiply';
+          ctx.fillStyle = 'rgba(50, 50, 50, 0.8)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.globalCompositeOperation = 'source-over';
+        } else {
+          // Для белой рамки оставляем как есть
+          ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+        }
+        setIsLoading(false);
+      };
+      frameImg.onerror = () => {
+        // Если изображение рамки не загрузилось, рисуем простую рамку
+        ctx.strokeStyle = selectedFrameColor.borderColor;
+        ctx.lineWidth = 20;
+        ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+        ctx.strokeStyle = selectedFrameColor.color;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+        setIsLoading(false);
+      };
+      frameImg.src = currentFrame.frame;
     };
     
     userImg.onload = () => {
