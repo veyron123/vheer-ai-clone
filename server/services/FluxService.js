@@ -3,6 +3,7 @@ import BaseAIService from './base/BaseAIService.js';
 import { getModelCredits } from '../config/pricing.config.js';
 import logger from '../utils/logger.js';
 import queueManager from './QueueService.js';
+import { getStandardizedAspectRatio, convertToServiceFormat } from '../utils/aspectRatioUtils.js';
 
 /**
  * Flux AI Service
@@ -202,9 +203,10 @@ class FluxService extends BaseAIService {
       guidance: 7.5
     };
 
-    // Handle aspect ratio
+    // Handle aspect ratio using standardized logic
     if (aspectRatio) {
-      const { width, height } = this.getFluxDimensions(aspectRatio);
+      const standardizedRatio = getStandardizedAspectRatio(aspectRatio);
+      const { width, height } = convertToServiceFormat(standardizedRatio, 'flux');
       payload.width = width;
       payload.height = height;
     }
@@ -222,19 +224,13 @@ class FluxService extends BaseAIService {
 
   /**
    * Get Flux dimensions based on aspect ratio
+   * @deprecated Use aspectRatioUtils.js convertToServiceFormat instead
    */
   getFluxDimensions(aspectRatio) {
-    const dimensions = {
-      '1:1': { width: 1024, height: 1024 },
-      '16:9': { width: 1344, height: 768 },
-      '9:16': { width: 768, height: 1344 },
-      '4:3': { width: 1152, height: 896 },
-      '3:4': { width: 896, height: 1152 },
-      '3:2': { width: 1216, height: 832 },
-      '2:3': { width: 832, height: 1216 }
-    };
-
-    return dimensions[aspectRatio] || dimensions['1:1'];
+    // This method is deprecated - use standardized aspect ratio utilities
+    console.warn('getFluxDimensions is deprecated, use aspectRatioUtils.js instead');
+    const standardizedRatio = getStandardizedAspectRatio(aspectRatio);
+    return convertToServiceFormat(standardizedRatio, 'flux');
   }
 
   /**

@@ -1,4 +1,5 @@
 import { fal } from "@fal-ai/client";
+import { getStandardizedAspectRatio, convertToServiceFormat } from '../utils/aspectRatioUtils.js';
 
 class QwenImageService {
   constructor() {
@@ -38,9 +39,10 @@ class QwenImageService {
         syncMode = true
       } = options;
 
-      // Convert aspect ratio to image size
-      const imageSize = this.getImageSize(aspectRatio);
-      console.log(`📐 Aspect ratio conversion: ${aspectRatio} -> ${JSON.stringify(imageSize)}`);
+      // Convert aspect ratio to image size using standardized logic
+      const standardizedRatio = getStandardizedAspectRatio(aspectRatio);
+      const imageSize = convertToServiceFormat(standardizedRatio, 'qwen');
+      console.log(`📐 Aspect ratio conversion: ${aspectRatio} -> ${standardizedRatio} -> ${JSON.stringify(imageSize)}`);
       
       // For custom sizes, use width/height object instead of enum
       let imageSizeParam = imageSize;
@@ -149,9 +151,10 @@ class QwenImageService {
         sync_mode: syncMode
       };
 
-      // Only set image_size if not matching input
+      // Only set image_size if not matching input, using standardized logic
       if (aspectRatio !== 'match') {
-        input.image_size = this.getImageSize(aspectRatio);
+        const standardizedRatio = getStandardizedAspectRatio(aspectRatio);
+        input.image_size = convertToServiceFormat(standardizedRatio, 'qwen');
       }
 
       if (seed) {
@@ -185,29 +188,12 @@ class QwenImageService {
 
   /**
    * Convert aspect ratio to FAL API image size format
-   * Based on official FAL AI documentation enum values:
-   * square_hd, square, portrait_4_3, portrait_16_9, landscape_4_3, landscape_16_9
+   * @deprecated Use aspectRatioUtils.js convertToServiceFormat instead
    */
   getImageSize(aspectRatio) {
-    console.log(`🔍 Converting aspect ratio: "${aspectRatio}"`);
-    
-    // FAL API predefined formats (as per official docs)
-    const sizeMap = {
-      '1:1': 'square_hd', // High definition square
-      '16:9': 'landscape_16_9', // Landscape 16:9  
-      '9:16': 'portrait_16_9', // Portrait 16:9
-      '4:3': 'landscape_4_3', // Landscape 4:3
-      '3:4': 'portrait_4_3', // Portrait 4:3
-      'square': 'square_hd',
-      'landscape': 'landscape_4_3', 
-      'portrait': 'portrait_4_3',
-      'match': 'square_hd' // Default for match in text-to-image
-    };
-
-    const result = sizeMap[aspectRatio] || 'square_hd'; // Default to square_hd
-    console.log(`🔍 Mapped to FAL format: "${result}"`);
-    
-    return result;
+    console.warn('getImageSize is deprecated, use aspectRatioUtils.js instead');
+    const standardizedRatio = getStandardizedAspectRatio(aspectRatio);
+    return convertToServiceFormat(standardizedRatio, 'qwen');
   }
 
   /**

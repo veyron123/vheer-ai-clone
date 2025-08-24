@@ -1,8 +1,42 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ShoppingCart, Plus, Minus, Trash2, ShieldCheck } from 'lucide-react';
+import { X, ShoppingCart, Plus, Minus, Trash2, ShieldCheck, Image } from 'lucide-react';
 import useCartStore from '../stores/cartStore';
 import toast from 'react-hot-toast';
+
+// Компонент для изображения товара с обработкой ошибок
+const CartItemImage = ({ src, alt }) => {
+  const [imageError, setImageError] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  return (
+    <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
+      {imageError || !src ? (
+        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100">
+          <Image className="w-8 h-8 text-gray-400" />
+        </div>
+      ) : (
+        <>
+          {loading && (
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500"></div>
+            </div>
+          )}
+          <img
+            src={src}
+            alt={alt}
+            className={`w-full h-full object-cover ${loading ? 'hidden' : ''}`}
+            onError={() => {
+              setImageError(true);
+              setLoading(false);
+            }}
+            onLoad={() => setLoading(false)}
+          />
+        </>
+      )}
+    </div>
+  );
+};
 
 const Cart = () => {
   const { 
@@ -87,18 +121,15 @@ const Cart = () => {
                     >
                       <div className="flex gap-4 p-4">
                         {/* Product Image */}
-                        <div className="w-24 h-24 flex-shrink-0">
-                          <img
-                            src={item.imageUrl}
-                            alt="Mockup"
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        </div>
+                        <CartItemImage 
+                          src={item.imageUrl} 
+                          alt="Frame Poster" 
+                        />
 
                         {/* Product Details */}
                         <div className="flex-1">
                           <h3 className="font-medium text-gray-900">
-                            Frame Mockup
+                            Frame Poster
                           </h3>
                           <div className="text-sm text-gray-500 mt-1 space-y-1">
                             <p>Frame Color: {item.frameColorName || item.frameColor}</p>

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getStandardizedAspectRatio, convertToServiceFormat } from '../utils/aspectRatioUtils.js';
 
 class GPTImageTextToImageService {
   constructor() {
@@ -26,9 +27,10 @@ class GPTImageTextToImageService {
         isEnhance = false
       } = options;
 
-      // Convert aspect ratio to GPT Image format
-      const size = this.getGPTImageSize(aspectRatio);
-      console.log(`📐 Aspect ratio conversion: ${aspectRatio} -> ${size}`);
+      // Convert aspect ratio to GPT Image format using standardized logic
+      const standardizedRatio = getStandardizedAspectRatio(aspectRatio);
+      const size = convertToServiceFormat(standardizedRatio, 'gpt-image');
+      console.log(`📐 Aspect ratio conversion: ${aspectRatio} -> ${standardizedRatio} -> ${size}`);
       
       const requestData = {
         prompt,
@@ -194,28 +196,12 @@ class GPTImageTextToImageService {
 
   /**
    * Convert aspect ratio to GPT Image API format
-   * GPT Image supports: '1:1', '3:2', '2:3'
+   * @deprecated Use aspectRatioUtils.js convertToServiceFormat instead
    */
   getGPTImageSize(aspectRatio) {
-    console.log(`🔍 Converting aspect ratio: "${aspectRatio}"`);
-    
-    const sizeMap = {
-      '1:1': '1:1',     // Square
-      '3:2': '3:2',     // Landscape 
-      '2:3': '2:3',     // Portrait
-      '16:9': '3:2',    // Map 16:9 to closest supported (3:2)
-      '9:16': '2:3',    // Map 9:16 to closest supported (2:3)
-      '4:3': '3:2',     // Map 4:3 to closest supported (3:2)
-      '3:4': '2:3',     // Map 3:4 to closest supported (2:3)
-      'square': '1:1',
-      'landscape': '3:2',
-      'portrait': '2:3'
-    };
-
-    const result = sizeMap[aspectRatio] || '1:1';
-    console.log(`🔍 Mapped to GPT Image format: "${result}"`);
-    
-    return result;
+    console.warn('getGPTImageSize is deprecated, use aspectRatioUtils.js instead');
+    const standardizedRatio = getStandardizedAspectRatio(aspectRatio);
+    return convertToServiceFormat(standardizedRatio, 'gpt-image');
   }
 
   /**

@@ -3,6 +3,7 @@ import BaseAIService from './base/BaseAIService.js';
 import { getModelCredits } from '../config/pricing.config.js';
 import logger from '../utils/logger.js';
 import queueManager from './QueueService.js';
+import { getStandardizedAspectRatio, convertToServiceFormat } from '../utils/aspectRatioUtils.js';
 
 /**
  * GPT Image Service
@@ -205,8 +206,9 @@ class GPTImageService extends BaseAIService {
       ? `${prompt}, ${style} style`
       : prompt;
 
-    // Map aspect ratio to GPT Image supported sizes
-    const size = this.mapAspectRatioToSize(aspectRatio);
+    // Map aspect ratio to GPT Image supported sizes using standardized logic
+    const standardizedRatio = getStandardizedAspectRatio(aspectRatio);
+    const size = convertToServiceFormat(standardizedRatio, 'gpt-image');
 
     return {
       prompt: fullPrompt,
@@ -219,21 +221,12 @@ class GPTImageService extends BaseAIService {
 
   /**
    * Map aspect ratio to GPT Image supported sizes
-   * GPT Image supports: "1:1", "3:2", "2:3"
+   * @deprecated Use aspectRatioUtils.js convertToServiceFormat instead
    */
   mapAspectRatioToSize(aspectRatio) {
-    const mapping = {
-      '1:1': '1:1',
-      '16:9': '3:2',
-      '4:3': '3:2',
-      '3:2': '3:2',
-      '9:16': '2:3',
-      '3:4': '2:3',
-      '2:3': '2:3',
-      'match': '1:1' // Default for match
-    };
-
-    return mapping[aspectRatio] || '1:1';
+    console.warn('mapAspectRatioToSize is deprecated, use aspectRatioUtils.js instead');
+    const standardizedRatio = getStandardizedAspectRatio(aspectRatio);
+    return convertToServiceFormat(standardizedRatio, 'gpt-image');
   }
 
   /**

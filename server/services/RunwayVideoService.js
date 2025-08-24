@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { getStandardizedAspectRatio, convertToServiceFormat } from '../utils/aspectRatioUtils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -46,11 +47,15 @@ export default class RunwayVideoService {
       // Validate parameters
       this.validateParams(params);
 
+      // Standardize the aspect ratio for consistent behavior
+      const standardizedAspectRatio = getStandardizedAspectRatio(params.aspectRatio);
+      const runwayAspectRatio = convertToServiceFormat(standardizedAspectRatio, 'runway');
+      
       const requestBody = {
         prompt: params.prompt,
         duration: parseInt(params.duration),
         quality: params.quality,
-        aspectRatio: params.aspectRatio,
+        aspectRatio: runwayAspectRatio,
         waterMark: params.waterMark || ''
       };
 
