@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Frame, Download, RotateCw, Move, Maximize, X, ChevronUp, ChevronDown } from 'lucide-react';
+import { Frame, Download, RotateCw, Move, Maximize, X, ChevronUp, ChevronDown, Palette, Ruler } from 'lucide-react';
 
 const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
   const canvasRef = useRef(null);
@@ -10,6 +10,24 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
   const [scale, setScale] = useState(0.7);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [hasShownAuto, setHasShownAuto] = useState(false);
+  const [selectedColor, setSelectedColor] = useState('white');
+  const [selectedSize, setSelectedSize] = useState('12x12');
+
+  // Конфигурация цветов рамок
+  const frameColors = [
+    { id: 'black', name: 'Black', color: '#1a1a1a', borderColor: '#000000' },
+    { id: 'white', name: 'White', color: '#ffffff', borderColor: '#e5e5e5' },
+    { id: 'redoak', name: 'Red Oak', color: '#8b4513', borderColor: '#6b3410' }
+  ];
+
+  // Конфигурация размеров и цен
+  const frameSizes = [
+    { id: '10x10', name: '10"×10"', price: 70 },
+    { id: '12x12', name: '12"×12"', price: 80 },
+    { id: '14x14', name: '14"×14"', price: 90 },
+    { id: '16x16', name: '16"×16"', price: 100 },
+    { id: '18x18', name: '18"×18"', price: 120 }
+  ];
 
   // Конфигурация рамок
   const frameConfig = {
@@ -87,25 +105,47 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
     };
     
     const renderImageOnCanvas = (img) => {
+      // Получаем выбранный цвет рамки
+      const selectedFrameColor = frameColors.find(c => c.id === selectedColor);
+      const screen = currentFrame.screen;
+      
+      // 1. Сначала рисуем фон рамки
+      ctx.fillStyle = selectedFrameColor.color;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // 2. Внешняя граница рамки
+      ctx.strokeStyle = selectedFrameColor.borderColor;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(1.5, 1.5, canvas.width - 3, canvas.height - 3);
+      
+      // 3. Внутренняя рамка вокруг изображения
+      ctx.strokeStyle = selectedFrameColor.borderColor;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(screen.x - 2, screen.y - 2, screen.width + 4, screen.height + 4);
+      
+      // 4. Рисуем изображение
       ctx.save();
       
-      const screen = currentFrame.screen;
+      // Обрезаем по области экрана
       ctx.beginPath();
       ctx.rect(screen.x, screen.y, screen.width, screen.height);
       ctx.clip();
       
+      // Применяем трансформации
       ctx.translate(
         screen.x + screen.width / 2 + position.x,
         screen.y + screen.height / 2 + position.y
       );
       ctx.rotate((rotation * Math.PI) / 180);
       
+      // Вычисляем масштаб
       const autoScale = Math.max(
         screen.width / img.width,
         screen.height / img.height
       );
       const finalScale = autoScale * scale;
       
+      // Рисуем изображение
       ctx.drawImage(
         img,
         -img.width * finalScale / 2,
@@ -116,21 +156,28 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       
       ctx.restore();
       
-      const frameImg = new Image();
-      frameImg.onload = () => {
-        ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
-        setIsLoading(false);
-      };
-      frameImg.onerror = () => {
-        ctx.strokeStyle = '#8B7355';
-        ctx.lineWidth = 20;
-        ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
-        ctx.strokeStyle = '#D4AF37';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
-        setIsLoading(false);
-      };
-      frameImg.src = currentFrame.frame;
+      // 5. Добавляем декоративные элементы для глубины
+      if (selectedColor === 'redoak') {
+        // Для дерева добавляем текстуру
+        ctx.strokeStyle = 'rgba(107, 52, 16, 0.3)';
+        ctx.lineWidth = 1;
+        for (let i = 10; i < 40; i += 10) {
+          ctx.strokeRect(i, i, canvas.width - i * 2, canvas.height - i * 2);
+        }
+      }
+      
+      // 6. Внутренняя тень для объема
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.2)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetX = -2;
+      ctx.shadowOffsetY = -2;
+      ctx.strokeStyle = 'transparent';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(screen.x + 2, screen.y + 2, screen.width - 4, screen.height - 4);
+      ctx.restore();
+      
+      setIsLoading(false);
     };
     
     userImg.onload = () => {
@@ -140,14 +187,15 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
     userImg.crossOrigin = 'anonymous';
     userImg.src = imageUrl;
     
-  }, [imageUrl, aspectRatio, rotation, scale, position, currentFrame, isVisible]);
+  }, [imageUrl, aspectRatio, rotation, scale, position, currentFrame, isVisible, selectedColor, frameColors]);
 
   // Скачивание результата
   const downloadMockup = () => {
     if (!canvasRef.current) return;
     
     const link = document.createElement('a');
-    link.download = `mockup-${aspectRatio}.png`;
+    const sizeText = aspectRatio === '1:1' ? `-${selectedSize}` : '';
+    link.download = `mockup-${selectedColor}-${aspectRatio}${sizeText}.png`;
     link.href = canvasRef.current.toDataURL();
     link.click();
   };
@@ -168,6 +216,11 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
           <span className="px-2 py-1 bg-purple-100 text-purple-700 text-sm rounded font-medium">
             {aspectRatio}
           </span>
+          {aspectRatio === '1:1' && isVisible && (
+            <span className="px-2 py-1 bg-green-100 text-green-700 text-sm rounded font-medium">
+              {frameSizes.find(s => s.id === selectedSize)?.name} - ${frameSizes.find(s => s.id === selectedSize)?.price}
+            </span>
+          )}
         </div>
         
         <div className="flex items-center gap-2">
@@ -228,6 +281,74 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
             {/* Controls */}
             <div className="space-y-4">
               <h4 className="text-sm font-medium text-gray-700">Settings</h4>
+              
+              {/* Frame Color Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Palette className="w-4 h-4 inline mr-1" />
+                  Frame color
+                </label>
+                <div className="flex gap-3">
+                  {frameColors.map((color) => (
+                    <label
+                      key={color.id}
+                      className="relative cursor-pointer"
+                    >
+                      <input
+                        type="radio"
+                        name="frameColor"
+                        value={color.id}
+                        checked={selectedColor === color.id}
+                        onChange={(e) => setSelectedColor(e.target.value)}
+                        className="sr-only"
+                      />
+                      <div className={`relative ${selectedColor === color.id ? 'ring-2 ring-purple-500 ring-offset-2' : ''} rounded-lg transition-all`}>
+                        <div 
+                          className="w-12 h-12 rounded-lg border-2"
+                          style={{ 
+                            backgroundColor: color.color,
+                            borderColor: color.borderColor
+                          }}
+                        >
+                          {selectedColor === color.id && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Size Selection - Only for 1:1 aspect ratio */}
+              {aspectRatio === '1:1' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Ruler className="w-4 h-4 inline mr-1" />
+                    Size
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {frameSizes.map((size) => (
+                      <button
+                        key={size.id}
+                        onClick={() => setSelectedSize(size.id)}
+                        className={`px-3 py-2 rounded-lg border-2 transition-all ${
+                          selectedSize === size.id
+                            ? 'border-purple-500 bg-purple-50 text-purple-700 font-medium'
+                            : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                        }`}
+                      >
+                        <div className="text-sm font-medium">{size.name}</div>
+                        <div className="text-xs text-gray-500">${size.price}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               {/* Rotation */}
               <div>
@@ -301,6 +422,8 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
                     setRotation(0);
                     setPosition({ x: 0, y: 0 });
                     setScale(0.7);
+                    setSelectedColor('white');
+                    setSelectedSize('12x12');
                   }}
                   className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                 >

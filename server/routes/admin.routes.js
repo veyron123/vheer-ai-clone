@@ -93,6 +93,36 @@ router.get('/users', authenticateUser, isAdmin, async (req, res) => {
   }
 });
 
+// Delete user (admin action)
+router.delete('/users/:id', authenticateUser, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { username: true, email: true }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Delete user (cascade will handle related records)
+    await prisma.user.delete({
+      where: { id }
+    });
+
+    res.json({ 
+      message: 'User deleted successfully', 
+      deletedUser: user 
+    });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({ error: 'Failed to delete user' });
+  }
+});
+
 // Get single user details
 router.get('/users/:id', authenticateUser, isAdmin, async (req, res) => {
   try {

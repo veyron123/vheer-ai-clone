@@ -4,7 +4,8 @@ import {
   Users, CreditCard, Image, Activity, Search, Filter, 
   ChevronDown, Eye, Edit, TrendingUp, Calendar, 
   Mail, Shield, Sparkles, Database, RefreshCw,
-  X, Check, AlertCircle, UserCheck, DollarSign
+  X, Check, AlertCircle, UserCheck, DollarSign,
+  Trash2, ChevronUp, ArrowUpDown
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -34,7 +35,7 @@ const AdminDashboard = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/users`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/admin/users`, {
         headers: { Authorization: `Bearer ${token}` },
         params: {
           page: currentPage,
@@ -63,7 +64,7 @@ const AdminDashboard = () => {
 
   const fetchDashboardStats = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/stats`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/admin/stats`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDashboardStats(response.data);
@@ -74,7 +75,7 @@ const AdminDashboard = () => {
 
   const fetchUserDetails = async (userId) => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/users/${userId}`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/admin/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSelectedUser(response.data);
@@ -85,7 +86,7 @@ const AdminDashboard = () => {
 
   const updateUser = async (userId, updates) => {
     try {
-      await axios.patch(`${import.meta.env.VITE_API_URL}/api/admin/users/${userId}`, updates, {
+      await axios.patch(`${import.meta.env.VITE_API_URL}/admin/users/${userId}`, updates, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('User updated successfully');
@@ -94,6 +95,52 @@ const AdminDashboard = () => {
     } catch (error) {
       toast.error('Failed to update user');
     }
+  };
+
+  const deleteUser = async (userId, username) => {
+    if (!confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`)) {
+      return;
+    }
+    
+    try {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/admin/users/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('User deleted successfully');
+      fetchUsers();
+    } catch (error) {
+      toast.error('Failed to delete user');
+    }
+  };
+
+  const handleSort = (field) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('desc');
+    }
+  };
+
+  const SortableHeader = ({ field, children }) => {
+    const isActive = sortBy === field;
+    const isAsc = isActive && sortOrder === 'asc';
+    const isDesc = isActive && sortOrder === 'desc';
+    
+    return (
+      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onClick={() => handleSort(field)}>
+        <div className="flex items-center space-x-1">
+          <span>{children}</span>
+          <div className="flex flex-col">
+            {isActive ? (
+              isAsc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
+            ) : (
+              <ArrowUpDown className="w-3 h-3 opacity-50" />
+            )}
+          </div>
+        </div>
+      </th>
+    );
   };
 
   const StatCard = ({ icon: Icon, label, value, color, trend }) => (
@@ -386,21 +433,15 @@ const AdminDashboard = () => {
                 <table className="w-full">
                   <thead className="bg-gray-50 border-b">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        User
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Credits
-                      </th>
+                      <SortableHeader field="username">User</SortableHeader>
+                      <SortableHeader field="totalCredits">Credits</SortableHeader>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Plan
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Stats
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Joined
-                      </th>
+                      <SortableHeader field="createdAt">Joined</SortableHeader>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
                       </th>
@@ -455,12 +496,22 @@ const AdminDashboard = () => {
                           {format(new Date(user.createdAt), 'MMM dd, yyyy')}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <button
-                            onClick={() => fetchUserDetails(user.id)}
-                            className="text-primary-600 hover:text-primary-700"
-                          >
-                            <Eye className="w-5 h-5" />
-                          </button>
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => fetchUserDetails(user.id)}
+                              className="text-primary-600 hover:text-primary-700"
+                              title="View Details"
+                            >
+                              <Eye className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => deleteUser(user.id, user.username)}
+                              className="text-red-600 hover:text-red-700"
+                              title="Delete User"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
