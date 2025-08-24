@@ -223,11 +223,13 @@ export const editImage = async (req, res) => {
       return res.status(400).json({ error: 'Input image is required for image editing' });
     }
 
+    // Define credits calculation
+    const modelId = 'qwen-image';
+    const creditsPerImage = 20; // 20 кредитов за изображение
+    const requiredCredits = creditsPerImage * (numImages || 1); // Умножаем на количество изображений
+
     // Check credits if user is authenticated
     if (userId) {
-      const modelId = 'qwen-image';
-      const creditsPerImage = 20; // 20 кредитов за изображение
-      const requiredCredits = creditsPerImage * (numImages || 1); // Умножаем на количество изображений
       
       try {
         const creditCheckResponse = await axios.post('http://localhost:5000/api/users/check-credits', {

@@ -138,37 +138,42 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       
       ctx.restore();
       
-      // Теперь загружаем и рисуем рамку поверх
-      const frameImg = new Image();
-      frameImg.onload = () => {
-        // Применяем цветовой фильтр к рамке если нужно
-        if (selectedColor === 'black') {
-          // Для черной рамки делаем изображение темнее
-          ctx.globalCompositeOperation = 'source-over';
-          ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
-          
-          // Добавляем темный оттенок
-          ctx.globalCompositeOperation = 'multiply';
-          ctx.fillStyle = 'rgba(50, 50, 50, 0.8)';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.globalCompositeOperation = 'source-over';
-        } else {
-          // Для белой рамки оставляем как есть
-          ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
-        }
-        setIsLoading(false);
-      };
-      frameImg.onerror = () => {
-        // Если изображение рамки не загрузилось, рисуем простую рамку
-        ctx.strokeStyle = selectedFrameColor.borderColor;
-        ctx.lineWidth = 20;
-        ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
-        ctx.strokeStyle = selectedFrameColor.color;
-        ctx.lineWidth = 2;
-        ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
-        setIsLoading(false);
-      };
-      frameImg.src = currentFrame.frame;
+      // Рисуем рамку программно, чтобы избежать CORS проблем
+      // Очищаем область вокруг изображения для рамки
+      ctx.globalCompositeOperation = 'destination-over';
+      
+      // Заливаем фон цветом рамки
+      ctx.fillStyle = selectedFrameColor.color;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.globalCompositeOperation = 'source-over';
+      
+      // Рисуем внешнюю границу рамки
+      ctx.strokeStyle = selectedFrameColor.borderColor;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(1.5, 1.5, canvas.width - 3, canvas.height - 3);
+      
+      // Рисуем внутреннюю границу вокруг изображения
+      ctx.strokeStyle = selectedFrameColor.borderColor;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(screen.x - 2, screen.y - 2, screen.width + 4, screen.height + 4);
+      
+      // Добавляем декоративные элементы для объема
+      ctx.strokeStyle = selectedFrameColor.color === '#ffffff' ? '#e0e0e0' : '#2a2a2a';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(screen.x - 4, screen.y - 4, screen.width + 8, screen.height + 8);
+      
+      // Внутренняя тень для глубины
+      ctx.shadowColor = 'rgba(0,0,0,0.2)';
+      ctx.shadowBlur = 4;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
+      ctx.strokeStyle = selectedFrameColor.borderColor;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(screen.x - 1, screen.y - 1, screen.width + 2, screen.height + 2);
+      ctx.shadowColor = 'transparent';
+      
+      setIsLoading(false);
     };
     
     userImg.onload = () => {
