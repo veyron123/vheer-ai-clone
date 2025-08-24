@@ -14,15 +14,19 @@ import {
   LogOut,
   Settings,
   ChevronRight,
-  Frame
+  Frame,
+  ShoppingCart
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import ColorfulLogo from './ColorfulLogo';
+import useCartStore from '../stores/cartStore';
 
 const MobileNav = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { user, isAuthenticated, logout } = useAuthStore();
+  const { openCart, getItemCount } = useCartStore();
+  const itemCount = getItemCount();
 
   // Close menu on route change
   useEffect(() => {
@@ -83,6 +87,23 @@ const MobileNav = () => {
                 </span>
               </div>
             )}
+
+            {/* Cart Icon */}
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                openCart();
+              }}
+              className="relative p-2"
+              aria-label="Shopping Cart"
+            >
+              <ShoppingCart className="w-6 h-6 text-gray-700" />
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
+                  {itemCount}
+                </span>
+              )}
+            </button>
 
             {/* Menu Toggle Button - Optimized for touch (48x48px) */}
             <button

@@ -1,5 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Frame, Download, RotateCw, Move, Maximize, X, ChevronUp, ChevronDown, Palette, Ruler } from 'lucide-react';
+import { Frame, ShoppingCart, RotateCw, Move, Maximize, X, ChevronUp, ChevronDown, Palette, Ruler, Download } from 'lucide-react';
+import useCartStore from '../../stores/cartStore';
+import toast from 'react-hot-toast';
 
 const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
   const canvasRef = useRef(null);
@@ -189,7 +191,48 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
     
   }, [imageUrl, aspectRatio, rotation, scale, position, currentFrame, isVisible, selectedColor, frameColors]);
 
-  // Скачивание результата
+  const { addItem, openCart } = useCartStore();
+
+  // Добавление в корзину
+  const addToCart = async () => {
+    if (!canvasRef.current) return;
+    
+    // Получаем выбранный размер и цену
+    const selectedSizeData = frameSizes.find(s => s.id === selectedSize);
+    const selectedColorData = frameColors.find(c => c.id === selectedColor);
+    
+    // Создаем объект товара для корзины
+    const cartItem = {
+      imageUrl: canvasRef.current.toDataURL(),
+      originalImageUrl: imageUrl,
+      frameColor: selectedColor,
+      frameColorName: selectedColorData?.name,
+      size: selectedSize,
+      sizeName: selectedSizeData?.name,
+      price: selectedSizeData?.price || 80,
+      aspectRatio: aspectRatio,
+      rotation: rotation,
+      scale: scale,
+      position: position,
+      type: 'mockup'
+    };
+    
+    // Добавляем в корзину
+    addItem(cartItem);
+    
+    // Показываем уведомление
+    toast.success('Added to cart!', {
+      icon: '🛒',
+      duration: 2000
+    });
+    
+    // Открываем корзину
+    setTimeout(() => {
+      openCart();
+    }, 500);
+  };
+
+  // Скачивание результата (оставляем как дополнительную функцию)
   const downloadMockup = () => {
     if (!canvasRef.current) return;
     
@@ -431,12 +474,20 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
                 </button>
                 
                 <button
-                  onClick={downloadMockup}
+                  onClick={addToCart}
                   disabled={isLoading}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 disabled:bg-gray-300 flex items-center justify-center gap-2 transition-colors"
+                  className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 disabled:bg-gray-300 flex items-center justify-center gap-2 transition-colors font-semibold shadow-lg"
                 >
-                  <Download className="w-5 h-5" />
-                  Download Mockup
+                  <ShoppingCart className="w-5 h-5" />
+                  ADD TO CART
+                </button>
+                
+                <button
+                  onClick={downloadMockup}
+                  className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-2 transition-colors text-sm"
+                >
+                  <Download className="w-4 h-4" />
+                  Download Preview
                 </button>
               </div>
             </div>

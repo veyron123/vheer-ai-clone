@@ -19,15 +19,20 @@ import {
   LogOut,
   Settings,
   Frame,
-  Shield
+  Shield,
+  ShoppingCart
 } from 'lucide-react';
+import Cart from './Cart';
+import useCartStore from '../stores/cartStore';
 
 const Layout = ({ children }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isAuthenticated, user, logout } = useAuthStore();
+  const { openCart, getItemCount } = useCartStore();
   const { t, i18n } = useTranslation('common');
   const navigate = useNavigate();
   const location = useLocation();
+  const itemCount = getItemCount();
 
   // Get current language from path
   const currentLang = getLanguageFromPath(location.pathname) || 'en';
@@ -86,6 +91,21 @@ const Layout = ({ children }) => {
             {/* User Menu */}
             <div className="flex items-center space-x-4">
               <LanguageSwitcher />
+              
+              {/* Cart Icon */}
+              <button
+                onClick={openCart}
+                className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                aria-label="Shopping Cart"
+              >
+                <ShoppingCart className="w-6 h-6 text-gray-700" />
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
+                    {itemCount}
+                  </span>
+                )}
+              </button>
+              
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2 text-sm">
@@ -162,6 +182,9 @@ const Layout = ({ children }) => {
       <main>
         {children}
       </main>
+
+      {/* Cart Component */}
+      <Cart />
 
       {/* Footer */}
       <footer className="bg-white border-t mt-20">

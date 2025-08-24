@@ -29,6 +29,7 @@ import runwayVideoRoutes from './routes/runwayVideo.routes.js';
 import wayforpayRoutes from './routes/wayforpay.routes.js';
 import testSubscriptionRoutes from './routes/test-subscription-expiry.js';
 import adminRoutes from './routes/admin.routes.js';
+import webhookRoutes, { setupWebSocket } from './routes/webhook.routes.js';
 
 // Middleware
 import { errorHandler } from './middleware/error.middleware.js';
@@ -141,6 +142,9 @@ if (process.env.NODE_ENV === 'development') {
 // Admin routes
 app.use('/api/admin', adminRoutes);
 
+// Webhook routes
+app.use('/api/webhook', webhookRoutes);
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
@@ -203,6 +207,9 @@ const server = app.listen(PORT, () => {
     nodeVersion: process.version
   });
 });
+
+// Setup WebSocket for real-time admin notifications
+const wss = setupWebSocket(server);
 
 // Increase server timeout to 5 minutes for long-running requests like image generation
 server.setTimeout(300000); // 5 minutes

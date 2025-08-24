@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { AppError } from '../middleware/error.middleware.js';
 import CreditService from '../services/creditService.js';
+import notificationService from '../services/NotificationService.js';
 
 const prisma = new PrismaClient();
 
@@ -62,6 +63,13 @@ export const register = async (req, res, next) => {
     });
     
     const token = generateToken(user.id);
+    
+    // Send notification for new user registration
+    try {
+      await notificationService.notifyNewUser(user);
+    } catch (notifError) {
+      console.error('Failed to send new user notification:', notifError);
+    }
     
     res.status(201).json({
       message: 'User registered successfully',

@@ -5,12 +5,13 @@ import {
   ChevronDown, Eye, Edit, TrendingUp, Calendar, 
   Mail, Shield, Sparkles, Database, RefreshCw,
   X, Check, AlertCircle, UserCheck, DollarSign,
-  Trash2, ChevronUp, ArrowUpDown
+  Trash2, ChevronUp, ArrowUpDown, Bell
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../stores/authStore';
 import { format } from 'date-fns';
+import NotificationSettings from '../components/NotificationSettings';
 
 const AdminDashboard = () => {
   const { token } = useAuthStore();
@@ -26,6 +27,7 @@ const AdminDashboard = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const [dashboardStats, setDashboardStats] = useState(null);
+  const [activeTab, setActiveTab] = useState('users');
 
   useEffect(() => {
     fetchUsers();
@@ -331,231 +333,258 @@ const AdminDashboard = () => {
               <Shield className="w-8 h-8 text-primary-600" />
               <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
             </div>
-            <button
-              onClick={() => {
-                fetchUsers();
-                fetchDashboardStats();
-              }}
-              className="p-2 hover:bg-gray-100 rounded-lg"
-            >
-              <RefreshCw className="w-5 h-5" />
-            </button>
+            <div className="flex items-center space-x-4">
+              {/* Tab Navigation */}
+              <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setActiveTab('users')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition ${activeTab === 'users' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                >
+                  <Users className="w-4 h-4 mr-2 inline" />
+                  Users
+                </button>
+                <button
+                  onClick={() => setActiveTab('notifications')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition ${activeTab === 'notifications' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                >
+                  <Bell className="w-4 h-4 mr-2 inline" />
+                  Notifications
+                </button>
+              </div>
+              <button
+                onClick={() => {
+                  fetchUsers();
+                  fetchDashboardStats();
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <RefreshCw className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Grid */}
-        {dashboardStats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <StatCard
-              icon={Users}
-              label="Total Users"
-              value={dashboardStats.users.total}
-              color="bg-blue-500"
-              trend={12}
-            />
-            <StatCard
-              icon={CreditCard}
-              label="Total Credits"
-              value={dashboardStats.users.totalCredits?.toLocaleString()}
-              color="bg-green-500"
-            />
-            <StatCard
-              icon={Image}
-              label="Generations"
-              value={dashboardStats.generations.total}
-              color="bg-purple-500"
-            />
-            <StatCard
-              icon={DollarSign}
-              label="Revenue"
-              value={`$${dashboardStats.payments.revenue?.toFixed(2)}`}
-              color="bg-yellow-500"
-            />
-          </div>
+        {activeTab === 'users' && (
+          <>
+            {/* Stats Grid */}
+            {dashboardStats && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <StatCard
+                  icon={Users}
+                  label="Total Users"
+                  value={dashboardStats.users.total}
+                  color="bg-blue-500"
+                  trend={12}
+                />
+                <StatCard
+                  icon={CreditCard}
+                  label="Total Credits"
+                  value={dashboardStats.users.totalCredits?.toLocaleString()}
+                  color="bg-green-500"
+                />
+                <StatCard
+                  icon={Image}
+                  label="Generations"
+                  value={dashboardStats.generations.total}
+                  color="bg-purple-500"
+                />
+                <StatCard
+                  icon={DollarSign}
+                  label="Revenue"
+                  value={`$${dashboardStats.payments.revenue?.toFixed(2)}`}
+                  color="bg-yellow-500"
+                />
+              </div>
+            )}
+
+            {/* Search and Filters */}
+            <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+              <div className="flex flex-col lg:flex-row gap-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by email, username, or name..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <select
+                    value={filterPlan}
+                    onChange={(e) => setFilterPlan(e.target.value)}
+                    className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    <option value="">All Plans</option>
+                    <option value="FREE">Free</option>
+                    <option value="STARTER">Starter</option>
+                    <option value="PRO">Pro</option>
+                    <option value="BUSINESS">Business</option>
+                  </select>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    <option value="createdAt">Join Date</option>
+                    <option value="totalCredits">Credits</option>
+                    <option value="username">Username</option>
+                    <option value="email">Email</option>
+                  </select>
+                  <button
+                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                    className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                  >
+                    {sortOrder === 'asc' ? '↑' : '↓'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Users Table */}
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              {loading ? (
+                <div className="flex items-center justify-center py-20">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                </div>
+              ) : (
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50 border-b">
+                        <tr>
+                          <SortableHeader field="username">User</SortableHeader>
+                          <SortableHeader field="totalCredits">Credits</SortableHeader>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Plan
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Stats
+                          </th>
+                          <SortableHeader field="createdAt">Joined</SortableHeader>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {users.map((user) => (
+                          <tr key={user.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">{user.username}</div>
+                                <div className="text-sm text-gray-500">{user.email}</div>
+                                {user.fullName && (
+                                  <div className="text-xs text-gray-400">{user.fullName}</div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <Sparkles className="w-4 h-4 text-yellow-500 mr-1" />
+                                <span className="text-sm font-medium">{user.totalCredits}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 py-1 text-xs rounded-full ${
+                                user.subscription?.plan === 'PRO' ? 'bg-purple-100 text-purple-800' :
+                                user.subscription?.plan === 'BUSINESS' ? 'bg-blue-100 text-blue-800' :
+                                user.subscription?.plan === 'STARTER' ? 'bg-green-100 text-green-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {user.subscription?.plan || 'FREE'}
+                              </span>
+                              {user.subscription?.status && user.subscription.status !== 'ACTIVE' && (
+                                <span className="ml-2 px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">
+                                  {user.subscription.status}
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <div className="flex items-center space-x-3">
+                                <div className="flex items-center">
+                                  <Image className="w-4 h-4 mr-1" />
+                                  <span>{user._count?.images || 0}</span>
+                                </div>
+                                <div className="flex items-center">
+                                  <Activity className="w-4 h-4 mr-1" />
+                                  <span>{user._count?.generations || 0}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {format(new Date(user.createdAt), 'MMM dd, yyyy')}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center space-x-2">
+                                <button
+                                  onClick={() => fetchUserDetails(user.id)}
+                                  className="text-primary-600 hover:text-primary-700"
+                                  title="View Details"
+                                >
+                                  <Eye className="w-5 h-5" />
+                                </button>
+                                <button
+                                  onClick={() => deleteUser(user.id, user.username)}
+                                  className="text-red-600 hover:text-red-700"
+                                  title="Delete User"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Pagination */}
+                  <div className="px-6 py-4 bg-gray-50 border-t flex items-center justify-between">
+                    <div className="text-sm text-gray-700">
+                      Page {currentPage} of {totalPages}
+                    </div>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 border rounded-lg hover:bg-gray-100 disabled:opacity-50"
+                      >
+                        Previous
+                      </button>
+                      <button
+                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1 border rounded-lg hover:bg-gray-100 disabled:opacity-50"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </>
         )}
 
-        {/* Search and Filters */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by email, username, or name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-            </div>
-            <div className="flex gap-3">
-              <select
-                value={filterPlan}
-                onChange={(e) => setFilterPlan(e.target.value)}
-                className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                <option value="">All Plans</option>
-                <option value="FREE">Free</option>
-                <option value="STARTER">Starter</option>
-                <option value="PRO">Pro</option>
-                <option value="BUSINESS">Business</option>
-              </select>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                <option value="createdAt">Join Date</option>
-                <option value="totalCredits">Credits</option>
-                <option value="username">Username</option>
-                <option value="email">Email</option>
-              </select>
-              <button
-                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-50"
-              >
-                {sortOrder === 'asc' ? '↑' : '↓'}
-              </button>
-            </div>
-          </div>
-        </div>
+        {activeTab === 'notifications' && (
+          <NotificationSettings />
+        )}
 
-        {/* Users Table */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b">
-                    <tr>
-                      <SortableHeader field="username">User</SortableHeader>
-                      <SortableHeader field="totalCredits">Credits</SortableHeader>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Plan
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Stats
-                      </th>
-                      <SortableHeader field="createdAt">Joined</SortableHeader>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {users.map((user) => (
-                      <tr key={user.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">{user.username}</div>
-                            <div className="text-sm text-gray-500">{user.email}</div>
-                            {user.fullName && (
-                              <div className="text-xs text-gray-400">{user.fullName}</div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <Sparkles className="w-4 h-4 text-yellow-500 mr-1" />
-                            <span className="text-sm font-medium">{user.totalCredits}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            user.subscription?.plan === 'PRO' ? 'bg-purple-100 text-purple-800' :
-                            user.subscription?.plan === 'BUSINESS' ? 'bg-blue-100 text-blue-800' :
-                            user.subscription?.plan === 'STARTER' ? 'bg-green-100 text-green-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {user.subscription?.plan || 'FREE'}
-                          </span>
-                          {user.subscription?.status && user.subscription.status !== 'ACTIVE' && (
-                            <span className="ml-2 px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">
-                              {user.subscription.status}
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <div className="flex items-center space-x-3">
-                            <div className="flex items-center">
-                              <Image className="w-4 h-4 mr-1" />
-                              <span>{user._count?.images || 0}</span>
-                            </div>
-                            <div className="flex items-center">
-                              <Activity className="w-4 h-4 mr-1" />
-                              <span>{user._count?.generations || 0}</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {format(new Date(user.createdAt), 'MMM dd, yyyy')}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center space-x-2">
-                            <button
-                              onClick={() => fetchUserDetails(user.id)}
-                              className="text-primary-600 hover:text-primary-700"
-                              title="View Details"
-                            >
-                              <Eye className="w-5 h-5" />
-                            </button>
-                            <button
-                              onClick={() => deleteUser(user.id, user.username)}
-                              className="text-red-600 hover:text-red-700"
-                              title="Delete User"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination */}
-              <div className="px-6 py-4 bg-gray-50 border-t flex items-center justify-between">
-                <div className="text-sm text-gray-700">
-                  Page {currentPage} of {totalPages}
-                </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                    className="px-3 py-1 border rounded-lg hover:bg-gray-100 disabled:opacity-50"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
-                    className="px-3 py-1 border rounded-lg hover:bg-gray-100 disabled:opacity-50"
-                  >
-                    Next
-                  </button>
-                </div>
-              </div>
-            </>
+        {/* User Details Modal */}
+        <AnimatePresence>
+          {selectedUser && (
+            <UserModal
+              user={selectedUser}
+              onClose={() => setSelectedUser(null)}
+              onUpdate={updateUser}
+            />
           )}
-        </div>
+        </AnimatePresence>
       </div>
-
-      {/* User Details Modal */}
-      <AnimatePresence>
-        {selectedUser && (
-          <UserModal
-            user={selectedUser}
-            onClose={() => setSelectedUser(null)}
-            onUpdate={updateUser}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 };
