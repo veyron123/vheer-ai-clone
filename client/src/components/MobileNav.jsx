@@ -88,22 +88,22 @@ const MobileNav = () => {
               </div>
             )}
 
-            {/* Cart Icon */}
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                openCart();
-              }}
-              className="relative p-2"
-              aria-label="Shopping Cart"
-            >
-              <ShoppingCart className="w-6 h-6 text-gray-700" />
-              {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
+            {/* Cart Icon - Only show when items exist */}
+            {itemCount > 0 && (
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  openCart();
+                }}
+                className="relative p-2 animate-fadeIn"
+                aria-label="Shopping Cart"
+              >
+                <ShoppingCart className="w-6 h-6 text-gray-700" />
+                <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold animate-pulse">
                   {itemCount}
                 </span>
-              )}
-            </button>
+              </button>
+            )}
 
             {/* Menu Toggle Button - Optimized for touch (48x48px) */}
             <button

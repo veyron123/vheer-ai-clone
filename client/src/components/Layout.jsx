@@ -92,19 +92,19 @@ const Layout = ({ children }) => {
             <div className="flex items-center space-x-4">
               <LanguageSwitcher />
               
-              {/* Cart Icon */}
-              <button
-                onClick={openCart}
-                className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                aria-label="Shopping Cart"
-              >
-                <ShoppingCart className="w-6 h-6 text-gray-700" />
-                {itemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
+              {/* Cart Icon - Only show when items exist */}
+              {itemCount > 0 && (
+                <button
+                  onClick={openCart}
+                  className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors animate-fadeIn"
+                  aria-label="Shopping Cart"
+                >
+                  <ShoppingCart className="w-6 h-6 text-gray-700" />
+                  <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold animate-pulse">
                     {itemCount}
                   </span>
-                )}
-              </button>
+                </button>
+              )}
               
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
