@@ -5,7 +5,6 @@ import toast from 'react-hot-toast';
 
 const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
   const canvasRef = useRef(null);
-  const exportCanvasRef = useRef(null); // Второй canvas для экспорта без CORS
   const [isVisible, setIsVisible] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -171,15 +170,15 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
 
   // Добавление в корзину
   const addToCart = async () => {
-    if (!canvasRef.current) return;
+    if (!imageUrl) return;
     
     // Получаем выбранный размер и цену
     const selectedSizeData = frameSizes.find(s => s.id === selectedSize);
     const selectedColorData = frameColors.find(c => c.id === selectedColor);
     
-    // Создаем объект товара для корзины
+    // Создаем объект товара для корзины (без canvas экспорта)
     const cartItem = {
-      imageUrl: canvasRef.current.toDataURL(),
+      imageUrl: imageUrl, // Используем оригинальное изображение
       originalImageUrl: imageUrl,
       frameColor: selectedColor,
       frameColorName: selectedColorData?.name,

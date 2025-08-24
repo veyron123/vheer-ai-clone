@@ -101,9 +101,9 @@ const Cart = () => {
                             Frame Mockup
                           </h3>
                           <div className="text-sm text-gray-500 mt-1 space-y-1">
-                            <p>Color: {item.frameColorName || item.frameColor}</p>
+                            <p>Frame Color: {item.frameColorName || item.frameColor}</p>
                             <p>Size: {item.sizeName || item.size}</p>
-                            <p>Ratio: {item.aspectRatio}</p>
+                            <p>Aspect Ratio: {item.aspectRatio}</p>
                           </div>
 
                           {/* Quantity Controls */}
