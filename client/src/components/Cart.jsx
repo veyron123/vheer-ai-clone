@@ -21,16 +21,20 @@ const CartItemImage = ({ src, alt }) => {
 
   // Сброс состояния при изменении src
   useEffect(() => {
+    console.log('CartItemImage - новое изображение:', src);
+    console.log('Тип URL:', src?.startsWith('data:') ? 'data URL' : src?.startsWith('blob:') ? 'blob URL' : src?.startsWith('http') ? 'http URL' : 'неизвестный');
     setImageError(false);
     setLoading(true);
     setRetryCount(0);
   }, [src]);
 
   if (!src) {
+    console.log('CartItemImage - нет src');
     return (
       <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100">
           <Image className="w-8 h-8 text-gray-400" />
+          <span className="text-xs text-gray-400 ml-1">No src</span>
         </div>
       </div>
     );
@@ -45,9 +49,14 @@ const CartItemImage = ({ src, alt }) => {
       )}
       
       {imageError && retryCount >= 2 ? (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100 p-2">
-          <Image className="w-6 h-6 text-gray-400 mb-1" />
-          <span className="text-xs text-gray-400 text-center">Image unavailable</span>
+        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100 p-1">
+          <Image className="w-4 h-4 text-gray-400 mb-1" />
+          <span className="text-xs text-gray-400 text-center leading-tight">
+            Image unavailable
+          </span>
+          <span className="text-xs text-gray-300 text-center leading-tight mt-1">
+            ({src?.startsWith('data:') ? 'data URL' : src?.startsWith('blob:') ? 'blob URL' : 'http URL'})
+          </span>
         </div>
       ) : (
         <img
@@ -60,15 +69,23 @@ const CartItemImage = ({ src, alt }) => {
             setImageError(false);
           }}
           onError={(e) => {
-            console.log('Image load error:', e.target.src);
+            const errorSrc = e.target.src;
+            console.log('Image load error details:', {
+              src: errorSrc,
+              type: errorSrc?.startsWith('data:') ? 'data URL' : errorSrc?.startsWith('blob:') ? 'blob URL' : 'http URL',
+              retryCount: retryCount,
+              error: e
+            });
             setLoading(false);
             
             if (retryCount < 2) {
+              console.log(`Попытка ${retryCount + 1}/2 загрузки изображения`);
               // Задержка перед повторной попыткой
               setTimeout(() => {
                 retryLoad();
               }, 1000);
             } else {
+              console.log('Все попытки загрузки исчерпаны, показываем заглушку');
               setImageError(true);
             }
           }}
