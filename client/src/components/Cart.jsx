@@ -22,7 +22,7 @@ const CartItemImage = ({ src, alt }) => {
   // Сброс состояния при изменении src
   useEffect(() => {
     console.log('CartItemImage - новое изображение:', src);
-    console.log('Тип URL:', src?.startsWith('data:') ? 'data URL' : src?.startsWith('blob:') ? 'blob URL' : src?.startsWith('http') ? 'http URL' : 'неизвестный');
+    console.log('Тип URL:', src?.startsWith('data:') ? 'data URL' : src?.startsWith('blob:') ? 'blob URL' : src?.includes('cloudinary.com') ? 'Cloudinary URL' : src?.startsWith('http') ? 'http URL' : 'неизвестный');
     setImageError(false);
     setLoading(true);
     setRetryCount(0);
@@ -55,7 +55,7 @@ const CartItemImage = ({ src, alt }) => {
             Image unavailable
           </span>
           <span className="text-xs text-gray-300 text-center leading-tight mt-1">
-            ({src?.startsWith('data:') ? 'data URL' : src?.startsWith('blob:') ? 'blob URL' : 'http URL'})
+            ({src?.startsWith('data:') ? 'data URL' : src?.startsWith('blob:') ? 'blob URL' : src?.includes('cloudinary.com') ? 'Cloudinary' : 'http URL'})
           </span>
         </div>
       ) : (
@@ -72,7 +72,7 @@ const CartItemImage = ({ src, alt }) => {
             const errorSrc = e.target.src;
             console.log('Image load error details:', {
               src: errorSrc,
-              type: errorSrc?.startsWith('data:') ? 'data URL' : errorSrc?.startsWith('blob:') ? 'blob URL' : 'http URL',
+              type: errorSrc?.startsWith('data:') ? 'data URL' : errorSrc?.startsWith('blob:') ? 'blob URL' : errorSrc?.includes('cloudinary.com') ? 'Cloudinary URL' : 'http URL',
               retryCount: retryCount,
               error: e
             });
@@ -108,15 +108,80 @@ const Cart = () => {
     getItemCount 
   } = useCartStore();
 
-  const handleCheckout = () => {
-    // Placeholder for WayForPay integration
-    toast.success('Redirecting to secure checkout...', {
-      icon: '🔒',
-      duration: 3000
-    });
-    // TODO: Integrate with WayForPay
-    console.log('Checkout items:', items);
-    console.log('Total:', getTotal());
+  const handleCheckout = async () => {
+    try {
+      toast.loading('Preparing secure checkout...', {
+        icon: '🔒',
+        id: 'checkout-loading'
+      });
+
+      // Prepare cart data for WayForPay
+      const cartData = {
+        items: items.map(item => ({
+          name: `Frame Poster - ${item.frameColorName || item.frameColor} - ${item.sizeName || item.size}`,
+          price: item.price,
+          quantity: item.quantity
+        })),
+        total: getTotal(),
+        currency: 'USD' // Changed to USD as requested
+      };
+
+      console.log('Checkout items:', items);
+      console.log('Cart data for WayForPay:', cartData);
+
+      // Call backend to initialize WayForPay payment  
+      const response = await fetch('http://localhost:5000/api/payments/wayforpay/cart-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(cartData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success('Redirecting to secure payment...', {
+          icon: '🔒',
+          id: 'checkout-loading',
+          duration: 2000
+        });
+
+        // Create and submit form to WayForPay
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'https://secure.wayforpay.com/pay';
+        form.target = '_blank'; // Open in new tab
+
+        // Add all WayForPay parameters as hidden inputs
+        Object.entries(result.paymentData).forEach(([key, value]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = Array.isArray(value) ? value.join(',') : value;
+          form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+
+      } else {
+        throw new Error(result.message || 'Payment initialization failed');
+      }
+
+    } catch (error) {
+      console.error('Checkout error:', error);
+      toast.error('Failed to initialize payment. Please try again.', {
+        icon: '❌',
+        id: 'checkout-loading',
+        duration: 4000
+      });
+    }
   };
 
   return (

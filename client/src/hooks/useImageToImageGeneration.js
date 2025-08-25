@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { generateImageToImage, uploadImage } from '../services/imageToImageGeneration';
 import { fileToBase64 } from '../utils/image.utils';
@@ -6,6 +6,11 @@ import { fileToBase64 } from '../utils/image.utils';
 export const useImageToImageGeneration = () => {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [generatedImage, setGeneratedImage] = useState(null);
+  
+  // DEBUG: Логируем изменения generatedImage
+  useEffect(() => {
+    console.log('🎯 useImageToImageGeneration: generatedImage changed:', generatedImage);
+  }, [generatedImage]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationTime, setGenerationTime] = useState(null);
   const [positivePrompt, setPositivePrompt] = useState('');
@@ -15,6 +20,7 @@ export const useImageToImageGeneration = () => {
   const handleImageUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      console.log('📸 Image upload started:', file.name, file.size);
       if (file.size > 10 * 1024 * 1024) { // 10MB limit
         toast.error('Image size must be less than 10MB');
         return;
@@ -22,6 +28,7 @@ export const useImageToImageGeneration = () => {
 
       const reader = new FileReader();
       reader.onload = (e) => {
+        console.log('📸 Image uploaded successfully, setting uploadedImage');
         setUploadedImage(e.target?.result);
         setGeneratedImage(null);
         setGenerationTime(null);

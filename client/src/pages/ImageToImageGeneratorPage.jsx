@@ -99,15 +99,18 @@ const ImageToImageGeneratorPage = () => {
                 />
               </div>
               
-              {!generatedImage && <ImageExampleGallery />}
+              {/* Show examples only when no images are loaded */}
+              {!generatedImage && !uploadedImage && <ImageExampleGallery />}
               
-              {/* Mockup Generator Section */}
-              <MockupSection
-                imageUrl={generatedImage}
-                aspectRatio={aspectRatio}
-                aiModel={aiModel}
-                autoShow={true}
-              />
+              {/* Mockup Generator Section - replaces examples when image is loaded */}
+              {(generatedImage || uploadedImage) && (
+                <MockupSection
+                  imageUrl={generatedImage || uploadedImage}
+                  aspectRatio={aspectRatio}
+                  aiModel={aiModel}
+                  autoShow={true}
+                />
+              )}
             </div>
 
             {/* Right Column - Settings */}

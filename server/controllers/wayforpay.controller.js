@@ -556,6 +556,295 @@ export const checkPaymentStatus = async (req, res) => {
 };
 
 /**
+ * Initialize one-time payment for cart items (no recurring)
+ */
+export const initializeCartPayment = async (req, res) => {
+  try {
+    const { items, total, currency = 'USD' } = req.body;
+    
+    // Validate cart data
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Cart is empty or invalid' 
+      });
+    }
+    
+    if (!total || total <= 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid total amount' 
+      });
+    }
+    
+    // Generate unique order reference
+    const orderReference = `CART_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    console.log('🛒 Initializing cart payment:', {
+      orderReference,
+      items: items.length,
+      total,
+      currency
+    });
+    
+    // Prepare product arrays for WayForPay
+    const productNames = items.map(item => item.name);
+    const productPrices = items.map(item => item.price);
+    const productCounts = items.map(item => item.quantity);
+    
+    // Generate payment data for WayForPay (one-time payment, no recurring)
+    const paymentData = {
+      merchantAccount: MERCHANT_LOGIN,
+      merchantDomainName: process.env.DOMAIN || 'vheer.com',
+      orderReference,
+      orderDate: Math.floor(Date.now() / 1000),
+      amount: total,
+      currency: currency,
+      productName: productNames,
+      productCount: productCounts,
+      productPrice: productPrices,
+      // One-time payment settings (no recurring)
+      merchantTransactionType: 'SALE', // Direct sale, not AUTH
+      language: 'EN', // Changed to English for USD
+      returnUrl: `${process.env.FRONTEND_URL || 'http://localhost:5178'}/cart/payment/success`,
+      serviceUrl: `${process.env.BASE_URL || 'http://localhost:5000'}/api/payments/wayforpay/cart-callback`
+    };
+    
+    // Generate signature for one-time payment
+    const signString = [
+      MERCHANT_LOGIN,
+      paymentData.merchantDomainName,
+      paymentData.orderReference,
+      paymentData.orderDate,
+      paymentData.amount,
+      paymentData.currency,
+      ...productNames,
+      ...productCounts,
+      ...productPrices
+    ].join(';');
+    
+    paymentData.merchantSignature = crypto.createHmac('md5', MERCHANT_SECRET)
+      .update(signString)
+      .digest('hex');
+    
+    console.log('✅ Cart payment data generated:', {
+      orderReference: paymentData.orderReference,
+      amount: paymentData.amount,
+      currency: paymentData.currency,
+      products: productNames.length,
+      signature: paymentData.merchantSignature
+    });
+    
+    // Handle user for payment - create guest user if needed
+    let userId = req.user?.id;
+    
+    if (!userId) {
+      // Create a temporary guest user for the payment
+      const guestUser = await prisma.user.create({
+        data: {
+          email: `guest_${orderReference}@temp.com`,
+          username: `guest_${Date.now()}`,
+          fullName: 'Guest User',
+          emailVerified: false,
+          totalCredits: 0
+        }
+      });
+      userId = guestUser.id;
+      console.log('👤 Created guest user for payment:', userId);
+    }
+    
+    // Store cart order in database for tracking
+    const payment = await prisma.payment.create({
+      data: {
+        userId: userId, // Now always has a valid userId
+        amount: total,
+        currency: currency,
+        status: 'PENDING',
+        description: `Cart payment - ${productNames.join(', ')}`,
+        wayforpayOrderReference: orderReference
+        // Note: metadata field doesn't exist in current schema
+      }
+    });
+    
+    console.log('📝 Payment record created:', payment.id);
+    
+    console.log('📤 Sending response to frontend:', {
+      success: true,
+      orderReference,
+      paymentId: payment.id,
+      paymentDataFields: Object.keys(paymentData)
+    });
+    
+    res.json({
+      success: true,
+      paymentData,
+      orderReference,
+      paymentId: payment.id
+    });
+    
+  } catch (error) {
+    console.error('❌ Cart payment initialization error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to initialize cart payment' 
+    });
+  }
+};
+
+/**
+ * Handle WayForPay callback for cart payments (one-time)
+ */
+export const handleCartCallback = async (req, res) => {
+  try {
+    console.log('=== WayForPay Cart Callback Received ===');
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    
+    // Parse callback data (same logic as subscription callback)
+    let callbackData;
+    const bodyKeys = Object.keys(req.body);
+    if (bodyKeys.length >= 1 && bodyKeys[0].startsWith('{')) {
+      try {
+        const jsonKey = bodyKeys.find(key => key.startsWith('{'));
+        let jsonString = jsonKey;
+        
+        if (!jsonString.endsWith('}')) {
+          const lastCompleteField = jsonString.lastIndexOf('","');
+          if (lastCompleteField > 0) {
+            jsonString = jsonString.substring(0, lastCompleteField + 1) + '}';
+          }
+        }
+        
+        callbackData = JSON.parse(jsonString);
+        console.log('✅ Successfully parsed cart callback data from JSON key');
+      } catch (parseError) {
+        console.log('❌ Failed to parse JSON from key:', parseError.message);
+        callbackData = req.body;
+      }
+    } else {
+      callbackData = req.body;
+    }
+    
+    const {
+      orderReference,
+      merchantSignature: signature,
+      amount,
+      currency,
+      transactionStatus,
+      reasonCode,
+      authCode,
+      cardPan
+    } = callbackData;
+    
+    console.log('🔍 Cart callback data:', {
+      orderReference,
+      amount,
+      currency,
+      transactionStatus,
+      reasonCode,
+      signature
+    });
+    
+    // Verify signature
+    const expectedSignature = generateCallbackSignature({
+      orderReference,
+      amount,
+      currency,
+      authCode,
+      cardPan,
+      transactionStatus,
+      reasonCode
+    });
+    
+    if (signature !== expectedSignature) {
+      console.error('❌ Invalid signature in cart callback');
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid signature' 
+      });
+    }
+    
+    console.log('✅ Cart callback signature verified');
+    
+    // Find payment record
+    const payment = await prisma.payment.findFirst({
+      where: { 
+        wayforpayOrderReference: orderReference
+      }
+    });
+    
+    if (!payment) {
+      console.error('❌ Payment record not found for orderReference:', orderReference);
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Payment record not found' 
+      });
+    }
+    
+    // Check for duplicate processing
+    if (payment.status === 'COMPLETED') {
+      console.log('⚠️ Cart payment already processed:', orderReference);
+      
+      const responseData = {
+        orderReference,
+        status: 'accept',
+        time: Math.floor(Date.now() / 1000)
+      };
+      
+      return res.json(responseData);
+    }
+    
+    // Update payment status
+    const updatedPayment = await prisma.payment.update({
+      where: { id: payment.id },
+      data: {
+        status: transactionStatus === 'Approved' ? 'COMPLETED' : 'FAILED'
+        // Note: metadata and completedAt fields don't exist in current schema
+        // Store additional info in description if needed
+      }
+    });
+    
+    console.log('✅ Cart payment record updated:', updatedPayment.id);
+    
+    if (transactionStatus === 'Approved') {
+      console.log('🎉 Cart payment successful!');
+      console.log('💰 Amount:', amount, currency);
+      console.log('🛒 Order:', orderReference);
+      
+      // Here you could add logic for:
+      // - Sending confirmation email
+      // - Updating inventory
+      // - Creating order fulfillment record
+      // - etc.
+    } else {
+      console.log('❌ Cart payment failed:', reasonCode);
+    }
+    
+    // Send response to WayForPay
+    const responseData = {
+      orderReference,
+      status: 'accept',
+      time: Math.floor(Date.now() / 1000)
+    };
+    
+    const responseSignature = crypto.createHmac('md5', MERCHANT_SECRET)
+      .update([MERCHANT_LOGIN, responseData.orderReference, responseData.status].join(';'))
+      .digest('hex');
+    
+    responseData.signature = responseSignature;
+    
+    console.log('📤 Sending cart callback response:', responseData);
+    res.json(responseData);
+    
+  } catch (error) {
+    console.error('❌ Cart callback processing error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Cart callback processing failed' 
+    });
+  }
+};
+
+/**
  * Cancel subscription
  */
 export const cancelSubscription = async (req, res) => {

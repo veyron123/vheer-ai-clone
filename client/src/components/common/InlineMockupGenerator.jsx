@@ -4,6 +4,8 @@ import useCartStore from '../../stores/cartStore';
 import toast from 'react-hot-toast';
 
 const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
+  // DEBUG: Логируем когда получаем новое изображение для мокапа
+  console.log('🖼️ InlineMockupGenerator received imageUrl:', imageUrl ? 'URL provided' : 'no URL', { autoShow, aspectRatio });
   const canvasRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
@@ -53,12 +55,17 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
   // Автоматический показ при появлении изображения
   useEffect(() => {
     if (autoShow && imageUrl && !hasShownAuto) {
-      const timer = setTimeout(() => {
-        setIsVisible(true);
-        setHasShownAuto(true);
-      }, 1000);
+      // DEBUG MODE: Показываем мокап сразу после загрузки изображения (для отладки)
+      // Закомментировано: setTimeout с задержкой 1000мс для production режима
+      // const timer = setTimeout(() => {
+      //   setIsVisible(true);
+      //   setHasShownAuto(true);
+      // }, 1000);
+      // return () => clearTimeout(timer);
       
-      return () => clearTimeout(timer);
+      // IMMEDIATE MOCKUP FOR DEBUG: Показываем мокап немедленно
+      setIsVisible(true);
+      setHasShownAuto(true);
     }
   }, [imageUrl, autoShow, hasShownAuto]);
 

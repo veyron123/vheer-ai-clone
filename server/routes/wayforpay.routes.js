@@ -4,7 +4,9 @@ import {
   initializePayment,
   handleCallback,
   checkPaymentStatus,
-  cancelSubscription
+  cancelSubscription,
+  initializeCartPayment,
+  handleCartCallback
 } from '../controllers/wayforpay.controller.js';
 
 const router = Router();
@@ -20,5 +22,13 @@ router.get('/status/:orderId', authenticate, checkPaymentStatus);
 
 // Cancel subscription
 router.post('/cancel', authenticate, cancelSubscription);
+
+// === CART PAYMENT ROUTES (One-time payments) ===
+
+// Initialize cart payment (no auth required - allows guest checkout)
+router.post('/cart-checkout', initializeCartPayment);
+
+// Handle WayForPay callback for cart payments (no auth required)
+router.post('/cart-callback', handleCartCallback);
 
 export default router;

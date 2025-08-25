@@ -7,9 +7,14 @@ const MockupSection = ({
   aiModel,
   autoShow = true 
 }) => {
+  // DEBUG: Логируем что получает MockupSection
+  console.log('📋 MockupSection received:', { imageUrl, aspectRatio, aiModel, autoShow });
   // Определяем, можно ли показать мокап
   const canShowMockup = () => {
-    if (!imageUrl) return false;
+    if (!imageUrl) {
+      console.log('❌ MockupSection: No imageUrl provided');
+      return false;
+    }
     
     // Поддерживаемые модели
     const supportedModels = [
@@ -29,6 +34,14 @@ const MockupSection = ({
     
     // Проверяем соотношение (если не указано, считаем что поддерживается)
     const ratioSupported = !aspectRatio || supportedRatios.includes(aspectRatio);
+    
+    console.log('🔍 MockupSection checks:', { 
+      modelSupported, 
+      ratioSupported, 
+      aiModel, 
+      aspectRatio,
+      finalResult: modelSupported && ratioSupported 
+    });
     
     return modelSupported && ratioSupported;
   };

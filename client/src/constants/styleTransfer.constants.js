@@ -39,7 +39,7 @@ export const STYLE_TRANSFER_STYLES = [
   { id: 'knitted-yarn', name: 'Knitted Yarn Style', image: '/Style Transfer images/knitted-yarn.jpg' },
   { id: 'rick-morty', name: 'Rick And Morty Style', image: '/Style Transfer images/rick-morty.jpg' },
   { id: '3d person', name: 'Kawaii 3D Character', image: '/Style Transfer images/3d person.png' },
-  { id: 'snoopy-comic', name: 'Snoopy Comic Style', image: '/Style Transfer images/snoopy-comic.jpg' }
+  { id: 'snoopy-comic', name: 'Classic Comic Strip Style', image: '/Style Transfer images/snoopy-comic.jpg' }
   // Remaining styles hidden for now
   // { id: 'minecraft', name: 'Minecraft Style', image: '/Style Transfer images/minecraft.jpg' },
   // { id: 'vintage-oil-painting-anime', name: 'Vintage Oil Painting Anime Style', image: '/Style Transfer images/vintage-oil-painting-anime.jpg' },

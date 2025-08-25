@@ -202,9 +202,9 @@ const animeStylePrompts = {
     negative: "scary, dark, realistic, harsh"
   },
   'snoopy-comic': {
-    prefix: "Peanuts Snoopy comic strip style",
-    suffix: "simple lines, classic cartoon, wholesome",
-    negative: "complex, realistic, dark"
+    prefix: "Classic comic strip style",
+    suffix: "simple lines, minimalist cartoon, wholesome, friendly characters",
+    negative: "complex, realistic, dark, detailed"
   },
   'minecraft': {
     prefix: "Minecraft voxel style, blocky 3D",
