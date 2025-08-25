@@ -25,11 +25,11 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
 
   // Конфигурация размеров и цен
   const frameSizes = [
-    { id: '10x10', name: '10"×10"', price: 70 },
-    { id: '12x12', name: '12"×12"', price: 80 },
-    { id: '14x14', name: '14"×14"', price: 90 },
-    { id: '16x16', name: '16"×16"', price: 100 },
-    { id: '18x18', name: '18"×18"', price: 120 }
+    { id: '10x10', name: '10"×10"', price: 1 },
+    { id: '12x12', name: '12"×12"', price: 1 },
+    { id: '14x14', name: '14"×14"', price: 1 },
+    { id: '16x16', name: '16"×16"', price: 1 },
+    { id: '18x18', name: '18"×18"', price: 1 }
   ];
 
   // Конфигурация рамок
@@ -191,7 +191,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       frameColorName: selectedColorData?.name,
       size: selectedSize,
       sizeName: selectedSizeData?.name,
-      price: selectedSizeData?.price || 80,
+      price: selectedSizeData?.price || 1,
       aspectRatio: aspectRatio,
       rotation: rotation,
       scale: scale,
@@ -243,7 +243,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
           </span>
           {aspectRatio === '1:1' && isVisible && (
             <span className="px-2 py-1 bg-green-100 text-green-700 text-sm rounded font-medium">
-              {frameSizes.find(s => s.id === selectedSize)?.name} - ${frameSizes.find(s => s.id === selectedSize)?.price}
+              {frameSizes.find(s => s.id === selectedSize)?.name} - ₴{frameSizes.find(s => s.id === selectedSize)?.price}
             </span>
           )}
         </div>

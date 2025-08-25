@@ -595,7 +595,7 @@ export const initializeCartPayment = async (req, res) => {
     // Generate payment data for WayForPay (one-time payment, no recurring)
     const paymentData = {
       merchantAccount: MERCHANT_LOGIN,
-      merchantDomainName: process.env.DOMAIN || 'vheer.com',
+      merchantDomainName: 'vheer.com', // Use .com domain to suggest international
       orderReference,
       orderDate: Math.floor(Date.now() / 1000),
       amount: total,
@@ -605,9 +605,31 @@ export const initializeCartPayment = async (req, res) => {
       productPrice: productPrices,
       // One-time payment settings (no recurring)
       merchantTransactionType: 'SALE', // Direct sale, not AUTH
-      language: 'EN', // Changed to English for USD
+      language: 'UA', // Changed to Ukrainian for UAH currency
       returnUrl: `${process.env.FRONTEND_URL || 'http://localhost:5178'}/cart/payment/success`,
-      serviceUrl: `${process.env.BASE_URL || 'http://localhost:5000'}/api/payments/wayforpay/cart-callback`
+      serviceUrl: `${process.env.BASE_URL || 'http://localhost:5000'}/api/payments/wayforpay/cart-callback`,
+      
+      // Empty additional fields for user input on payment page
+      clientFirstName: '',
+      clientLastName: '',
+      clientEmail: '',
+      clientPhone: '',
+      clientAddress: '',
+      clientCity: '',
+      clientCountry: 'United States', // Set United States as default country
+      
+      // Empty delivery fields for user input
+      deliveryFirstName: '',
+      deliveryLastName: '',
+      deliveryPhone: '',
+      deliveryAddress: '',
+      deliveryCountry: 'United States',
+      
+      // Enable delivery options block on payment page (address delivery only)  
+      deliveryList: 'other',
+      
+      // Try to force international settings
+      defaultPaymentSystem: 'card'
     };
     
     // Generate signature for one-time payment
@@ -672,7 +694,12 @@ export const initializeCartPayment = async (req, res) => {
       success: true,
       orderReference,
       paymentId: payment.id,
-      paymentDataFields: Object.keys(paymentData)
+      paymentDataFields: Object.keys(paymentData),
+      additionalFieldsIncluded: [
+        'clientFirstName', 'clientLastName', 'clientEmail', 'clientPhone',
+        'clientAddress', 'clientCity', 'deliveryFirstName', 'deliveryLastName',
+        'deliveryPhone', 'deliveryAddress'
+      ]
     });
     
     res.json({
@@ -732,7 +759,19 @@ export const handleCartCallback = async (req, res) => {
       transactionStatus,
       reasonCode,
       authCode,
-      cardPan
+      cardPan,
+      // Additional fields filled by user on payment page
+      clientFirstName,
+      clientLastName,
+      clientEmail,
+      clientPhone,
+      clientAddress,
+      clientCity,
+      clientCountry,
+      deliveryFirstName,
+      deliveryLastName,
+      deliveryPhone,
+      deliveryAddress
     } = callbackData;
     
     console.log('🔍 Cart callback data:', {
@@ -743,6 +782,29 @@ export const handleCartCallback = async (req, res) => {
       reasonCode,
       signature
     });
+    
+    // Log additional user-filled fields if present
+    const additionalFields = {
+      clientFirstName,
+      clientLastName,
+      clientEmail,
+      clientPhone,
+      clientAddress,
+      clientCity,
+      clientCountry,
+      deliveryFirstName,
+      deliveryLastName,
+      deliveryPhone,
+      deliveryAddress
+    };
+    
+    const filledFields = Object.entries(additionalFields)
+      .filter(([key, value]) => value && value.trim())
+      .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
+    
+    if (Object.keys(filledFields).length > 0) {
+      console.log('👤 Additional fields filled by user:', filledFields);
+    }
     
     // Verify signature
     const expectedSignature = generateCallbackSignature({
@@ -793,13 +855,33 @@ export const handleCartCallback = async (req, res) => {
       return res.json(responseData);
     }
     
-    // Update payment status
+    // Update payment status and add customer info to description
+    let descriptionAddition = '';
+    if (Object.keys(filledFields).length > 0) {
+      const customerInfo = [];
+      if (clientFirstName || clientLastName) {
+        customerInfo.push(`Customer: ${clientFirstName || ''} ${clientLastName || ''}`.trim());
+      }
+      if (clientEmail) customerInfo.push(`Email: ${clientEmail}`);
+      if (clientPhone) customerInfo.push(`Phone: ${clientPhone}`);
+      if (clientAddress || clientCity || clientCountry) {
+        const addressParts = [clientAddress, clientCity, clientCountry].filter(part => part && part.trim());
+        if (addressParts.length > 0) {
+          customerInfo.push(`Address: ${addressParts.join(', ')}`);
+        }
+      }
+      if (deliveryAddress) customerInfo.push(`Delivery: ${deliveryAddress}`);
+      
+      if (customerInfo.length > 0) {
+        descriptionAddition = ` | ${customerInfo.join(' | ')}`;
+      }
+    }
+    
     const updatedPayment = await prisma.payment.update({
       where: { id: payment.id },
       data: {
-        status: transactionStatus === 'Approved' ? 'COMPLETED' : 'FAILED'
-        // Note: metadata and completedAt fields don't exist in current schema
-        // Store additional info in description if needed
+        status: transactionStatus === 'Approved' ? 'COMPLETED' : 'FAILED',
+        description: payment.description + descriptionAddition
       }
     });
     

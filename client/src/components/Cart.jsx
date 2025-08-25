@@ -123,7 +123,7 @@ const Cart = () => {
           quantity: item.quantity
         })),
         total: getTotal(),
-        currency: 'USD' // Changed to USD as requested
+        currency: 'UAH' // Changed to UAH for testing payments
       };
 
       console.log('Checkout items:', items);
@@ -295,11 +295,11 @@ const Cart = () => {
                         {/* Price */}
                         <div className="text-right">
                           <p className="text-lg font-semibold text-gray-900">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            ₴{(item.price * item.quantity).toFixed(2)}
                           </p>
                           {item.quantity > 1 && (
                             <p className="text-sm text-gray-500">
-                              ${item.price.toFixed(2)} each
+                              ₴{item.price.toFixed(2)} each
                             </p>
                           )}
                         </div>
@@ -330,7 +330,7 @@ const Cart = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal</span>
-                    <span className="font-medium">${getTotal().toFixed(2)}</span>
+                    <span className="font-medium">₴{getTotal().toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Shipping</span>
@@ -338,7 +338,7 @@ const Cart = () => {
                   </div>
                   <div className="flex justify-between text-lg font-semibold pt-2 border-t">
                     <span>Total</span>
-                    <span>${getTotal().toFixed(2)}</span>
+                    <span>₴{getTotal().toFixed(2)}</span>
                   </div>
                 </div>
 
