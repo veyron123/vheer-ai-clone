@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { GPTImageTextToImageService } from '../services/GPTImageTextToImageService.js';
 import { saveGeneratedImage } from './images.controller.js';
 import axios from 'axios';
+import { getUserFriendlyAIError, logAIServiceError } from '../utils/aiServiceErrors.js';
 
 const prisma = new PrismaClient();
 const gptImageService = new GPTImageTextToImageService();
@@ -127,7 +128,8 @@ export const generateTextToImage = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ GPT Image text-to-image generation error:', error);
+    logAIServiceError(error, 'GPT Image', 'Text-to-image generation');
+    const userFriendlyMessage = getUserFriendlyAIError(error, 'GPT Image');
     
     // Update generation status to failed if it exists
     try {
@@ -145,7 +147,7 @@ export const generateTextToImage = async (req, res) => {
     }
 
     res.status(500).json({
-      error: 'Text-to-image generation failed',
+      error: userFriendlyMessage,
       message: error.message,
       model: 'gpt-image'
     });

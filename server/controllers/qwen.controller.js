@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { QwenImageService } from '../services/QwenImageService.js';
 import { getModelCredits } from '../config/pricing.config.js';
 import { saveGeneratedImage } from './images.controller.js';
+import { getUserFriendlyAIError, logAIServiceError } from '../utils/aiServiceErrors.js';
 import axios from 'axios';
 
 const prisma = new PrismaClient();
@@ -168,7 +169,8 @@ export const generateImage = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Qwen Image generation error:', error);
+    logAIServiceError(error, 'Qwen Image', 'Image generation');
+    const userFriendlyMessage = getUserFriendlyAIError(error, 'Qwen Image');
     
     // Update generation status to failed if it exists
     try {
@@ -186,7 +188,7 @@ export const generateImage = async (req, res) => {
     }
 
     res.status(500).json({
-      error: 'Image generation failed',
+      error: userFriendlyMessage,
       message: error.message,
       model: 'qwen-image'
     });
@@ -339,7 +341,8 @@ export const editImage = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Qwen Image editing error:', error);
+    logAIServiceError(error, 'Qwen Image', 'Image editing');
+    const userFriendlyMessage = getUserFriendlyAIError(error, 'Qwen Image');
     
     // Update generation status to failed if it exists
     try {
@@ -357,7 +360,7 @@ export const editImage = async (req, res) => {
     }
 
     res.status(500).json({
-      error: 'Image editing failed',
+      error: userFriendlyMessage,
       message: error.message,
       model: 'qwen-image'
     });

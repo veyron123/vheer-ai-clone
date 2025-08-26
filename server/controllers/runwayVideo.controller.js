@@ -1,5 +1,6 @@
 import RunwayVideoService from '../services/RunwayVideoService.js';
 import CreditService from '../services/creditService.js';
+import { getUserFriendlyAIError, logAIServiceError } from '../utils/aiServiceErrors.js';
 
 class RunwayVideoController {
   constructor() {
@@ -144,11 +145,8 @@ class RunwayVideoController {
       });
 
     } catch (error) {
-      console.error('❌ Runway video generation failed:', {
-        userId: req.user?.id,
-        error: error.message,
-        stack: error.stack
-      });
+      logAIServiceError(error, 'Runway Video', 'Video generation');
+      const userFriendlyMessage = getUserFriendlyAIError(error, 'Runway Video');
 
       // If credits were deducted but generation failed, refund them (skip for dev user)
       if (req.user?.id && req.user.id !== 'dev-user-123' && error.message.includes('Runway API Error')) {
@@ -163,7 +161,7 @@ class RunwayVideoController {
 
       res.status(500).json({
         success: false,
-        message: error.message || 'Video generation failed',
+        message: userFriendlyMessage,
         error: process.env.NODE_ENV === 'development' ? error.stack : undefined
       });
     }

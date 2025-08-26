@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getUserFriendlyAIError, logAIServiceError } from '../utils/aiServiceErrors.js';
 
 const MIDJOURNEY_API_KEY = process.env.MIDJOURNEY_API_KEY || 'b5cfe077850a194e434914eedd7111d5';
 const MIDJOURNEY_API_URL = 'https://api.kie.ai/api/v1/mj';
@@ -107,10 +108,11 @@ export const generateImageToImage = async (req, res) => {
       throw new Error(`No task ID received from Midjourney API. Response: ${JSON.stringify(response.data)}`);
     }
   } catch (error) {
-    console.error('Midjourney image-to-image generation error:', error.response?.data || error.message);
-    console.error('Full error:', error);
+    logAIServiceError(error, 'Midjourney', 'Image-to-image generation');
+    const userFriendlyMessage = getUserFriendlyAIError(error, 'Midjourney');
+    
     res.status(500).json({ 
-      error: 'Failed to generate image with Midjourney',
+      error: userFriendlyMessage,
       details: error.response?.data || error.message 
     });
   }
@@ -221,9 +223,11 @@ export const generateTextToImage = async (req, res) => {
       throw new Error('No task ID received from Midjourney API');
     }
   } catch (error) {
-    console.error('Midjourney text-to-image generation error:', error.response?.data || error.message);
+    logAIServiceError(error, 'Midjourney', 'Text-to-image generation');
+    const userFriendlyMessage = getUserFriendlyAIError(error, 'Midjourney');
+    
     res.status(500).json({ 
-      error: 'Failed to generate image with Midjourney',
+      error: userFriendlyMessage,
       details: error.response?.data || error.message 
     });
   }

@@ -2,6 +2,7 @@ import axios from 'axios';
 import { PrismaClient } from '@prisma/client';
 import { getModelCredits } from '../config/pricing.config.js';
 import { saveGeneratedImage } from './images.controller.js';
+import { getUserFriendlyAIError, logAIServiceError } from '../utils/aiServiceErrors.js';
 
 const prisma = new PrismaClient();
 
@@ -287,10 +288,11 @@ export const generateImage = async (req, res) => {
       throw new Error('Unexpected response from GPT IMAGE API: ' + JSON.stringify(response.data));
     }
   } catch (error) {
-    console.error('GPT IMAGE generation error:', error.response?.data || error.message);
-    console.error('Full error:', error);
+    logAIServiceError(error, 'GPT Image', 'Image generation');
+    const userFriendlyMessage = getUserFriendlyAIError(error, 'GPT Image');
+    
     res.status(500).json({ 
-      error: 'Failed to generate image',
+      error: userFriendlyMessage,
       details: error.response?.data || error.message 
     });
   }
@@ -656,10 +658,11 @@ export const generateImageToImage = async (req, res) => {
       throw new Error('Unexpected response from GPT IMAGE API: ' + JSON.stringify(response.data));
     }
   } catch (error) {
-    console.error('GPT IMAGE image-to-image generation error:', error.response?.data || error.message);
-    console.error('Full error:', error);
+    logAIServiceError(error, 'GPT Image', 'Image-to-image generation');
+    const userFriendlyMessage = getUserFriendlyAIError(error, 'GPT Image');
+    
     res.status(500).json({ 
-      error: 'Failed to generate image',
+      error: userFriendlyMessage,
       details: error.response?.data || error.message 
     });
   }
