@@ -35,9 +35,71 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Debug isVisible changes
+  useEffect(() => {
+    console.log('🔄 isVisible changed to:', isVisible);
+  }, [isVisible]);
+  
+  // Debug isLoading changes
+  useEffect(() => {
+    console.log('🔄 isLoading changed to:', isLoading);
+  }, [isLoading]);
   const [rotation, setRotation] = useState(0);
-  const [scale, setScale] = useState(0.8); // 80% по умолчанию
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  // Индивидуальные настройки scale и position для каждого размера
+  const [scalePerSize, setScalePerSize] = useState({});
+  const [positionPerSize, setPositionPerSize] = useState({});
+  
+  // Функция для получения scale для текущего размера (диапазон 5-100%)
+  const getCurrentScale = () => {
+    if (scalePerSize[selectedSize] !== undefined) {
+      return scalePerSize[selectedSize];
+    }
+    
+    // Значения по умолчанию для каждого размера
+    const defaultScales = {
+      '6x8': 0.26,   // 26%
+      '12x16': 0.43, // 43%
+      '18x24': 0.40, // 40%
+      '24x32': 0.47  // 47%
+    };
+    
+    return defaultScales[selectedSize] || 0.9; // Основной canvas теперь 90%
+  };
+  
+  // Функция для установки scale для текущего размера
+  const setCurrentScale = (newScale) => {
+    setScalePerSize(prev => ({
+      ...prev,
+      [selectedSize]: newScale
+    }));
+  };
+  
+  // Функция для получения position для текущего размера
+  const getCurrentPosition = () => {
+    if (positionPerSize[selectedSize] !== undefined) {
+      return positionPerSize[selectedSize];
+    }
+    
+    // Значения по умолчанию для каждого размера
+    const defaultPositions = {
+      '6x8': { x: -5, y: -22 },  // X=-5px, Y=-22px
+      '12x16': { x: -4, y: -39 }, // X=-4px, Y=-39px
+      '18x24': { x: 0, y: -41 }, // Y=-41px
+      '24x32': { x: 0, y: -70 }  // Y=-70px
+    };
+    
+    return defaultPositions[selectedSize] || { x: 0, y: 0 }; // По умолчанию центрировано
+  };
+  
+  // Функция для установки position для текущего размера
+  const setCurrentPosition = (newPosition) => {
+    setPositionPerSize(prev => ({
+      ...prev,
+      [selectedSize]: newPosition
+    }));
+  };
+  
   const [hasShownAuto, setHasShownAuto] = useState(false);
   const [selectedColor, setSelectedColor] = useState('white');
   // Инициализируем размер по умолчанию в зависимости от соотношения сторон
@@ -271,21 +333,22 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
           const innerAspect = innerWidth / innerHeight;
           
           if (imgAspect > innerAspect) {
-            drawWidth = innerWidth * scale;
-            drawHeight = (innerWidth / imgAspect) * scale;
+            drawWidth = innerWidth * getCurrentScale();
+            drawHeight = (innerWidth / imgAspect) * getCurrentScale();
           } else {
-            drawHeight = innerHeight * scale;
-            drawWidth = (innerHeight * imgAspect) * scale;
+            drawHeight = innerHeight * getCurrentScale();
+            drawWidth = (innerHeight * imgAspect) * getCurrentScale();
           }
         } else {
-          const size = Math.min(innerWidth, innerHeight) * scale;
+          const size = Math.min(innerWidth, innerHeight) * getCurrentScale();
           drawWidth = size;
           drawHeight = size;
         }
         
-        // Центрируем изображение
-        drawX = innerX + (innerWidth - drawWidth) / 2;
-        drawY = innerY + (innerHeight - drawHeight) / 2;
+        // Центрируем изображение с учетом position
+        const currentPos = getCurrentPosition();
+        drawX = innerX + (innerWidth - drawWidth) / 2 + (currentPos.x * 0.3); // масштабируем для preview
+        drawY = innerY + (innerHeight - drawHeight) / 2 + (currentPos.y * 0.3); // масштабируем для preview
         
         // Рисуем изображение
         ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
@@ -346,6 +409,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       }
       
       // Показываем мокап немедленно для любого нового изображения
+      console.log('🔄 Setting isVisible to TRUE');
       setIsVisible(true);
     }
   }, [imageUrl, autoShow, hasShownAuto]);
@@ -359,6 +423,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
     
     if (!imageUrl) {
       console.log('🧹 Resetting mockup state (no image)');
+      console.log('🔄 Setting isVisible to FALSE');
       setIsVisible(false);
       setHasShownAuto(false);
       setIsExpanded(true);
@@ -375,6 +440,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
 
   // Рендеринг мокапа
   useEffect(() => {
+    console.log('🔥 MAIN CANVAS useEffect STARTED!');
     console.log('🎨 Main Mockup render effect triggered:', { 
       imageUrl: imageUrl ? 'exists' : 'missing', 
       isVisible, 
@@ -400,6 +466,15 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
     const canvas = mainCanvasRef.current;
     const ctx = canvas.getContext('2d');
     
+    // 🔍 DEBUG: Проверяем canvas и context
+    console.log('🔍 Canvas details:', {
+      canvas: !!canvas,
+      ctx: !!ctx,
+      canvasWidth: canvas.width,
+      canvasHeight: canvas.height,
+      canvasStyle: canvas.style.width + 'x' + canvas.style.height
+    });
+    
     // ВРЕМЕННО установим размер - будем менять после загрузки изображения
     canvas.width = 800; // временный размер
     canvas.height = 600; // временный размер
@@ -422,12 +497,15 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
     };
     
     const renderImageOnCanvas = (img) => {
+      console.log('🚀 MAIN CANVAS: renderImageOnCanvas CALLED!');
       console.log('🎨 Main Canvas: Starting renderImageOnCanvas with:', {
         imageWidth: img.width,
         imageHeight: img.height,
         selectedSize,
         selectedColor,
-        detectedAspectRatio
+        detectedAspectRatio,
+        imageUrl,
+        isVisible
       });
       
       // 📝 РЕВОЛЮЦИОННЫЙ ПОДХОД: Адаптируем размер канваса под изображение!
@@ -472,6 +550,10 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         const innerX = frameMargin;
         const innerY = frameMargin;
         
+        // 🎯 ФИКСИРОВАННЫЕ НАСТРОЙКИ ДЛЯ ОСНОВНОГО CANVAS
+        const mainCanvasScale = 0.7; // 70% фиксированно для основного canvas
+        const mainCanvasPosition = { x: 0, y: 0 }; // центрировано
+        
         // 🎯 ОПРЕДЕЛЯЕМ КАК ВПИСАТЬ ИЗОБРАЖЕНИЕ В БЕЛУЮ ОБЛАСТЬ
         let drawWidth, drawHeight, drawX, drawY;
         
@@ -482,23 +564,23 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
           
           if (imgAspect > innerAspect) {
             // Изображение шире - ограничиваем по ширине
-            drawWidth = innerWidth * scale;
-            drawHeight = (innerWidth / imgAspect) * scale;
+            drawWidth = innerWidth * mainCanvasScale;
+            drawHeight = (innerWidth / imgAspect) * mainCanvasScale;
           } else {
             // Изображение выше - ограничиваем по высоте
-            drawHeight = innerHeight * scale;
-            drawWidth = (innerHeight * imgAspect) * scale;
+            drawHeight = innerHeight * mainCanvasScale;
+            drawWidth = (innerHeight * imgAspect) * mainCanvasScale;
           }
         } else {
           // Для квадратных изображений - используем меньшую сторону
-          const size = Math.min(innerWidth, innerHeight) * scale;
+          const size = Math.min(innerWidth, innerHeight) * mainCanvasScale;
           drawWidth = size;
           drawHeight = size;
         }
         
-        // 📍 ЦЕНТРИРУЕМ ИЗОБРАЖЕНИЕ В БЕЛОЙ ОБЛАСТИ
-        drawX = innerX + (innerWidth - drawWidth) / 2 + position.x;
-        drawY = innerY + (innerHeight - drawHeight) / 2 + position.y;
+        // 📍 ЦЕНТРИРУЕМ ИЗОБРАЖЕНИЕ В БЕЛОЙ ОБЛАСТИ (фиксированная позиция)
+        drawX = innerX + (innerWidth - drawWidth) / 2 + mainCanvasPosition.x;
+        drawY = innerY + (innerHeight - drawHeight) / 2 + mainCanvasPosition.y;
         
         // 🔄 ПРИМЕНЯЕМ ПОВОРОТ ЕСЛИ НУЖНО
         if (rotation !== 0) {
@@ -509,13 +591,14 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
           ctx.translate(-centerX, -centerY);
         }
         
-        console.log('🖼️ Drawing user image first (under frame):', {
+        console.log('🖼️ Main Canvas: Drawing user image first (under frame):', {
           aspectRatio,
           innerArea: `${innerWidth}x${innerHeight}`,
           imageSize: `${drawWidth.toFixed(0)}x${drawHeight.toFixed(0)}`,
           position: `${drawX.toFixed(0)}, ${drawY.toFixed(0)}`,
-          scale,
-          rotation
+          scale: mainCanvasScale,
+          rotation,
+          note: 'Fixed 70% scale for main canvas'
         });
         
         // 🎨 РИСУЕМ ИЗОБРАЖЕНИЕ
@@ -543,13 +626,30 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         
         // 🖼️ ЭТАП 1: РИСУЕМ ПОЛЬЗОВАТЕЛЬСКОЕ ИЗОБРАЖЕНИЕ СНАЧАЛА
         console.log('🎨 Main Canvas: Drawing user image first...');
+        console.log('🔍 Main Canvas: Image details:', {
+          imgWidth: img.width,
+          imgHeight: img.height,
+          canvasWidth: canvas.width,
+          canvasHeight: canvas.height,
+          aspectRatio: autoDetectedRatio
+        });
+        
         drawUserImageFirst(img, ctx, canvas, autoDetectedRatio);
         
         // 🎨 ЭТАП 2: РИСУЕМ РАМКУ ПОВЕРХ ИЗОБРАЖЕНИЯ
-        console.log('🎨 Main Canvas: Drawing frame on top...');
+        // Drawing frame on top of the image
         ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
         
-        console.log('✅ Main Canvas: Rendering completed!');
+        console.log('✅ Main Canvas: Frame drawn successfully');
+        console.log('🔍 Canvas state:', {
+          width: canvas.width,
+          height: canvas.height,
+          hasContext: !!ctx,
+          frameImgLoaded: frameImg.complete,
+          userImgLoaded: userImg.complete
+        });
+        
+        // Main canvas rendering completed
         setIsLoading(false);
       };
       frameImg.onerror = (error) => {
@@ -591,17 +691,34 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         frameImg.src = '/Mockup images/frame-1x1.png';
         console.log('🖼️ Using fixed frame for 1:1 image:', frameImg.src);
       } else {
-        // Для не-квадратных изображений используем динамические рамки из соответствующих папок
-        const framePathWithCorrectRatio = getMockupFramePathWithRatio(selectedSize, selectedColor, 'main', autoDetectedRatio);
-        frameImg.src = framePathWithCorrectRatio;
-        console.log('🖼️ Main Canvas: Using dynamic frame for', autoDetectedRatio, 'image:', frameImg.src);
-        console.log('🖼️ Main Canvas: Selected size:', selectedSize, 'Selected color:', selectedColor);
+        // 🎯 ФИКСИРОВАННАЯ РАМКА ДЛЯ ОСНОВНОГО CANVAS: ВСЕГДА 8-6.png
+        const fixedMainCanvasFrame = '/Mockup images/Frames 4-3/8-6.png';
+        frameImg.src = fixedMainCanvasFrame;
+        console.log('🖼️ Main Canvas: Using FIXED frame 8-6.png for', autoDetectedRatio, 'image:', frameImg.src);
+        console.log('🖼️ Main Canvas: Frame is independent of size selection');
       }
     };
     
     userImg.onload = () => {
-      console.log('✅ Main Canvas: User image loaded successfully:', { width: userImg.width, height: userImg.height });
+      console.log('🚀 MAIN CANVAS: USER IMAGE LOADED!');
+      console.log('✅ Main Canvas: User image loaded successfully:', { 
+        width: userImg.width, 
+        height: userImg.height,
+        src: userImg.src,
+        imageUrl,
+        isVisible 
+      });
       renderImageOnCanvas(userImg);
+    };
+    
+    userImg.onerror = (error) => {
+      console.error('❌ MAIN CANVAS: USER IMAGE FAILED TO LOAD!', {
+        src: userImg.src,
+        imageUrl,
+        proxiedUrl: proxiedImageUrl,
+        error
+      });
+      setIsLoading(false);
     };
     
     // Проксируем внешние изображения через наш сервер для обхода CORS
@@ -613,8 +730,9 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
     userImg.src = proxiedImageUrl;
     console.log('🔄 Main Canvas: Loading user image from:', proxiedImageUrl, '(original:', imageUrl, ')');
     console.log('🔄 Main Canvas: useEffect completed setup, waiting for image to load...');
+    console.log('🔥 MAIN CANVAS useEffect ENDED - image loading started!');
     
-  }, [imageUrl, detectedAspectRatio, rotation, scale, position, isVisible]);
+  }, [imageUrl, detectedAspectRatio, rotation, isVisible]); // Main canvas не зависит от scalePerSize/positionPerSize
 
   // Синхронизация мокапа в Frame Preview (только для выбранного размера)
   useEffect(() => {
@@ -645,7 +763,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       console.log('❌ Frame Preview: Canvas ref not ready');
     }
     
-  }, [imageUrl, detectedAspectRatio, selectedColor, scale, rotation, position, isVisible, selectedSize]);
+  }, [imageUrl, detectedAspectRatio, selectedColor, scalePerSize, positionPerSize, rotation, isVisible, selectedSize]);
 
   const { addItem, openCart } = useCartStore();
 
@@ -663,13 +781,13 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       originalImageUrl: imageUrl,
       frameColor: selectedColor,
       frameColorName: selectedColorData?.name,
-      size: selectedSize,
-      sizeName: selectedSizeData?.name,
-      price: selectedSizeData?.price || 1,
+      size: '8x6', // фиксированный размер для основного canvas
+      sizeName: '8"×6"', // фиксированное название
+      price: 1, // фиксированная цена для основного canvas
       aspectRatio: detectedAspectRatio,
       rotation: rotation,
-      scale: scale,
-      position: position,
+      scale: 0.7, // фиксированный scale 70% для основного canvas
+      position: { x: 0, y: 0 }, // фиксированная позиция по центру
       type: 'mockup'
     };
     
@@ -871,22 +989,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
                 </div>
               </div>
               
-              {/* Scale */}
-              <div>
-                <label className="block text-sm text-gray-600 mb-2">
-                  <Maximize className="w-4 h-4 inline mr-1" />
-                  Scale: {(scale * 100).toFixed(0)}%
-                </label>
-                <input
-                  type="range"
-                  min="0.5"
-                  max="2"
-                  step="0.1"
-                  value={scale}
-                  onChange={(e) => setScale(Number(e.target.value))}
-                  className="w-full"
-                />
-              </div>
+{/* Position controls are hidden but functionality remains */}
 
               {/* Action Buttons */}
               <div className="pt-4 border-t">
