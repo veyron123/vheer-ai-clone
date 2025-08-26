@@ -301,8 +301,8 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     
-    // Устанавливаем размер canvas для frame preview (меньше основного)
-    const previewSize = 128;
+    // Устанавливаем размер canvas для frame preview (увеличен до 160px)
+    const previewSize = 160;
     canvas.width = previewSize;
     canvas.height = previewSize;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -318,8 +318,8 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       const drawUserImageInPreview = (img, ctx, canvas, aspectRatio) => {
         ctx.save();
         
-        // Отступы рамки (пропорционально меньше)
-        const frameMargin = 13; // ~10% от 128px
+        // Отступы рамки (пропорционально для 160px)
+        const frameMargin = 16; // ~10% от 160px
         const innerWidth = canvas.width - (frameMargin * 2);
         const innerHeight = canvas.height - (frameMargin * 2);
         const innerX = frameMargin;
@@ -951,17 +951,15 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
                     Frame Preview - {currentFrameSizes.find(s => s.id === selectedSize)?.name}
                   </label>
                   <div className="text-center">
-                    <div className="bg-gray-100 rounded-lg border-2 border-gray-200 overflow-hidden mx-auto mb-2" style={{ width: '128px', height: '128px' }}>
+                    <div className="bg-gray-100 rounded-lg border-2 border-gray-200 overflow-hidden mx-auto" style={{ width: '160px', height: '160px' }}>
                       <canvas
                         ref={frameCanvasRef}
-                        width={128}
-                        height={128}
+                        width={160}
+                        height={160}
                         className="w-full h-full object-contain"
                         style={{ imageRendering: 'crisp-edges' }}
                       />
                     </div>
-                    <div className="text-sm font-medium text-gray-600">{currentFrameSizes.find(s => s.id === selectedSize)?.name}</div>
-                    <div className="text-sm text-gray-500">₴{currentFrameSizes.find(s => s.id === selectedSize)?.price}</div>
                   </div>
                 </div>
               )}
