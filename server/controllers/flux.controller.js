@@ -323,6 +323,12 @@ async function pollForBflResult(requestId, pollingUrl, req = null) {
       if (i === maxAttempts - 1) {
         console.error('Flux generation error:', error.response?.data || error.message);
         console.error('Full error:', error);
+        
+        // If it's 500 errors consistently, provide a more user-friendly message
+        if (error.response?.status === 500) {
+          throw new Error('The Flux AI service is temporarily unavailable due to server maintenance. Please try again later or use a different AI model.');
+        }
+        
         throw new Error(`BFL API error after ${maxAttempts} attempts: ${error.response?.data?.error || error.message}`);
       }
       

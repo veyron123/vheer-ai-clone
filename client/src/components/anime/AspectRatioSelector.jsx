@@ -41,9 +41,6 @@ const AspectRatioSelector = ({ selectedRatio, onRatioChange, disabled = false, a
     <div className="mb-6 relative" ref={dropdownRef}>
       <label className="text-sm font-medium mb-3 block">
         Aspect Ratio
-        {disabled && (
-          <span className="text-xs text-gray-400 ml-2">(GPT Image only)</span>
-        )}
       </label>
       
       <button 
