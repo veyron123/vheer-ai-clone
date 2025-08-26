@@ -139,7 +139,7 @@ const StyleTransferPage = () => {
             <AspectRatioSelector
               selectedRatio={aspectRatio}
               onRatioChange={setAspectRatio}
-              disabled={aiModel !== 'gpt-image'}
+              disabled={aiModel !== 'gpt-image' && aiModel !== 'qwen-image'}
             />
             
               <GenerateButton

@@ -1,39 +1,42 @@
-// Service Worker for Push Notifications
+// Service Worker для push-уведомлений Vheer
 
-const CACHE_NAME = 'vheer-admin-notifications-v1';
+const CACHE_NAME = 'vheer-notifications-v1';
 
-// Install event
+// Установка Service Worker
 self.addEventListener('install', (event) => {
-  console.log('🔧 Service Worker installing...');
+  console.log('🔧 Service Worker устанавливается...');
   self.skipWaiting();
 });
 
-// Activate event
+// Активация Service Worker
 self.addEventListener('activate', (event) => {
-  console.log('✅ Service Worker activated');
+  console.log('✅ Service Worker активирован');
   event.waitUntil(self.clients.claim());
 });
 
-// Push event (for server-sent push notifications)
+// Обработка push-уведомлений
 self.addEventListener('push', (event) => {
-  console.log('📬 Push notification received');
+  console.log('📬 Получено push-уведомление');
   
-  let options = {
-    body: 'You have a new notification',
-    icon: '/icon-192x192.png',
-    badge: '/badge-72x72.png',
+  let notificationData = {
+    title: 'Vheer - Уведомление',
+    body: 'У вас новое уведомление',
+    icon: '/android-chrome-192x192.png',
+    badge: '/favicon-32x32.png',
     vibrate: [200, 100, 200],
+    requireInteraction: true,
     data: {
-      url: '/en/admin'
+      url: '/admin',
+      timestamp: Date.now()
     },
     actions: [
       {
-        action: 'view',
-        title: 'View'
+        action: 'open',
+        title: '🔗 Открыть'
       },
       {
         action: 'dismiss',
-        title: 'Dismiss'
+        title: '❌ Закрыть'
       }
     ]
   };
@@ -41,20 +44,20 @@ self.addEventListener('push', (event) => {
   if (event.data) {
     try {
       const pushData = event.data.json();
-      options = { ...options, ...pushData };
+      notificationData = { ...notificationData, ...pushData };
     } catch (error) {
-      console.error('❌ Failed to parse push data:', error);
+      console.error('❌ Ошибка парсинга данных push:', error);
     }
   }
 
   event.waitUntil(
-    self.registration.showNotification(options.title || 'New Notification', options)
+    self.registration.showNotification(notificationData.title, notificationData)
   );
 });
 
-// Notification click event
+// Обработка клика по уведомлению
 self.addEventListener('notificationclick', (event) => {
-  console.log('🖱️ Notification clicked:', event.action);
+  console.log('🖱️ Клик по уведомлению:', event.action);
   
   event.notification.close();
 
@@ -62,45 +65,164 @@ self.addEventListener('notificationclick', (event) => {
     return;
   }
 
-  // Open or focus admin page
-  const url = event.notification.data?.url || '/en/admin';
-  
+  // Определяем URL для открытия
+  const data = event.notification.data || {};
+  let urlToOpen = data.url || '/admin';
+
+  // Специальные URL для разных типов уведомлений
+  if (data.type) {
+    switch (data.type) {
+      case 'new_order':
+        urlToOpen = '/admin?tab=orders';
+        break;
+      case 'abandoned_cart':
+        urlToOpen = '/admin?tab=carts';
+        break;
+      case 'test':
+        urlToOpen = '/admin?tab=notifications';
+        break;
+      default:
+        urlToOpen = '/admin';
+    }
+  }
+
   event.waitUntil(
-    self.clients.matchAll({ type: 'window' })
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true })
       .then((clientList) => {
-        // Try to find existing admin tab
+        // Ищем открытую админ-панель
         for (const client of clientList) {
           if (client.url.includes('/admin') && 'focus' in client) {
+            // Если admin открыт, фокусируемся на нем и обновляем URL если нужно
+            if (client.url !== urlToOpen) {
+              return client.navigate ? client.navigate(urlToOpen) : client.focus();
+            }
             return client.focus();
           }
         }
         
-        // Open new tab if no admin tab found
+        // Если админ-панель не открыта, открываем новую вкладку
         if (self.clients.openWindow) {
-          return self.clients.openWindow(url);
+          return self.clients.openWindow(urlToOpen);
         }
+      })
+      .catch((error) => {
+        console.error('❌ Ошибка открытия окна:', error);
       })
   );
 });
 
-// Background sync for offline notifications
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'background-sync') {
-    console.log('🔄 Background sync triggered');
-    event.waitUntil(syncNotifications());
+// Обработка закрытия уведомления
+self.addEventListener('notificationclose', (event) => {
+  console.log('🔔 Уведомление закрыто');
+  
+  // Можно отправить аналитику
+  const data = event.notification.data;
+  if (data && data.trackingId) {
+    fetch('/api/notifications/track', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        type: 'notification_closed',
+        trackingId: data.trackingId,
+        timestamp: Date.now()
+      })
+    }).catch(err => console.error('❌ Ошибка отправки аналитики:', err));
   }
 });
 
-async function syncNotifications() {
-  // Sync any pending notifications when back online
+// Background Sync для офлайн уведомлений
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'notifications-sync') {
+    console.log('🔄 Фоновая синхронизация уведомлений');
+    event.waitUntil(syncPendingNotifications());
+  }
+});
+
+// Синхронизация отложенных уведомлений
+async function syncPendingNotifications() {
   try {
-    const response = await fetch('/api/admin/pending-notifications');
-    const notifications = await response.json();
+    // Проверяем наличие отложенных уведомлений
+    const response = await fetch('/api/notifications/pending', {
+      headers: {
+        'Cache-Control': 'no-cache'
+      }
+    });
     
-    for (const notification of notifications) {
-      await self.registration.showNotification(notification.title, notification.options);
+    if (response.ok) {
+      const data = await response.json();
+      
+      if (data.notifications && data.notifications.length > 0) {
+        for (const notification of data.notifications) {
+          await self.registration.showNotification(notification.title, {
+            body: notification.body,
+            icon: notification.icon || '/android-chrome-192x192.png',
+            badge: notification.badge || '/favicon-32x32.png',
+            data: notification.data || {},
+            requireInteraction: true
+          });
+        }
+        
+        console.log(`✅ Показано ${data.notifications.length} отложенных уведомлений`);
+      }
     }
   } catch (error) {
-    console.error('❌ Failed to sync notifications:', error);
+    console.error('❌ Ошибка синхронизации уведомлений:', error);
   }
 }
+
+// Периодическая проверка уведомлений (если поддерживается)
+if ('periodicsync' in self.registration) {
+  self.addEventListener('periodicsync', (event) => {
+    if (event.tag === 'check-notifications') {
+      console.log('⏰ Периодическая проверка уведомлений');
+      event.waitUntil(checkForNewNotifications());
+    }
+  });
+}
+
+// Проверка новых уведомлений
+async function checkForNewNotifications() {
+  try {
+    const response = await fetch('/api/notifications/check', {
+      headers: {
+        'Cache-Control': 'no-cache'
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      
+      if (data.hasNewNotifications) {
+        // Показываем новые уведомления
+        for (const notification of data.notifications) {
+          await self.registration.showNotification(notification.title, {
+            body: notification.body,
+            icon: notification.icon || '/android-chrome-192x192.png',
+            badge: notification.badge || '/favicon-32x32.png',
+            data: notification.data || {},
+            requireInteraction: true
+          });
+        }
+      }
+    }
+  } catch (error) {
+    console.error('❌ Ошибка проверки уведомлений:', error);
+  }
+}
+
+// Обработка сообщений от основного потока
+self.addEventListener('message', (event) => {
+  console.log('💬 Получено сообщение:', event.data);
+  
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+  
+  if (event.data && event.data.type === 'CHECK_NOTIFICATIONS') {
+    checkForNewNotifications();
+  }
+});
+
+console.log('🚀 Service Worker Vheer загружен и готов к работе');

@@ -5,13 +5,15 @@ import {
   ChevronDown, Eye, Edit, TrendingUp, Calendar, 
   Mail, Shield, Sparkles, Database, RefreshCw,
   X, Check, AlertCircle, UserCheck, DollarSign,
-  Trash2, ChevronUp, ArrowUpDown, Bell
+  Trash2, ChevronUp, ArrowUpDown, Bell, Package, ShoppingCart
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../stores/authStore';
 import { format } from 'date-fns';
 import NotificationSettings from '../components/NotificationSettings';
+import AdminOrders from '../components/AdminOrders';
+import AdminCarts from '../components/AdminCarts';
 
 const AdminDashboard = () => {
   const { token } = useAuthStore();
@@ -344,6 +346,20 @@ const AdminDashboard = () => {
                   Users
                 </button>
                 <button
+                  onClick={() => setActiveTab('orders')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition ${activeTab === 'orders' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                >
+                  <Package className="w-4 h-4 mr-2 inline" />
+                  Orders
+                </button>
+                <button
+                  onClick={() => setActiveTab('carts')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition ${activeTab === 'carts' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                >
+                  <ShoppingCart className="w-4 h-4 mr-2 inline" />
+                  Carts
+                </button>
+                <button
                   onClick={() => setActiveTab('notifications')}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition ${activeTab === 'notifications' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
                 >
@@ -568,6 +584,14 @@ const AdminDashboard = () => {
               )}
             </div>
           </>
+        )}
+
+        {activeTab === 'orders' && (
+          <AdminOrders />
+        )}
+        
+        {activeTab === 'carts' && (
+          <AdminCarts />
         )}
 
         {activeTab === 'notifications' && (

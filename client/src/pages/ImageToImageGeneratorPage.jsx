@@ -25,8 +25,14 @@ const ImageToImageGeneratorPage = () => {
     isGenerating,
     generationTime,
     positivePrompt,
+    negativePrompt,
+    creativeStrength,
+    controlStrength,
     fileInputRef,
     setPositivePrompt,
+    setNegativePrompt,
+    setCreativeStrength,
+    setControlStrength,
     handleImageUpload,
     handleImageRemove,
     generateImage,
@@ -120,6 +126,12 @@ const ImageToImageGeneratorPage = () => {
                 <PromptControls
                   positivePrompt={positivePrompt}
                   onPositivePromptChange={setPositivePrompt}
+                  negativePrompt={negativePrompt}
+                  onNegativePromptChange={setNegativePrompt}
+                  creativeStrength={creativeStrength}
+                  onCreativeStrengthChange={setCreativeStrength}
+                  controlStrength={controlStrength}
+                  onControlStrengthChange={setControlStrength}
                 />
               </div>
 

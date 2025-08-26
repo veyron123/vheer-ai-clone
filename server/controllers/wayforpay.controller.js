@@ -771,7 +771,14 @@ export const handleCartCallback = async (req, res) => {
       deliveryFirstName,
       deliveryLastName,
       deliveryPhone,
-      deliveryAddress
+      deliveryAddress,
+      deliveryCity,
+      deliveryCountry,
+      deliveryPostalCode,
+      // Product information
+      productName,
+      productCount,
+      productPrice
     } = callbackData;
     
     console.log('🔍 Cart callback data:', {
@@ -892,11 +899,154 @@ export const handleCartCallback = async (req, res) => {
       console.log('💰 Amount:', amount, currency);
       console.log('🛒 Order:', orderReference);
       
-      // Here you could add logic for:
-      // - Sending confirmation email
-      // - Updating inventory
-      // - Creating order fulfillment record
-      // - etc.
+      // Create order record with full customer and product details
+      try {
+        // Build cart items array from product data
+        const items = [];
+        if (productName && productCount && productPrice) {
+          const names = Array.isArray(productName) ? productName : [productName];
+          const counts = Array.isArray(productCount) ? productCount : [productCount];
+          const prices = Array.isArray(productPrice) ? productPrice : [productPrice];
+          
+          for (let i = 0; i < names.length; i++) {
+            items.push({
+              name: names[i],
+              quantity: parseInt(counts[i]) || 1,
+              price: parseFloat(prices[i]) || 0
+            });
+          }
+        }
+        
+        // Create the order in the database
+        const order = await prisma.order.create({
+          data: {
+            userId: payment.userId,
+            orderReference,
+            
+            // Customer information
+            customerFirstName: clientFirstName || '',
+            customerLastName: clientLastName || '',
+            customerEmail: clientEmail || `${orderReference}@order.com`,
+            customerPhone: clientPhone || '',
+            
+            // Billing address
+            billingAddress: clientAddress || '',
+            billingCity: clientCity || '',
+            billingCountry: clientCountry || '',
+            
+            // Shipping address
+            shippingFirstName: deliveryFirstName || clientFirstName || '',
+            shippingLastName: deliveryLastName || clientLastName || '',
+            shippingAddress: deliveryAddress || clientAddress || '',
+            shippingCity: deliveryCity || clientCity || '',
+            shippingCountry: deliveryCountry || clientCountry || '',
+            shippingPostalCode: deliveryPostalCode || '',
+            shippingPhone: deliveryPhone || clientPhone || '',
+            
+            // Order details
+            items: items,
+            subtotal: parseFloat(amount),
+            total: parseFloat(amount),
+            currency: currency || 'UAH',
+            
+            // Payment information
+            paymentMethod: 'card',
+            paymentStatus: 'paid',
+            paymentReference: authCode || transactionStatus,
+            paidAt: new Date(),
+            
+            // Initial status
+            status: 'processing',
+            
+            // Notes
+            customerNotes: `Order from WayForPay: ${orderReference}`
+          }
+        });
+        
+        console.log('✅ Order created:', order.id);
+        
+        // Помечаем корзину как оплаченную
+        try {
+          // Получаем sessionId из localStorage или генерируем
+          const sessionId = callbackData.sessionId || `session_${orderReference}`;
+          
+          const cartSession = await prisma.cartSession.findFirst({
+            where: {
+              OR: [
+                { sessionId },
+                { userId: payment.userId },
+                { 
+                  AND: [
+                    { totalAmount: parseFloat(amount) },
+                    { status: 'active' },
+                    { 
+                      lastActivityAt: {
+                        gte: new Date(Date.now() - 2 * 60 * 60 * 1000) // За последние 2 часа
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            orderBy: {
+              lastActivityAt: 'desc'
+            }
+          });
+          
+          if (cartSession) {
+            await prisma.cartSession.update({
+              where: { id: cartSession.id },
+              data: {
+                status: 'converted',
+                convertedToOrderId: order.id
+              }
+            });
+            console.log('✅ Корзина помечена как оплаченная:', cartSession.id);
+          }
+        } catch (cartError) {
+          console.error('Ошибка обновления статуса корзины:', cartError);
+        }
+        
+        // Send browser notification to admin (we'll implement this next)
+        try {
+          // Try to send notification via WebSocket or Push API
+          const notificationData = {
+            type: 'new_order',
+            title: '🛍️ New Order Received!',
+            message: `Order ${orderReference} from ${clientFirstName || 'Customer'} ${clientLastName || ''} for ${currency} ${amount}`,
+            orderId: order.id,
+            timestamp: new Date().toISOString()
+          };
+          
+          // Store notification in database for admin panel
+          await prisma.payment.create({
+            data: {
+              userId: payment.userId,
+              amount: 0.01, // Small amount to indicate notification
+              currency: 'NOTIFICATION',
+              status: 'NEW_ORDER',
+              description: JSON.stringify(notificationData),
+              wayforpayOrderReference: `NOTIF_${orderReference}`
+            }
+          });
+          
+          console.log('📢 Admin notification created');
+        } catch (notifError) {
+          console.error('Failed to create notification:', notifError);
+        }
+        
+      } catch (orderError) {
+        console.error('❌ Failed to create order:', orderError);
+        // Order creation failed but payment was successful - log for manual review
+        console.error('CRITICAL: Payment successful but order creation failed!');
+        console.error('Order data:', {
+          orderReference,
+          amount,
+          currency,
+          clientEmail,
+          items: productName
+        });
+      }
     } else {
       console.log('❌ Cart payment failed:', reasonCode);
     }

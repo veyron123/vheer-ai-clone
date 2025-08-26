@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingCart, Plus, Minus, Trash2, ShieldCheck, Image } from 'lucide-react';
 import useCartStore from '../stores/cartStore';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 
 // Компонент для изображения товара с обработкой ошибок
 const CartItemImage = ({ src, alt }) => {
@@ -107,7 +108,40 @@ const Cart = () => {
     getTotal,
     getItemCount 
   } = useCartStore();
+  
+  // Генерируем или получаем ID сессии
+  const [sessionId] = useState(() => {
+    let id = localStorage.getItem('cartSessionId');
+    if (!id) {
+      id = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('cartSessionId', id);
+    }
+    return id;
+  });
 
+  // Отправляем данные корзины на сервер при изменениях
+  useEffect(() => {
+    const saveCartToServer = async () => {
+      if (items.length > 0) {
+        try {
+          await axios.post(`${import.meta.env.VITE_API_URL}/carts/save`, {
+            sessionId,
+            items,
+            totalAmount: getTotal(),
+            itemCount: getItemCount(),
+            currency: 'UAH'
+          });
+        } catch (error) {
+          console.error('Ошибка сохранения корзины:', error);
+        }
+      }
+    };
+    
+    // Сохраняем с задержкой, чтобы не спамить сервер
+    const timeoutId = setTimeout(saveCartToServer, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [items, sessionId, getTotal, getItemCount]);
+  
   const handleCheckout = async () => {
     try {
       toast.loading('Preparing secure checkout...', {
@@ -150,6 +184,20 @@ const Cart = () => {
           id: 'checkout-loading',
           duration: 2000
         });
+        
+        // Помечаем корзину как в процессе оплаты
+        try {
+          await axios.post(`${import.meta.env.VITE_API_URL}/carts/save`, {
+            sessionId,
+            items,
+            totalAmount: getTotal(),
+            itemCount: getItemCount(),
+            currency: 'UAH',
+            status: 'checkout_started'
+          });
+        } catch (error) {
+          console.error('Ошибка обновления статуса корзины:', error);
+        }
 
         // Create and submit form to WayForPay
         const form = document.createElement('form');

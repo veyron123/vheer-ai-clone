@@ -29,6 +29,9 @@ import runwayVideoRoutes from './routes/runwayVideo.routes.js';
 import wayforpayRoutes from './routes/wayforpay.routes.js';
 import testSubscriptionRoutes from './routes/test-subscription-expiry.js';
 import adminRoutes from './routes/admin.routes.js';
+import ordersRoutes from './routes/orders.routes.js';
+import cartTrackingRoutes from './routes/cart-tracking.routes.js';
+import notificationsRoutes from './routes/notifications.routes.js';
 import webhookRoutes, { setupWebSocket } from './routes/webhook.routes.js';
 
 // Middleware
@@ -37,6 +40,7 @@ import { checkDailyCredits } from './middleware/credit.middleware.js';
 import CreditCronJob from './jobs/creditCronJob.js';
 import initializeSubscriptionExpiryJobs from './jobs/subscriptionExpiryJob.js';
 import initializeAutoPaymentJobs from './jobs/autoPaymentJob.js';
+import initializeCartTrackingJobs from './jobs/cartTrackingJob.js';
 
 // Load environment variables first
 dotenv.config();
@@ -141,6 +145,9 @@ if (process.env.NODE_ENV === 'development') {
 
 // Admin routes
 app.use('/api/admin', adminRoutes);
+app.use('/api/orders', ordersRoutes);
+app.use('/api/carts', cartTrackingRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 // Webhook routes
 app.use('/api/webhook', webhookRoutes);
@@ -198,6 +205,9 @@ CreditCronJob.init();
 // Initialize subscription expiry cron jobs
 initializeSubscriptionExpiryJobs();
 initializeAutoPaymentJobs();
+
+// Initialize cart tracking jobs
+initializeCartTrackingJobs();
 
 // Start server with increased timeout
 const server = app.listen(PORT, () => {
