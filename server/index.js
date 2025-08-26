@@ -32,6 +32,7 @@ import adminRoutes from './routes/admin.routes.js';
 import ordersRoutes from './routes/orders.routes.js';
 import cartTrackingRoutes from './routes/cart-tracking.routes.js';
 import notificationsRoutes from './routes/notifications.routes.js';
+import imageProxyRoutes from './routes/image-proxy.routes.js';
 import webhookRoutes, { setupWebSocket } from './routes/webhook.routes.js';
 
 // Middleware
@@ -148,6 +149,9 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/orders', ordersRoutes);
 app.use('/api/carts', cartTrackingRoutes);
 app.use('/api/notifications', notificationsRoutes);
+
+// Image proxy routes (no authentication required for public images)
+app.use('/api/image-proxy', imageProxyRoutes);
 
 // Webhook routes
 app.use('/api/webhook', webhookRoutes);

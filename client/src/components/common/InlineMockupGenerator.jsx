@@ -30,12 +30,13 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
   
   // Состояние для автоматически определенного соотношения сторон
   const [detectedAspectRatio, setDetectedAspectRatio] = useState(aspectRatio || '1:1');
-  const canvasRef = useRef(null);
+  const mainCanvasRef = useRef(null); // Основной canvas для детального предпросмотра
+  const frameCanvasRef = useRef(null); // Canvas для frame preview
   const [isVisible, setIsVisible] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [rotation, setRotation] = useState(0);
-  const [scale, setScale] = useState(0.7);
+  const [scale, setScale] = useState(0.8); // 80% по умолчанию
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [hasShownAuto, setHasShownAuto] = useState(false);
   const [selectedColor, setSelectedColor] = useState('white');
@@ -92,9 +93,14 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
     switch (aspectRatio) {
       case '1:1':
         folderName = 'Frames 1-1';
-        // Для квадратных используем размер + цвет: "10-10black.png"
         const sizeFormatted = size.replace('x', '-');
-        filename = `${sizeFormatted}${color}.png`;
+        if (previewType === 'context') {
+          // Для контекстного предпросмотра: "10-10black-Context-Preview.png" (если есть)
+          filename = `${sizeFormatted}${color}-Context-Preview.png`;
+        } else {
+          // Для основного: "10-10black.png"
+          filename = `${sizeFormatted}${color}.png`;
+        }
         break;
         
       case '3:4':
@@ -111,8 +117,14 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         
       case '4:3':
         folderName = 'Frames 4-3';
-        // Для 4:3 используем только размер без цвета: "8-6.png"
-        filename = `${size.replace('x', '-')}.png`;
+        const sizeFormattedLandscape = size.replace('x', '-');
+        if (previewType === 'context') {
+          // Для контекстного предпросмотра: "8-6-Context-Preview.png" (если есть)
+          filename = `${sizeFormattedLandscape}-Context-Preview.png`;
+        } else {
+          // Для основного предпросмотра: "8-6.png"
+          filename = `${sizeFormattedLandscape}.png`;
+        }
         break;
         
       default:
@@ -209,29 +221,150 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
 
   const currentFrame = frameConfig[detectedAspectRatio] || frameConfig['1:1'];
 
+  // Функция для создания мокапа в Frame Preview
+  const renderFramePreview = (size, canvasRef) => {
+    console.log('🎨 renderFramePreview called:', {
+      size,
+      imageUrl: imageUrl ? 'exists' : 'missing',
+      canvasRefReady: canvasRef.current ? 'ready' : 'not ready',
+      selectedColor,
+      detectedAspectRatio
+    });
+    
+    if (!imageUrl || !canvasRef.current) {
+      console.log('❌ renderFramePreview: Early return - missing requirements');
+      return;
+    }
+    
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    
+    // Устанавливаем размер canvas для frame preview (меньше основного)
+    const previewSize = 128;
+    canvas.width = previewSize;
+    canvas.height = previewSize;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const userImg = new Image();
+    userImg.crossOrigin = 'anonymous';
+    
+    userImg.onload = () => {
+      console.log('✅ Frame Preview: User image loaded');
+      const autoDetectedRatio = detectAspectRatio(userImg.width, userImg.height);
+      
+      // Функция для отрисовки изображения в frame preview
+      const drawUserImageInPreview = (img, ctx, canvas, aspectRatio) => {
+        ctx.save();
+        
+        // Отступы рамки (пропорционально меньше)
+        const frameMargin = 13; // ~10% от 128px
+        const innerWidth = canvas.width - (frameMargin * 2);
+        const innerHeight = canvas.height - (frameMargin * 2);
+        const innerX = frameMargin;
+        const innerY = frameMargin;
+        
+        // Определяем размеры изображения
+        let drawWidth, drawHeight, drawX, drawY;
+        
+        if (aspectRatio === '3:4' || aspectRatio === '4:3') {
+          const imgAspect = img.width / img.height;
+          const innerAspect = innerWidth / innerHeight;
+          
+          if (imgAspect > innerAspect) {
+            drawWidth = innerWidth * scale;
+            drawHeight = (innerWidth / imgAspect) * scale;
+          } else {
+            drawHeight = innerHeight * scale;
+            drawWidth = (innerHeight * imgAspect) * scale;
+          }
+        } else {
+          const size = Math.min(innerWidth, innerHeight) * scale;
+          drawWidth = size;
+          drawHeight = size;
+        }
+        
+        // Центрируем изображение
+        drawX = innerX + (innerWidth - drawWidth) / 2;
+        drawY = innerY + (innerHeight - drawHeight) / 2;
+        
+        // Рисуем изображение
+        ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+        ctx.restore();
+      };
+      
+      // Загружаем рамку для данного размера
+      const frameImg = new Image();
+      frameImg.onload = () => {
+        console.log('✅ Frame Preview: Context frame loaded:', frameImg.src);
+        // Сначала рисуем пользовательское изображение
+        drawUserImageInPreview(userImg, ctx, canvas, autoDetectedRatio);
+        // Затем рамку поверх
+        ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+        console.log('✅ Frame Preview: Rendering completed!');
+      };
+      
+      frameImg.onerror = (error) => {
+        console.error('❌ Frame Preview: Context frame failed to load:', frameImg.src, error);
+        // Fallback - простая рамка
+        drawUserImageInPreview(userImg, ctx, canvas, autoDetectedRatio);
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
+        console.log('✅ Frame Preview: Fallback rendering completed!');
+      };
+      
+      // Для Frame Preview используем Context изображения
+      const contextFramePath = getMockupFramePathWithRatio(size, selectedColor, 'context', autoDetectedRatio);
+      console.log('🖼️ Frame Preview: Loading context frame:', contextFramePath);
+      frameImg.src = contextFramePath;
+    };
+    
+    // Проксируем внешние изображения для Frame Preview
+    const proxiedImageUrlForPreview = imageUrl.startsWith('http') 
+      ? `/api/image-proxy/proxy?url=${encodeURIComponent(imageUrl)}`
+      : imageUrl;
+      
+    console.log('🎨 Frame Preview: Using proxied image:', proxiedImageUrlForPreview);
+    userImg.src = proxiedImageUrlForPreview;
+  };
+
   // Автоматический показ при появлении изображения
   useEffect(() => {
-    if (autoShow && imageUrl && !hasShownAuto) {
-      // DEBUG MODE: Показываем мокап сразу после загрузки изображения (для отладки)
-      // Закомментировано: setTimeout с задержкой 1000мс для production режима
-      // const timer = setTimeout(() => {
-      //   setIsVisible(true);
-      //   setHasShownAuto(true);
-      // }, 1000);
-      // return () => clearTimeout(timer);
+    console.log('🔍 Auto-show check:', {
+      autoShow,
+      imageUrl: imageUrl ? 'exists' : 'missing',
+      hasShownAuto,
+      willShow: autoShow && imageUrl && !hasShownAuto
+    });
+    
+    if (autoShow && imageUrl) {
+      if (!hasShownAuto) {
+        console.log('✅ Auto-showing mockup generator (first time)');
+        setHasShownAuto(true);
+      } else {
+        console.log('✅ Auto-showing mockup generator (image changed)');
+      }
       
-      // IMMEDIATE MOCKUP FOR DEBUG: Показываем мокап немедленно
+      // Показываем мокап немедленно для любого нового изображения
       setIsVisible(true);
-      setHasShownAuto(true);
     }
   }, [imageUrl, autoShow, hasShownAuto]);
 
-  // Сброс при изменении изображения
+  // Сброс только при полном удалении изображения
   useEffect(() => {
+    console.log('🔄 Image change detected:', {
+      imageUrl: imageUrl ? 'exists' : 'missing',
+      willReset: !imageUrl
+    });
+    
     if (!imageUrl) {
+      console.log('🧹 Resetting mockup state (no image)');
       setIsVisible(false);
       setHasShownAuto(false);
       setIsExpanded(true);
+    } else {
+      // Когда появляется новое изображение и мокап уже был показан, оставляем его видимым
+      console.log('🔄 New image detected, keeping mockup visible if already shown');
     }
   }, [imageUrl]);
 
@@ -242,27 +375,29 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
 
   // Рендеринг мокапа
   useEffect(() => {
-    console.log('🎨 Mockup render effect triggered:', { 
+    console.log('🎨 Main Mockup render effect triggered:', { 
       imageUrl: imageUrl ? 'exists' : 'missing', 
       isVisible, 
       detectedAspectRatio,
       selectedSize,
-      canvasRef: canvasRef.current ? 'ready' : 'not ready'
+      mainCanvasRef: mainCanvasRef.current ? 'ready' : 'not ready'
     });
     
     if (!imageUrl || !isVisible) {
+      console.log('❌ Main Canvas: Stopping render - imageUrl:', imageUrl ? 'exists' : 'missing', 'isVisible:', isVisible);
       setIsLoading(false);
       return;
     }
     
-    if (!canvasRef.current) {
+    if (!mainCanvasRef.current) {
+      console.log('❌ Main Canvas: Canvas ref not ready, retrying in 100ms');
       const timeout = setTimeout(() => {
         setIsLoading(true);
       }, 100);
       return () => clearTimeout(timeout);
     }
     
-    const canvas = canvasRef.current;
+    const canvas = mainCanvasRef.current;
     const ctx = canvas.getContext('2d');
     
     // ВРЕМЕННО установим размер - будем менять после загрузки изображения
@@ -273,17 +408,28 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
     const userImg = new Image();
     
     userImg.onerror = (error) => {
+      console.error('❌ Main Canvas: User image failed to load:', error);
       const fallbackImg = new Image();
       fallbackImg.onload = () => {
+        console.log('✅ Main Canvas: Fallback image loaded');
         renderImageOnCanvas(fallbackImg);
       };
       fallbackImg.onerror = () => {
+        console.error('❌ Main Canvas: Fallback image also failed');
         setIsLoading(false);
       };
       fallbackImg.src = imageUrl;
     };
     
     const renderImageOnCanvas = (img) => {
+      console.log('🎨 Main Canvas: Starting renderImageOnCanvas with:', {
+        imageWidth: img.width,
+        imageHeight: img.height,
+        selectedSize,
+        selectedColor,
+        detectedAspectRatio
+      });
+      
       // 📝 РЕВОЛЮЦИОННЫЙ ПОДХОД: Адаптируем размер канваса под изображение!
       const imageAspectRatio = img.width / img.height;
       
@@ -300,6 +446,11 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       if (autoDetectedRatio !== detectedAspectRatio) {
         console.log('🔄 Auto-updating aspect ratio:', detectedAspectRatio, '→', autoDetectedRatio);
         setDetectedAspectRatio(autoDetectedRatio);
+        
+        // 🎯 КРИТИЧЕСКИЙ ФИКС: Также обновляем размер для нового соотношения сторон
+        const newDefaultSize = getDefaultSize(autoDetectedRatio);
+        console.log('🔄 Auto-updating size for aspect ratio change:', selectedSize, '→', newDefaultSize);
+        setSelectedSize(newDefaultSize);
       }
       
       // 🎯 ФИКСИРОВАННЫЙ РАЗМЕР КАНВАСА: ВСЕГДА КВАДРАТНЫЙ 1:1
@@ -382,7 +533,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       // 🖼️ ЭТАП 1: ЗАГРУЖАЕМ РАМКУ И ОТРИСОВЫВАЕМ ВСЁ
       const frameImg = new Image();
       frameImg.onload = () => {
-        console.log('✅ Frame image loaded successfully:', {
+        console.log('✅ Main Canvas: Frame image loaded successfully:', {
           src: frameImg.src,
           aspectRatio: detectedAspectRatio,
           dimensions: `${frameImg.width}x${frameImg.height}`,
@@ -391,15 +542,18 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         });
         
         // 🖼️ ЭТАП 1: РИСУЕМ ПОЛЬЗОВАТЕЛЬСКОЕ ИЗОБРАЖЕНИЕ СНАЧАЛА
+        console.log('🎨 Main Canvas: Drawing user image first...');
         drawUserImageFirst(img, ctx, canvas, autoDetectedRatio);
         
         // 🎨 ЭТАП 2: РИСУЕМ РАМКУ ПОВЕРХ ИЗОБРАЖЕНИЯ
+        console.log('🎨 Main Canvas: Drawing frame on top...');
         ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
         
+        console.log('✅ Main Canvas: Rendering completed!');
         setIsLoading(false);
       };
       frameImg.onerror = (error) => {
-        console.error('❌ Frame image failed to load:', {
+        console.error('❌ Main Canvas: Frame image failed to load:', {
           src: frameImg.src,
           aspectRatio: detectedAspectRatio,
           selectedSize,
@@ -407,14 +561,20 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
           error
         });
         
-        // Если изображение рамки не загрузилось, рисуем простую черную рамку
-        console.warn('🔄 Falling back to programmatic frame for:', detectedAspectRatio);
+        // Сначала рисуем пользовательское изображение
+        console.log('🎨 Main Canvas: Drawing user image (fallback mode)...');
+        drawUserImageFirst(img, ctx, canvas, autoDetectedRatio);
+        
+        // Затем рисуем простую черную рамку
+        console.warn('🔄 Main Canvas: Falling back to programmatic frame for:', detectedAspectRatio);
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = 20;
         ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
         ctx.strokeStyle = '#1a1a1a';
         ctx.lineWidth = 2;
         ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+        
+        console.log('✅ Main Canvas: Fallback rendering completed!');
         setIsLoading(false);
       };
       // 🖼️ ВЫБОР РАМКИ НА ОСНОВЕ АВТОМАТИЧЕСКИ ДЕТЕКТИРОВАННОГО СООТНОШЕНИЯ
@@ -432,25 +592,60 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         console.log('🖼️ Using fixed frame for 1:1 image:', frameImg.src);
       } else {
         // Для не-квадратных изображений используем динамические рамки из соответствующих папок
-        // Временно используем autoDetectedRatio для getMockupFramePath
-        const tempDetectedRatio = detectedAspectRatio;
-        // Переопределяем глобально для getMockupFramePath
         const framePathWithCorrectRatio = getMockupFramePathWithRatio(selectedSize, selectedColor, 'main', autoDetectedRatio);
         frameImg.src = framePathWithCorrectRatio;
-        console.log('🖼️ Using dynamic frame for', autoDetectedRatio, 'image:', frameImg.src);
+        console.log('🖼️ Main Canvas: Using dynamic frame for', autoDetectedRatio, 'image:', frameImg.src);
+        console.log('🖼️ Main Canvas: Selected size:', selectedSize, 'Selected color:', selectedColor);
       }
     };
     
     userImg.onload = () => {
-      console.log('✅ User image loaded successfully:', { width: userImg.width, height: userImg.height });
+      console.log('✅ Main Canvas: User image loaded successfully:', { width: userImg.width, height: userImg.height });
       renderImageOnCanvas(userImg);
     };
     
+    // Проксируем внешние изображения через наш сервер для обхода CORS
+    const proxiedImageUrl = imageUrl.startsWith('http') 
+      ? `/api/image-proxy/proxy?url=${encodeURIComponent(imageUrl)}`
+      : imageUrl;
+      
     userImg.crossOrigin = 'anonymous';
-    userImg.src = imageUrl;
-    console.log('🔄 Loading user image from:', imageUrl);
+    userImg.src = proxiedImageUrl;
+    console.log('🔄 Main Canvas: Loading user image from:', proxiedImageUrl, '(original:', imageUrl, ')');
+    console.log('🔄 Main Canvas: useEffect completed setup, waiting for image to load...');
     
   }, [imageUrl, detectedAspectRatio, rotation, scale, position, isVisible]);
+
+  // Синхронизация мокапа в Frame Preview (только для выбранного размера)
+  useEffect(() => {
+    console.log('🖼️ Frame Preview useEffect triggered:', {
+      imageUrl: imageUrl ? 'exists' : 'missing',
+      isVisible,
+      selectedSize,
+      detectedAspectRatio,
+      selectedColor,
+      frameCanvasRefReady: frameCanvasRef.current ? 'ready' : 'not ready'
+    });
+    
+    if (!imageUrl || !isVisible || !selectedSize) {
+      console.log('❌ Frame Preview: Stopping - missing requirements');
+      return;
+    }
+    
+    console.log('🔄 Frame Preview: Updating for selected size:', selectedSize, '(using Context images)');
+    
+    // Обновляем мокап только для выбранного размера
+    const canvasRef = frameCanvasRef.current;
+    if (canvasRef) {
+      console.log('🎨 Frame Preview: Starting render with timeout...');
+      setTimeout(() => {
+        renderFramePreview(selectedSize, { current: canvasRef });
+      }, 100); // Небольшая задержка для корректного рендеринга
+    } else {
+      console.log('❌ Frame Preview: Canvas ref not ready');
+    }
+    
+  }, [imageUrl, detectedAspectRatio, selectedColor, scale, rotation, position, isVisible, selectedSize]);
 
   const { addItem, openCart } = useCartStore();
 
@@ -495,12 +690,12 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
 
   // Скачивание результата (оставляем как дополнительную функцию)
   const downloadMockup = () => {
-    if (!canvasRef.current) return;
+    if (!mainCanvasRef.current) return;
     
     const link = document.createElement('a');
     const sizeText = detectedAspectRatio === '1:1' ? `-${selectedSize}` : '';
     link.download = `mockup-${selectedColor}-${detectedAspectRatio}${sizeText}.png`;
-    link.href = canvasRef.current.toDataURL();
+    link.href = mainCanvasRef.current.toDataURL();
     link.click();
   };
 
@@ -575,7 +770,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
                   </div>
                 )}
                 <canvas
-                  ref={canvasRef}
+                  ref={mainCanvasRef}
                   className={`max-w-full h-auto ${isLoading ? 'invisible' : 'visible'}`}
                   style={{ imageRendering: 'crisp-edges' }}
                 />
@@ -584,117 +779,73 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
 
             {/* Controls */}
             <div className="space-y-4">
-              {/* Frame Color Selection with Dynamic Preview - только для 1:1 */}
+              {/* Frame Color Selection - только для 1:1 */}
               {detectedAspectRatio === '1:1' && (
-                <div className="flex gap-4 items-start">
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      <Palette className="w-4 h-4 inline mr-1" />
-                      Frame color
-                    </label>
-                    <div className="flex gap-3">
-                      {frameColors.map((color) => (
-                        <label
-                          key={color.id}
-                          className="relative cursor-pointer"
-                        >
-                          <input
-                            type="radio"
-                            name="frameColor"
-                            value={color.id}
-                            checked={selectedColor === color.id}
-                            onChange={(e) => setSelectedColor(e.target.value)}
-                            className="sr-only"
-                          />
-                          <div className={`relative ${selectedColor === color.id ? 'ring-2 ring-purple-500 ring-offset-2' : ''} rounded-lg transition-all`}>
-                            <div 
-                              className="w-12 h-12 rounded-lg border-2"
-                              style={{ 
-                                backgroundColor: color.color,
-                                borderColor: color.borderColor
-                              }}
-                            >
-                              {selectedColor === color.id && (
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                  </svg>
-                                </div>
-                              )}
-                            </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Palette className="w-4 h-4 inline mr-1" />
+                    Frame color
+                  </label>
+                  <div className="flex gap-3">
+                    {frameColors.map((color) => (
+                      <label
+                        key={color.id}
+                        className="relative cursor-pointer"
+                      >
+                        <input
+                          type="radio"
+                          name="frameColor"
+                          value={color.id}
+                          checked={selectedColor === color.id}
+                          onChange={(e) => setSelectedColor(e.target.value)}
+                          className="sr-only"
+                        />
+                        <div className={`relative ${selectedColor === color.id ? 'ring-2 ring-purple-500 ring-offset-2' : ''} rounded-lg transition-all`}>
+                          <div 
+                            className="w-12 h-12 rounded-lg border-2"
+                            style={{ 
+                              backgroundColor: color.color,
+                              borderColor: color.borderColor
+                            }}
+                          >
+                            {selectedColor === color.id && (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                              </div>
+                            )}
                           </div>
-                        </label>
-                      ))}
-                    </div>
+                        </div>
+                      </label>
+                    ))}
                   </div>
-                  
-                  {/* Динамический предпросмотр рамки */}
-                  <div className="flex-shrink-0">
-                    <div className="bg-gray-100 rounded-lg overflow-hidden" style={{ width: '128px' }}>
-                      <img 
-                        src={getMockupFramePath(selectedSize, selectedColor)}
-                        alt={`${selectedSize} ${selectedColor} frame`}
-                        className="w-full h-auto block"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
+                </div>
+              )}
+
+              {/* Frame Preview - динамический мокап для выбранного размера */}
+              {(detectedAspectRatio === '3:4' || detectedAspectRatio === '4:3' || detectedAspectRatio === '1:1') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    <Palette className="w-4 h-4 inline mr-1" />
+                    Frame Preview - {currentFrameSizes.find(s => s.id === selectedSize)?.name}
+                  </label>
+                  <div className="text-center">
+                    <div className="bg-gray-100 rounded-lg border-2 border-gray-200 overflow-hidden mx-auto mb-2" style={{ width: '128px', height: '128px' }}>
+                      <canvas
+                        ref={frameCanvasRef}
+                        width={128}
+                        height={128}
+                        className="w-full h-full object-contain"
+                        style={{ imageRendering: 'crisp-edges' }}
                       />
-                      <div className="w-full h-32 bg-gray-200 items-center justify-center text-xs text-gray-500 hidden">
-                        No preview
-                      </div>
                     </div>
+                    <div className="text-sm font-medium text-gray-600">{currentFrameSizes.find(s => s.id === selectedSize)?.name}</div>
+                    <div className="text-sm text-gray-500">₴{currentFrameSizes.find(s => s.id === selectedSize)?.price}</div>
                   </div>
                 </div>
               )}
 
-              {/* Frame Preview - для соотношения 3:4 (только Context изображения) */}
-              {detectedAspectRatio === '3:4' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Palette className="w-4 h-4 inline mr-1" />
-                    Frame Preview
-                  </label>
-                  <div className="bg-gray-100 rounded-lg border-2 border-gray-200 overflow-hidden mx-auto" style={{ width: '128px' }}>
-                    <img 
-                      src={getMockupFramePath(selectedSize, selectedColor, 'context')}
-                      alt={`${selectedSize} context frame`}
-                      className="w-full h-auto block"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'flex';
-                      }}
-                    />
-                    <div className="w-full h-32 bg-gray-200 items-center justify-center text-xs text-gray-500 hidden">
-                      No context
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Frame Preview - для соотношения 4:3 */}
-              {detectedAspectRatio === '4:3' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Palette className="w-4 h-4 inline mr-1" />
-                    Frame Preview
-                  </label>
-                  <div className="w-32 h-24 bg-gray-100 rounded-lg border-2 border-gray-200 flex items-center justify-center overflow-hidden mx-auto">
-                    <img 
-                      src={getMockupFramePath(selectedSize, selectedColor, 'main')}
-                      alt={`${selectedSize} frame`}
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'flex';
-                      }}
-                    />
-                    <div className="w-full h-full bg-gray-200 items-center justify-center text-xs text-gray-500 hidden">
-                      No preview
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* Size Selection - для всех соотношений сторон */}
               <div>
