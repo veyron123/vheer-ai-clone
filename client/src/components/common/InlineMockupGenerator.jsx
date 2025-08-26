@@ -544,14 +544,14 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         
         // 📏 ОПРЕДЕЛЯЕМ РАЗМЕРЫ БЕЛОЙ ОБЛАСТИ ВНУТРИ РАМКИ
         // Рамка обычно имеет отступы ~10% с каждой стороны
-        const frameMargin = 50; // отступы рамки в пикселях
+        const frameMargin = 30; // уменьшенные отступы рамки в пикселях
         const innerWidth = canvas.width - (frameMargin * 2);
         const innerHeight = canvas.height - (frameMargin * 2);
         const innerX = frameMargin;
         const innerY = frameMargin;
         
         // 🎯 ФИКСИРОВАННЫЕ НАСТРОЙКИ ДЛЯ ОСНОВНОГО CANVAS
-        const mainCanvasScale = 0.7; // 70% фиксированно для основного canvas
+        const mainCanvasScale = 0.85; // увеличенный масштаб 85% для лучшей видимости
         const mainCanvasPosition = { x: 0, y: 0 }; // центрировано
         
         // 🎯 ОПРЕДЕЛЯЕМ КАК ВПИСАТЬ ИЗОБРАЖЕНИЕ В БЕЛУЮ ОБЛАСТЬ
@@ -598,11 +598,16 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
           position: `${drawX.toFixed(0)}, ${drawY.toFixed(0)}`,
           scale: mainCanvasScale,
           rotation,
-          note: 'Fixed 70% scale for main canvas'
+          note: 'Fixed 85% scale for main canvas'
         });
+        
+        // 🎨 РИСУЕМ БЕЛЫЙ ФОН ДЛЯ ОБЛАСТИ ИЗОБРАЖЕНИЯ (для лучшей видимости)
+        ctx.fillStyle = 'white';
+        ctx.fillRect(innerX, innerY, innerWidth, innerHeight);
         
         // 🎨 РИСУЕМ ИЗОБРАЖЕНИЕ
         ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+        
         ctx.restore();
       };
       
@@ -627,17 +632,23 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         // 🖼️ ЭТАП 1: РИСУЕМ ПОЛЬЗОВАТЕЛЬСКОЕ ИЗОБРАЖЕНИЕ СНАЧАЛА
         console.log('🎨 Main Canvas: Drawing user image first...');
         console.log('🔍 Main Canvas: Image details:', {
-          imgWidth: img.width,
-          imgHeight: img.height,
+          imgExists: !!img,
+          imgComplete: img?.complete,
+          imgWidth: img?.width || 'UNDEFINED',
+          imgHeight: img?.height || 'UNDEFINED',
           canvasWidth: canvas.width,
           canvasHeight: canvas.height,
           aspectRatio: autoDetectedRatio
         });
         
+        if (!img || !img.complete) {
+          console.error('❌ Main Canvas: User image not ready in frameImg.onload!');
+          return;
+        }
+        
         drawUserImageFirst(img, ctx, canvas, autoDetectedRatio);
         
         // 🎨 ЭТАП 2: РИСУЕМ РАМКУ ПОВЕРХ ИЗОБРАЖЕНИЯ
-        // Drawing frame on top of the image
         ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
         
         console.log('✅ Main Canvas: Frame drawn successfully');
@@ -686,39 +697,30 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         explanation: 'Using autoDetected ratio for immediate frame selection'
       });
       
+      // Выбираем правильную рамку в зависимости от соотношения сторон
       if (autoDetectedRatio === '1:1') {
-        // Для квадратных изображений используем фиксированную рамку
-        frameImg.src = '/Mockup images/frame-1x1.png';
-        console.log('🖼️ Using fixed frame for 1:1 image:', frameImg.src);
+        // Для квадратных изображений
+        frameImg.src = '/Mockup images/Frames 1-1/12-12white.png';
+        console.log('🖼️ Using square frame for 1:1 image:', frameImg.src);
+      } else if (autoDetectedRatio === '3:4') {
+        // Для портретных изображений 3:4
+        frameImg.src = '/Mockup images/Frames 3-4/6-8.png';
+        console.log('🖼️ Using portrait frame for 3:4 image:', frameImg.src);
+      } else if (autoDetectedRatio === '4:3') {
+        // Для ландшафтных изображений 4:3
+        frameImg.src = '/Mockup images/Frames 4-3/8-6.png';
+        console.log('🖼️ Using landscape frame for 4:3 image:', frameImg.src);
       } else {
-        // 🎯 ФИКСИРОВАННАЯ РАМКА ДЛЯ ОСНОВНОГО CANVAS: ВСЕГДА 8-6.png
-        const fixedMainCanvasFrame = '/Mockup images/Frames 4-3/8-6.png';
-        frameImg.src = fixedMainCanvasFrame;
-        console.log('🖼️ Main Canvas: Using FIXED frame 8-6.png for', autoDetectedRatio, 'image:', frameImg.src);
-        console.log('🖼️ Main Canvas: Frame is independent of size selection');
+        // Fallback
+        frameImg.src = '/Mockup images/Frames 1-1/12-12white.png';
+        console.log('🖼️ Using fallback frame:', frameImg.src);
       }
     };
     
+    // Устанавливаем обработчик успешной загрузки
     userImg.onload = () => {
-      console.log('🚀 MAIN CANVAS: USER IMAGE LOADED!');
-      console.log('✅ Main Canvas: User image loaded successfully:', { 
-        width: userImg.width, 
-        height: userImg.height,
-        src: userImg.src,
-        imageUrl,
-        isVisible 
-      });
+      console.log('✅ Main Canvas: User image loaded successfully');
       renderImageOnCanvas(userImg);
-    };
-    
-    userImg.onerror = (error) => {
-      console.error('❌ MAIN CANVAS: USER IMAGE FAILED TO LOAD!', {
-        src: userImg.src,
-        imageUrl,
-        proxiedUrl: proxiedImageUrl,
-        error
-      });
-      setIsLoading(false);
     };
     
     // Проксируем внешние изображения через наш сервер для обхода CORS
