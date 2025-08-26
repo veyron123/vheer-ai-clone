@@ -43,8 +43,8 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
   const getDefaultSize = (ratio) => {
     switch (ratio) {
       case '1:1': return '12x12';
-      case '3:4': return '12x16';
-      case '4:3': return '16x12';
+      case '3:4': return '6x8';
+      case '4:3': return '8x6';
       default: return '12x12';
     }
   };
@@ -82,6 +82,60 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
 
   // Получаем размеры для текущего соотношения сторон
   const currentFrameSizes = frameSizes[detectedAspectRatio] || frameSizes['1:1'];
+
+  // Функция для получения пути к мокапу с заданным соотношением сторон
+  const getMockupFramePathWithRatio = (size, color, previewType = 'main', aspectRatio) => {
+    // Определяем папку на основе переданного соотношения сторон
+    let folderName = '';
+    let filename = '';
+    
+    switch (aspectRatio) {
+      case '1:1':
+        folderName = 'Frames 1-1';
+        // Для квадратных используем размер + цвет: "10-10black.png"
+        const sizeFormatted = size.replace('x', '-');
+        filename = `${sizeFormatted}${color}.png`;
+        break;
+        
+      case '3:4':
+        folderName = 'Frames 3-4';
+        const sizeFormattedPortrait = size.replace('x', '-');
+        if (previewType === 'context') {
+          // Для контекстного предпросмотра: "6-8-Context-Preview.png"
+          filename = `${sizeFormattedPortrait}-Context-Preview.png`;
+        } else {
+          // Для основного предпросмотра: "6-8.png"
+          filename = `${sizeFormattedPortrait}.png`;
+        }
+        break;
+        
+      case '4:3':
+        folderName = 'Frames 4-3';
+        // Для 4:3 используем только размер без цвета: "8-6.png"
+        filename = `${size.replace('x', '-')}.png`;
+        break;
+        
+      default:
+        // Fallback для неизвестных соотношений
+        folderName = 'Frames 1-1';
+        filename = 'frame-1x1.png';
+        break;
+    }
+    
+    const fullPath = `/Mockup images/${folderName}/${filename}`;
+    
+    console.log('🖼️ Frame path with ratio:', { 
+      aspectRatio, 
+      size, 
+      color, 
+      previewType,
+      folderName, 
+      filename, 
+      fullPath 
+    });
+    
+    return fullPath;
+  };
 
   // Функция для получения пути к мокапу на основе размера, цвета и типа превью
   const getMockupFramePath = (size, color, previewType = 'main') => {
@@ -235,88 +289,126 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       
       // 🎯 АВТОМАТИЧЕСКОЕ ОПРЕДЕЛЕНИЕ СООТНОШЕНИЯ СТОРОН
       const autoDetectedRatio = detectAspectRatio(img.width, img.height);
+      console.log('🎯 Aspect ratio analysis:', {
+        currentDetected: detectedAspectRatio,
+        autoDetected: autoDetectedRatio,
+        imageSize: `${img.width}x${img.height}`,
+        imageRatio: (img.width / img.height).toFixed(3),
+        willUpdate: autoDetectedRatio !== detectedAspectRatio
+      });
+      
       if (autoDetectedRatio !== detectedAspectRatio) {
         console.log('🔄 Auto-updating aspect ratio:', detectedAspectRatio, '→', autoDetectedRatio);
         setDetectedAspectRatio(autoDetectedRatio);
       }
       
-      // Вычисляем идеальный размер канваса на основе изображения
-      const maxCanvasWidth = 600; // максимальная ширина контейнера
-      const maxCanvasHeight = 600; // максимальная высота контейнера
+      // 🎯 ФИКСИРОВАННЫЙ РАЗМЕР КАНВАСА: ВСЕГДА КВАДРАТНЫЙ 1:1
+      const canvasSize = 500; // Квадратный canvas 500x500
+      const canvasWidth = canvasSize;
+      const canvasHeight = canvasSize;
       
-      let canvasWidth, canvasHeight;
+      console.log('📐 Canvas dimensions fixed to:', { canvasWidth, canvasHeight, aspectRatio: '1:1' });
       
-      if (imageAspectRatio > 1) {
-        // Горизонтальное изображение - канвас делаем шире
-        canvasWidth = maxCanvasWidth;
-        canvasHeight = maxCanvasWidth / imageAspectRatio;
+      // 📋 ФУНКЦИЯ ДЛЯ ОТРИСОВКИ ПОЛЬЗОВАТЕЛЬСКОГО ИЗОБРАЖЕНИЯ (ПОД РАМКОЙ)
+      const drawUserImageFirst = (img, ctx, canvas, aspectRatio) => {
+        ctx.save();
         
-        // Если получилось слишком высоко - ограничиваем
-        if (canvasHeight > maxCanvasHeight) {
-          canvasHeight = maxCanvasHeight;
-          canvasWidth = maxCanvasHeight * imageAspectRatio;
-        }
-      } else {
-        // Вертикальное изображение - канвас делаем выше
-        canvasHeight = maxCanvasHeight;
-        canvasWidth = maxCanvasHeight * imageAspectRatio;
+        // 📏 ОПРЕДЕЛЯЕМ РАЗМЕРЫ БЕЛОЙ ОБЛАСТИ ВНУТРИ РАМКИ
+        // Рамка обычно имеет отступы ~10% с каждой стороны
+        const frameMargin = 50; // отступы рамки в пикселях
+        const innerWidth = canvas.width - (frameMargin * 2);
+        const innerHeight = canvas.height - (frameMargin * 2);
+        const innerX = frameMargin;
+        const innerY = frameMargin;
         
-        // Если получилось слишком широко - ограничиваем
-        if (canvasWidth > maxCanvasWidth) {
-          canvasWidth = maxCanvasWidth;
-          canvasHeight = maxCanvasWidth / imageAspectRatio;
+        // 🎯 ОПРЕДЕЛЯЕМ КАК ВПИСАТЬ ИЗОБРАЖЕНИЕ В БЕЛУЮ ОБЛАСТЬ
+        let drawWidth, drawHeight, drawX, drawY;
+        
+        if (aspectRatio === '3:4' || aspectRatio === '4:3') {
+          // Для прямоугольных изображений - вписываем с сохранением пропорций
+          const imgAspect = img.width / img.height;
+          const innerAspect = innerWidth / innerHeight;
+          
+          if (imgAspect > innerAspect) {
+            // Изображение шире - ограничиваем по ширине
+            drawWidth = innerWidth * scale;
+            drawHeight = (innerWidth / imgAspect) * scale;
+          } else {
+            // Изображение выше - ограничиваем по высоте
+            drawHeight = innerHeight * scale;
+            drawWidth = (innerHeight * imgAspect) * scale;
+          }
+        } else {
+          // Для квадратных изображений - используем меньшую сторону
+          const size = Math.min(innerWidth, innerHeight) * scale;
+          drawWidth = size;
+          drawHeight = size;
         }
-      }
+        
+        // 📍 ЦЕНТРИРУЕМ ИЗОБРАЖЕНИЕ В БЕЛОЙ ОБЛАСТИ
+        drawX = innerX + (innerWidth - drawWidth) / 2 + position.x;
+        drawY = innerY + (innerHeight - drawHeight) / 2 + position.y;
+        
+        // 🔄 ПРИМЕНЯЕМ ПОВОРОТ ЕСЛИ НУЖНО
+        if (rotation !== 0) {
+          const centerX = drawX + drawWidth / 2;
+          const centerY = drawY + drawHeight / 2;
+          ctx.translate(centerX, centerY);
+          ctx.rotate((rotation * Math.PI) / 180);
+          ctx.translate(-centerX, -centerY);
+        }
+        
+        console.log('🖼️ Drawing user image first (under frame):', {
+          aspectRatio,
+          innerArea: `${innerWidth}x${innerHeight}`,
+          imageSize: `${drawWidth.toFixed(0)}x${drawHeight.toFixed(0)}`,
+          position: `${drawX.toFixed(0)}, ${drawY.toFixed(0)}`,
+          scale,
+          rotation
+        });
+        
+        // 🎨 РИСУЕМ ИЗОБРАЖЕНИЕ
+        ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+        ctx.restore();
+      };
       
-      // АДАПТИРУЕМ РАЗМЕР КАНВАСА ПОД ИЗОБРАЖЕНИЕ!
-      canvas.width = canvasWidth + 100; // +100 для рамки
-      canvas.height = canvasHeight + 100; // +100 для рамки
+      // 🎯 УСТАНАВЛИВАЕМ ФИКСИРОВАННЫЙ КВАДРАТНЫЙ РАЗМЕР КАНВАСА
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
       
       // Очищаем канвас с новыми размерами
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      ctx.save();
-      
-      // Размер изображения - занимает основную часть канваса с отступами
-      const imageWidth = canvasWidth * scale;
-      const imageHeight = canvasHeight * scale;
-      
-      // Центрируем изображение
-      const centerX = canvas.width / 2 + position.x;
-      const centerY = canvas.height / 2 + position.y;
-      
-      ctx.translate(centerX, centerY);
-      ctx.rotate((rotation * Math.PI) / 180);
-      
-      console.log('🚀 DYNAMIC CANVAS SIZING:', {
-        originalImage: `${img.width}x${img.height}`,
-        imageAspectRatio: imageAspectRatio.toFixed(3),
-        adaptedCanvas: `${canvas.width}x${canvas.height}`,
-        finalImageSize: `${imageWidth.toFixed(0)}x${imageHeight.toFixed(0)}`,
-        scale: scale,
-        position: `${position.x}, ${position.y}`,
-        rotation: `${rotation}°`
-      });
-      
-      // Рисуем изображение в его натуральных пропорциях
-      ctx.drawImage(
-        img,
-        -imageWidth / 2,
-        -imageHeight / 2,
-        imageWidth,
-        imageHeight
-      );
-      
-      ctx.restore();
-      
-      // Загружаем и рисуем изображение рамки
+      // 🖼️ ЭТАП 1: ЗАГРУЖАЕМ РАМКУ И ОТРИСОВЫВАЕМ ВСЁ
       const frameImg = new Image();
       frameImg.onload = () => {
+        console.log('✅ Frame image loaded successfully:', {
+          src: frameImg.src,
+          aspectRatio: detectedAspectRatio,
+          dimensions: `${frameImg.width}x${frameImg.height}`,
+          selectedSize,
+          selectedColor
+        });
+        
+        // 🖼️ ЭТАП 1: РИСУЕМ ПОЛЬЗОВАТЕЛЬСКОЕ ИЗОБРАЖЕНИЕ СНАЧАЛА
+        drawUserImageFirst(img, ctx, canvas, autoDetectedRatio);
+        
+        // 🎨 ЭТАП 2: РИСУЕМ РАМКУ ПОВЕРХ ИЗОБРАЖЕНИЯ
         ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+        
         setIsLoading(false);
       };
-      frameImg.onerror = () => {
+      frameImg.onerror = (error) => {
+        console.error('❌ Frame image failed to load:', {
+          src: frameImg.src,
+          aspectRatio: detectedAspectRatio,
+          selectedSize,
+          selectedColor,
+          error
+        });
+        
         // Если изображение рамки не загрузилось, рисуем простую черную рамку
+        console.warn('🔄 Falling back to programmatic frame for:', detectedAspectRatio);
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = 20;
         ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
@@ -325,13 +417,27 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
         setIsLoading(false);
       };
-      // ФИКСИРОВАННАЯ РАМКА: Для canvas всегда используем frame-1x1.png для 1:1, для других - динамические
-      if (detectedAspectRatio === '1:1') {
+      // 🖼️ ВЫБОР РАМКИ НА ОСНОВЕ АВТОМАТИЧЕСКИ ДЕТЕКТИРОВАННОГО СООТНОШЕНИЯ
+      console.log('🎨 Frame selection logic:', {
+        currentDetected: detectedAspectRatio,
+        autoDetected: autoDetectedRatio,
+        selectedSize,
+        selectedColor,
+        explanation: 'Using autoDetected ratio for immediate frame selection'
+      });
+      
+      if (autoDetectedRatio === '1:1') {
+        // Для квадратных изображений используем фиксированную рамку
         frameImg.src = '/Mockup images/frame-1x1.png';
-        console.log('🖼️ Canvas using fixed frame for 1:1:', frameImg.src);
+        console.log('🖼️ Using fixed frame for 1:1 image:', frameImg.src);
       } else {
-        frameImg.src = getMockupFramePath(selectedSize, selectedColor, 'main');
-        console.log('🖼️ Canvas using dynamic frame for', detectedAspectRatio, ':', frameImg.src);
+        // Для не-квадратных изображений используем динамические рамки из соответствующих папок
+        // Временно используем autoDetectedRatio для getMockupFramePath
+        const tempDetectedRatio = detectedAspectRatio;
+        // Переопределяем глобально для getMockupFramePath
+        const framePathWithCorrectRatio = getMockupFramePathWithRatio(selectedSize, selectedColor, 'main', autoDetectedRatio);
+        frameImg.src = framePathWithCorrectRatio;
+        console.log('🖼️ Using dynamic frame for', autoDetectedRatio, 'image:', frameImg.src);
       }
     };
     
