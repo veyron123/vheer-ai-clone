@@ -255,8 +255,8 @@ export const generateImage = async (req, res) => {
 
 // Poll for generation result from bfl.ai (new API format)
 async function pollForBflResult(requestId, pollingUrl, req = null) {
-  const maxAttempts = 120; // 60 seconds timeout 
-  const pollInterval = 500; // 500ms between polls
+  const maxAttempts = 60; // Reduce attempts but increase interval
+  const baseInterval = 2000; // 2 seconds base interval
   
   console.log(`Starting to poll bfl.ai for request: ${requestId}`);
   console.log(`Polling URL: ${pollingUrl || 'https://api.bfl.ai/v1/get_result?id=' + requestId}`);
@@ -304,11 +304,31 @@ async function pollForBflResult(requestId, pollingUrl, req = null) {
       }
       // Status: 'Pending' or 'Request Moderated' means still processing
       
-      // Wait before next poll
-      await new Promise(resolve => setTimeout(resolve, pollInterval));
+      // Wait before next poll with progressive backoff
+      const waitTime = Math.min(baseInterval * Math.pow(1.2, i), 10000); // Max 10 seconds
+      await new Promise(resolve => setTimeout(resolve, waitTime));
     } catch (error) {
       console.error('bfl.ai polling error:', error.message);
-      if (i === maxAttempts - 1) throw error;
+      
+      // Check if it's a 500 error and we still have attempts left
+      if (error.response?.status === 500 && i < maxAttempts - 1) {
+        console.log(`Retrying due to server error (${i + 1}/${maxAttempts})`);
+        // Wait longer on server errors with exponential backoff
+        const retryWait = Math.min(baseInterval * Math.pow(2, i + 1), 30000); // Max 30 seconds
+        await new Promise(resolve => setTimeout(resolve, retryWait));
+        continue;
+      }
+      
+      // Check if it's the last attempt
+      if (i === maxAttempts - 1) {
+        console.error('Flux generation error:', error.response?.data || error.message);
+        console.error('Full error:', error);
+        throw new Error(`BFL API error after ${maxAttempts} attempts: ${error.response?.data?.error || error.message}`);
+      }
+      
+      // Wait before retry for non-500 errors
+      const retryWait = Math.min(baseInterval * Math.pow(1.5, i), 15000); // Max 15 seconds
+      await new Promise(resolve => setTimeout(resolve, retryWait));
     }
   }
   
