@@ -27,7 +27,7 @@ const MockupSection = ({
     ];
     
     // Поддерживаемые соотношения
-    const supportedRatios = ['1:1', '4:3'];
+    const supportedRatios = ['1:1', '3:4', '4:3'];
     
     // Проверяем модель (если не указана, считаем что поддерживается)
     const modelSupported = !aiModel || supportedModels.includes(aiModel);
