@@ -951,7 +951,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
               </div>
               
               {/* Position and Scale Controls - всегда показывается для 3:4 */}
-              {aspectRatio === '3:4' && (
+              {detectedAspectRatio === '3:4' && (
                 <div className="space-y-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Ruler className="w-4 h-4 inline mr-1" />
