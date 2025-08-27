@@ -3,6 +3,7 @@ import { AI_MODELS } from '../../constants/anime.constants';
 
 const ModelSelector = ({ selectedModel, onModelChange }) => {
   const models = Object.values(AI_MODELS);
+  const selectedModelData = models.find(model => model.id === selectedModel);
   
   return (
     <div className="mb-6">
@@ -28,6 +29,13 @@ const ModelSelector = ({ selectedModel, onModelChange }) => {
           </button>
         ))}
       </div>
+      
+      {/* Price display under buttons */}
+      {selectedModelData && (
+        <div className="text-center text-sm text-primary-600 font-medium mt-3">
+          {selectedModelData.credits} credits per generation
+        </div>
+      )}
     </div>
   );
 };

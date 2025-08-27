@@ -92,11 +92,19 @@ export const useImageToImageGeneration = () => {
       const timeTaken = (Date.now() - startTime) / 1000;
       setGenerationTime(timeTaken);
       
+      // Debug: log the result to understand structure
+      console.log('🔍 Generation result:', result);
+      
       // Update generated image
       if (result?.images?.[0]?.url) {
         setGeneratedImage(result.images[0].url);
         toast.success('Image generated successfully!');
+      } else if (result?.url) {
+        // Some APIs return direct URL
+        setGeneratedImage(result.url);
+        toast.success('Image generated successfully!');
       } else {
+        console.error('❌ Unexpected result structure:', result);
         throw new Error('No image generated');
       }
     } catch (error) {

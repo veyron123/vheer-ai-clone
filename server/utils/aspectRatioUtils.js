@@ -47,6 +47,8 @@ export function convertToServiceFormat(standardizedRatio, service) {
       return convertToQwenFormat(standardizedRatio);
     case 'gpt-image':
       return standardizedRatio; // GPT Image uses standardized format directly
+    case 'nano-banana':
+      return convertToNanoBananaDimensions(standardizedRatio);
     case 'runway':
       return convertToRunwayFormat(standardizedRatio);
     default:
@@ -86,6 +88,24 @@ function convertToQwenFormat(standardizedRatio) {
 
   const result = qwenFormatMap[standardizedRatio] || 'square_hd';
   console.log(`🔍 Qwen format for ${standardizedRatio}: "${result}"`);
+  return result;
+}
+
+/**
+ * Convert standardized aspect ratio to Nano-Banana dimensions
+ * @param {string} standardizedRatio - Standardized aspect ratio
+ * @returns {Object} Nano-Banana dimensions with width and height
+ */
+function convertToNanoBananaDimensions(standardizedRatio) {
+  // Use same dimensions as Flux for consistency
+  const nanoBananaDimensions = {
+    '1:1': { width: 1024, height: 1024 },  // Square
+    '3:2': { width: 1216, height: 832 },   // Landscape (closest to 3:2)
+    '2:3': { width: 832, height: 1216 }    // Portrait (closest to 2:3)
+  };
+
+  const result = nanoBananaDimensions[standardizedRatio] || nanoBananaDimensions['1:1'];
+  console.log(`🔍 Nano-Banana dimensions for ${standardizedRatio}:`, result);
   return result;
 }
 

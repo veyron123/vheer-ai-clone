@@ -23,6 +23,7 @@ import gptimageRoutes from './routes/gptimage.routes.js';
 import qwenRoutes from './routes/qwen.routes.js';
 import gptImageTextToImageRoutes from './routes/gptImageTextToImage.routes.js';
 import midjourneyRoutes from './routes/midjourney.routes.js';
+import nanoBananaRoutes from './routes/nanobanana.routes.js';
 // Video generator moved to .ignore folder
 // import lumaVideoRoutes from './routes/lumaVideoRoutes.js';
 import runwayVideoRoutes from './routes/runwayVideo.routes.js';
@@ -134,6 +135,7 @@ app.use('/api/gptimage', gptimageRoutes);
 app.use('/api/qwen', qwenRoutes);
 app.use('/api/gpt-image-text', gptImageTextToImageRoutes);
 app.use('/api/midjourney', midjourneyRoutes);
+app.use('/api/nano-banana', nanoBananaRoutes);
 // Video generator moved to .ignore folder
 // app.use('/api/video', lumaVideoRoutes);
 app.use('/api/runway-video', runwayVideoRoutes);

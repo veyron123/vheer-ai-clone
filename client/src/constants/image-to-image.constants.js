@@ -3,22 +3,32 @@ export const IMAGE_AI_MODELS = {
   FLUX_PRO: {
     id: 'flux-pro',
     name: 'Flux1.Kontext Pro',
-    badge: { text: 'Fast', color: 'bg-yellow-400 text-black' }
+    badge: { text: 'Fast', color: 'bg-yellow-400 text-black' },
+    credits: 10
   },
   FLUX_MAX: {
     id: 'flux-max',
     name: 'Flux1.Kontext Max',
-    badge: { text: 'Quality', color: 'bg-primary-400 text-white' }
+    badge: { text: 'Quality', color: 'bg-primary-400 text-white' },
+    credits: 20
   },
   GPT_IMAGE: {
     id: 'gpt-image',
     name: 'GPT Image',
-    badge: { text: '👑', color: 'bg-red-500 text-white' }
+    badge: { text: '👑', color: 'bg-red-500 text-white' },
+    credits: 30
   },
   QWEN_IMAGE: {
     id: 'qwen-image',
     name: 'Qwen Image',
-    badge: { text: 'NEW', color: 'bg-green-500 text-white' }
+    badge: { text: 'NEW', color: 'bg-green-500 text-white' },
+    credits: 20
+  },
+  NANO_BANANA: {
+    id: 'nano-banana',
+    name: 'Nano-Banana',
+    badge: { text: '🍌', color: 'bg-orange-600 text-white' },
+    credits: 20
   }
   // Temporarily disabled - issues with API
   // MIDJOURNEY: {

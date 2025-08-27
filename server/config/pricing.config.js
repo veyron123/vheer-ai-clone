@@ -25,6 +25,13 @@ export const MODEL_PRICING = {
     credits: 30,
     description: 'High-quality AI'
   },
+
+  // Nano-Banana (Gemini 2.5 Flash)
+  'nano-banana': {
+    name: 'Nano-Banana',
+    credits: 20,
+    description: 'Fast & creative AI'
+  },
   
   // Midjourney Models (future)
   'midjourney': {

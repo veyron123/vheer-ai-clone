@@ -11,6 +11,8 @@ import ImageGenerateButton from '../components/image-to-image/ImageGenerateButto
 import ImageExampleGallery from '../components/image-to-image/ImageExampleGallery';
 import SEO from '../components/SEO';
 import MockupSection from '../components/common/MockupSection';
+import ReviewsSection from '../components/common/ReviewsSection';
+import TextReviewsSection from '../components/common/TextReviewsSection';
 
 // Hooks
 import { useImageToImageGeneration } from '../hooks/useImageToImageGeneration';
@@ -164,6 +166,14 @@ const ImageToImageGeneratorPage = () => {
 
       </div>
 
+      {/* Блок отзывов карусель - под всеми секциями */}
+      <ReviewsSection />
+      
+      {/* Блок текстовых отзывов */}
+      <div className="container mx-auto px-4 pb-8">
+        <TextReviewsSection />
+      </div>
+      
     </>
   );
 };

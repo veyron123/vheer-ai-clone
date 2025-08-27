@@ -3,6 +3,7 @@ import { getApiUrl } from '../config/api.config';
 import { useAuthStore } from '../stores/authStore';
 import { urlToBase64 } from '../utils/imageUtils';
 import analytics from './analytics';
+import { generateWithNanoBananaImageToImage } from './nanoBananaGeneration';
 
 // Configure API key from environment variable
 fal.config({
@@ -705,6 +706,38 @@ export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = '
       throw error;
     }
   }
+
+  // Use Nano-Banana for image-to-image generation
+  if (aiModel === 'nano-banana') {
+    try {
+      const styleConfig = animeStylePrompts[style] || animeStylePrompts.disney;
+      
+      // Construct the prompt for Nano-Banana
+      let prompt;
+      if (customPrompt && style === 'custom') {
+        prompt = `Transform this photo with custom style: ${customPrompt}`;
+      } else {
+        prompt = `Transform this photo into ${styleConfig.prefix} anime style, ${styleConfig.suffix}, high quality anime portrait, masterpiece`;
+      }
+      
+      // Generate with Nano-Banana
+      const result = await generateWithNanoBananaImageToImage(imageUrl, prompt, 'none', aspectRatio, abortSignal);
+      
+      return {
+        images: [{
+          url: result.url,
+          width: 1024,
+          height: 1024,
+          content_type: 'image/png'
+        }]
+      };
+    } catch (error) {
+      console.error("Error generating with Nano-Banana:", error);
+      throw error;
+    }
+  }
+
+  throw new Error(`Unsupported AI model: ${aiModel}`);
 }
 
 /**

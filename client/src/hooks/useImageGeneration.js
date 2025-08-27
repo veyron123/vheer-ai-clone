@@ -66,8 +66,8 @@ export const useImageGeneration = () => {
       // Determine aspect ratio
       let finalAspectRatio = '1:1';
       
-      if (aiModel === 'gpt-image' || aiModel === 'qwen-image') {
-        // For GPT Image and Qwen Image - use selected aspect ratio
+      if (aiModel === 'gpt-image' || aiModel === 'qwen-image' || aiModel === 'nano-banana') {
+        // For GPT Image, Qwen Image, and Nano-Banana - use selected aspect ratio
         finalAspectRatio = aspectRatio || '1:1';
         if (aspectRatio === 'match' && uploadedImage) {
           finalAspectRatio = await detectAspectRatio(uploadedImage);

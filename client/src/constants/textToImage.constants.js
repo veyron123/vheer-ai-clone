@@ -13,6 +13,13 @@ export const TEXT_TO_IMAGE_MODELS = [
     description: 'Advanced text to image creation',
     credits: 20,
     premium: false
+  },
+  {
+    id: 'nano-banana',
+    name: 'Nano-Banana',
+    description: 'Fast & creative AI generation',
+    credits: 20,
+    premium: false
   }
 ];
 

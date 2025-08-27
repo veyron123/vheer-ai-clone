@@ -20,6 +20,7 @@ const MockupSection = ({
     const supportedModels = [
       'gpt-image', 
       'qwen-image', 
+      'nano-banana',
       'flux-pro', 
       'flux-max',
       'flux-dev',
@@ -27,7 +28,7 @@ const MockupSection = ({
     ];
     
     // Поддерживаемые соотношения
-    const supportedRatios = ['1:1', '3:4', '4:3'];
+    const supportedRatios = ['match', '1:1', '16:9', '9:16', '4:3', '3:4'];
     
     // Проверяем модель (если не указана, считаем что поддерживается)
     const modelSupported = !aiModel || supportedModels.includes(aiModel);

@@ -2,6 +2,7 @@ import { fal } from "@fal-ai/client";
 import { getApiUrl } from '../config/api.config';
 import { useAuthStore } from '../stores/authStore';
 import { urlToBase64 } from '../utils/imageUtils';
+import { generateWithNanoBananaImageToImage } from './nanoBananaGeneration';
 
 // Configure API key from environment variable
 fal.config({
@@ -488,6 +489,24 @@ export async function generateImageToImage(imageUrl, positivePrompt, negativePro
   // Use Qwen Image for image-to-image generation
   if (aiModel === 'qwen-image') {
     return await generateWithQwenImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aspectRatio, abortSignal);
+  }
+  
+  // Use Nano-Banana for image-to-image generation
+  if (aiModel === 'nano-banana') {
+    try {
+      const result = await generateWithNanoBananaImageToImage(imageUrl, positivePrompt, 'none', aspectRatio, abortSignal);
+      return {
+        images: [{
+          url: result.url,
+          width: 1024,
+          height: 1024,
+          content_type: 'image/png'
+        }]
+      };
+    } catch (error) {
+      console.error('Nano-Banana generation failed:', error);
+      throw error; // Re-throw to be handled by caller
+    }
   }
   
   // Use Midjourney for image-to-image generation (temporarily disabled)

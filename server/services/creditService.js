@@ -3,16 +3,13 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 class CreditService {
-  // Начислить ежедневные кредиты пользователю
+  // Начислить ежедневные кредиты пользователю (только для FREE плана)
   static async addDailyCredits(userId) {
     try {
       const user = await prisma.user.findUnique({
         where: { id: userId },
-        select: {
-          id: true,
-          totalCredits: true,
-          lastCreditUpdate: true,
-          createdAt: true
+        include: {
+          subscription: true
         }
       });
 
@@ -20,26 +17,37 @@ class CreditService {
         throw new Error('User not found');
       }
 
+      // Проверяем план пользователя - только FREE план получает ежедневные кредиты
+      const userPlan = user.subscription?.plan || 'FREE';
+      if (userPlan !== 'FREE') {
+        return {
+          success: false,
+          message: 'Daily credits are only for FREE plan users',
+          currentCredits: user.totalCredits,
+          userPlan: userPlan
+        };
+      }
+
       // Проверяем, прошли ли сутки с последнего обновления
       const now = new Date();
       const lastUpdate = new Date(user.lastCreditUpdate);
       const diffInHours = (now - lastUpdate) / (1000 * 60 * 60);
 
-      // Если прошло меньше 24 часов, не начисляем кредиты
+      // Если прошло меньше 24 часов, не обновляем кредиты
       if (diffInHours < 24) {
         return {
           success: false,
-          message: 'Daily credits already added today',
+          message: 'Daily credits already reset today',
           nextUpdate: new Date(lastUpdate.getTime() + 24 * 60 * 60 * 1000),
           currentCredits: user.totalCredits
         };
       }
 
-      // Начисляем 100 кредитов
+      // ОБНУЛЯЕМ и устанавливаем 100 кредитов (не накапливаем!)
       const updatedUser = await prisma.user.update({
         where: { id: userId },
         data: {
-          totalCredits: user.totalCredits + 100,
+          totalCredits: 100, // Устанавливаем ровно 100, а не добавляем
           lastCreditUpdate: now
         }
       });
@@ -48,22 +56,22 @@ class CreditService {
       await prisma.credit.create({
         data: {
           userId: userId,
-          amount: 100,
-          type: 'DAILY_BONUS',
-          description: 'Daily free credits'
+          amount: 100 - user.totalCredits, // Записываем разницу для истории
+          type: 'DAILY_RESET',
+          description: 'Daily credits reset to 100 (FREE plan)'
         }
       });
 
       return {
         success: true,
-        message: 'Daily credits added successfully',
-        creditsAdded: 100,
+        message: 'Daily credits reset successfully',
+        previousCredits: user.totalCredits,
         currentCredits: updatedUser.totalCredits,
         nextUpdate: new Date(now.getTime() + 24 * 60 * 60 * 1000)
       };
 
     } catch (error) {
-      console.error('Error adding daily credits:', error);
+      console.error('Error resetting daily credits:', error);
       throw error;
     }
   }
@@ -177,31 +185,44 @@ class CreditService {
     }
   }
 
-  // Массовое начисление ежедневных кредитов для всех пользователей (для cron job)
+  // Массовое обнуление и начисление ежедневных кредитов для пользователей FREE плана (для cron job)
   static async addDailyCreditsToAllUsers() {
     try {
       const now = new Date();
       const yesterdayTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-      // Находим пользователей, которым нужно начислить кредиты
+      // Находим пользователей с FREE планом, которым нужно обновить кредиты
       const users = await prisma.user.findMany({
         where: {
           lastCreditUpdate: {
             lt: yesterdayTime
           }
         },
-        select: {
-          id: true,
-          totalCredits: true,
-          lastCreditUpdate: true
+        include: {
+          subscription: true
         }
       });
 
       let updateCount = 0;
+      let skippedCount = 0;
       const results = [];
 
       for (const user of users) {
         try {
+          // Проверяем план пользователя
+          const userPlan = user.subscription?.plan || 'FREE';
+          
+          if (userPlan !== 'FREE') {
+            skippedCount++;
+            results.push({
+              userId: user.id,
+              success: false,
+              message: `Skipped - user has ${userPlan} plan`,
+              plan: userPlan
+            });
+            continue;
+          }
+
           const result = await this.addDailyCredits(user.id);
           if (result.success) {
             updateCount++;
@@ -209,7 +230,9 @@ class CreditService {
           results.push({
             userId: user.id,
             success: result.success,
-            message: result.message
+            message: result.message,
+            previousCredits: result.previousCredits,
+            currentCredits: result.currentCredits
           });
         } catch (error) {
           results.push({
@@ -220,14 +243,22 @@ class CreditService {
         }
       }
 
+      console.log(`💰 Daily credits reset completed:`, {
+        totalUsers: users.length,
+        freeUsersUpdated: updateCount,
+        nonFreeUsersSkipped: skippedCount,
+        timestamp: new Date().toISOString()
+      });
+
       return {
         totalUsers: users.length,
         updatedUsers: updateCount,
+        skippedUsers: skippedCount,
         results: results
       };
 
     } catch (error) {
-      console.error('Error in mass daily credits update:', error);
+      console.error('Error in mass daily credits reset:', error);
       throw error;
     }
   }

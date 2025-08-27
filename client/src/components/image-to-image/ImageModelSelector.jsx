@@ -2,6 +2,8 @@ import React from 'react';
 import { IMAGE_AI_MODELS } from '../../constants/image-to-image.constants';
 
 const ImageModelSelector = ({ selectedModel, onModelChange }) => {
+  const selectedModelData = Object.values(IMAGE_AI_MODELS).find(model => model.id === selectedModel);
+  
   return (
     <div className="space-y-3">
       <h3 className="text-sm font-medium text-gray-700">AI Model</h3>
@@ -27,6 +29,12 @@ const ImageModelSelector = ({ selectedModel, onModelChange }) => {
           </button>
         ))}
       </div>
+      {/* Price display under buttons */}
+      {selectedModelData && (
+        <div className="text-center text-sm text-primary-600 font-medium">
+          {selectedModelData.credits} credits per generation
+        </div>
+      )}
     </div>
   );
 };

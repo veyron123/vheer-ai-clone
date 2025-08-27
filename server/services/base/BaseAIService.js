@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import crypto from 'crypto';
 import logger from '../../utils/logger.js';
 import CacheService from '../CacheService.js';
 
@@ -269,7 +270,7 @@ class BaseAIService {
     ].filter(Boolean).join(':');
     
     // Simple hash for shorter keys
-    const hash = require('crypto')
+    const hash = crypto
       .createHash('md5')
       .update(normalized)
       .digest('hex');

@@ -1,5 +1,6 @@
 import { getApiUrl } from '../config/api.config';
 import { useAuthStore } from '../stores/authStore';
+import { generateWithNanoBanana } from './nanoBananaGeneration';
 
 /**
  * Generate image from text using Qwen Image
@@ -213,12 +214,25 @@ export async function generateWithGPTTextToImage(prompt, negativePrompt = '', st
  * @param {string} prompt - The text prompt for generation
  * @param {string} negativePrompt - Negative prompt for generation
  * @param {string} style - Style for generation
- * @param {string} aiModel - AI model to use ('gpt-image' or 'qwen-image')
+ * @param {string} aiModel - AI model to use ('gpt-image', 'qwen-image', or 'nano-banana')
  * @param {string} aspectRatio - Aspect ratio for generation
  * @param {string} baseImage - Base image for image-to-image generation
  * @returns {Promise} Generated image data
  */
 export async function generateTextToImage(prompt, negativePrompt = '', style = 'none', aiModel = 'qwen-image', aspectRatio = '1:1', abortSignal = null, baseImage = null, advancedSettings = null) {
+  // Use Nano-Banana for text-to-image generation
+  if (aiModel === 'nano-banana') {
+    const result = await generateWithNanoBanana(prompt, style, aspectRatio, abortSignal);
+    return {
+      images: [{
+        url: result.url,
+        width: 1024,
+        height: 1024,
+        content_type: 'image/png'
+      }]
+    };
+  }
+  
   // Use Qwen Image for text-to-image generation
   if (aiModel === 'qwen-image') {
     return await generateWithQwenTextToImage(prompt, negativePrompt, style, aspectRatio, abortSignal, baseImage, advancedSettings);

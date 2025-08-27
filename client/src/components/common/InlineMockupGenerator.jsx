@@ -1,7 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Frame, ShoppingCart, Maximize, X, ChevronUp, ChevronDown, Palette, Ruler } from 'lucide-react';
+import { Frame, ShoppingCart, Maximize, X, ChevronUp, ChevronDown, Palette, Ruler, ZoomIn } from 'lucide-react';
 import useCartStore from '../../stores/cartStore';
 import toast from 'react-hot-toast';
+import { viewImage } from '../../utils/downloadUtils';
 
 const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
   // DEBUG: Логируем когда получаем новое изображение для мокапа
@@ -35,6 +36,10 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewImageData, setPreviewImageData] = useState(null);
+  const [previewTitle, setPreviewTitle] = useState('');
+  const [previewType, setPreviewType] = useState(''); // 'frame' or 'original'
   
   // Debug isVisible changes
   useEffect(() => {
@@ -61,7 +66,14 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       '6x8': 0.26,   // 26%
       '12x16': 0.43, // 43%
       '18x24': 0.40, // 40%
-      '24x32': 0.47  // 47%
+      '24x32': 0.47, // 47%
+      '8x6': 0.22,   // 22% - для 4:3 (обновлено)
+      '24x18': 0.42, // 42% - для 4:3 (обновлено)
+      '32x24': 0.44, // 44% - для 4:3 (обновлено)
+      '10x10': 0.85, // 85% - для 1:1
+      '12x12': 0.85, // 85% - для 1:1
+      '16x16': 0.85, // 85% - для 1:1
+      '18x18': 0.85  // 85% - для 1:1
     };
     
     return defaultScales[selectedSize] || 0.9; // Основной canvas теперь 90%
@@ -86,7 +98,14 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       '6x8': { x: -5, y: -22 },  // X=-5px, Y=-22px
       '12x16': { x: -4, y: -39 }, // X=-4px, Y=-39px
       '18x24': { x: 0, y: -41 }, // Y=-41px
-      '24x32': { x: 0, y: -70 }  // Y=-70px
+      '24x32': { x: 0, y: -70 }, // Y=-70px
+      '8x6': { x: -11, y: -58 },     // X=-11px, Y=-58px - для 4:3 (обновлено)
+      '24x18': { x: -5, y: -122 },   // X=-5px, Y=-122px - для 4:3 (обновлено)
+      '32x24': { x: -7, y: -177 },   // X=-7px, Y=-177px - для 4:3 (обновлено)
+      '10x10': { x: 0, y: 0 },   // Центрированно - для 1:1
+      '12x12': { x: 0, y: 0 },   // Центрированно - для 1:1
+      '16x16': { x: 0, y: 0 },   // Центрированно - для 1:1
+      '18x18': { x: 0, y: 0 }    // Центрированно - для 1:1
     };
     
     return defaultPositions[selectedSize] || { x: 0, y: 0 }; // По умолчанию центрировано
@@ -137,7 +156,6 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
     ],
     '4:3': [
       { id: '8x6', name: '8"×6"', price: 1 },
-      { id: '16x12', name: '16"×12"', price: 1 },
       { id: '24x18', name: '24"×18"', price: 1 },
       { id: '32x24', name: '32"×24"', price: 1 }
     ]
@@ -181,8 +199,20 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         folderName = 'Frames 4-3';
         const sizeFormattedLandscape = size.replace('x', '-');
         if (previewType === 'context') {
-          // Для контекстного предпросмотра: "8-6-Context-Preview.png" (если есть)
-          filename = `${sizeFormattedLandscape}-Context-Preview.png`;
+          // Для контекстного предпросмотра используем специфичные Context изображения
+          // 8x6 -> Context 1, 8_ x 6_ (Horizontal).png
+          // 24x18 -> Context 1, 24″ x 18″ (Horizontal).png
+          // 32x24 -> Context 1, 32_ x 24_ (Horizontal).png
+          if (size === '8x6') {
+            filename = 'Context 1, 8_ x 6_ (Horizontal).png';
+          } else if (size === '24x18') {
+            filename = 'Context 1, 24″ x 18″ (Horizontal).png';
+          } else if (size === '32x24') {
+            filename = 'Context 1, 32_ x 24_ (Horizontal).png';
+          } else {
+            // Fallback для неизвестных размеров
+            filename = `${sizeFormattedLandscape}-Context-Preview.png`;
+          }
         } else {
           // Для основного предпросмотра: "8-6.png"
           filename = `${sizeFormattedLandscape}.png`;
@@ -239,8 +269,23 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         
       case '4:3':
         folderName = 'Frames 4-3';
-        // Для 4:3 используем только размер без цвета: "8-6.png"
-        filename = `${size.replace('x', '-')}.png`;
+        // Для 4:3 используем специфичные изображения для контекста
+        const sizeFormattedLandscape2 = size.replace('x', '-');
+        if (previewType === 'context') {
+          // Используем Context изображения для frame preview
+          if (size === '8x6') {
+            filename = 'Context 1, 8_ x 6_ (Horizontal).png';
+          } else if (size === '24x18') {
+            filename = 'Context 1, 24″ x 18″ (Horizontal).png';
+          } else if (size === '32x24') {
+            filename = 'Context 1, 32_ x 24_ (Horizontal).png';
+          } else {
+            filename = `${sizeFormattedLandscape2}.png`;
+          }
+        } else {
+          // Для основного предпросмотра
+          filename = `${sizeFormattedLandscape2}.png`;
+        }
         break;
         
       default:
@@ -301,8 +346,8 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     
-    // Устанавливаем размер canvas для frame preview (увеличен до 160px)
-    const previewSize = 160;
+    // Устанавливаем размер canvas для frame preview (увеличен до 365px)
+    const previewSize = 365;
     canvas.width = previewSize;
     canvas.height = previewSize;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -318,8 +363,8 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       const drawUserImageInPreview = (img, ctx, canvas, aspectRatio) => {
         ctx.save();
         
-        // Отступы рамки (пропорционально для 160px)
-        const frameMargin = 16; // ~10% от 160px
+        // Отступы рамки (пропорционально для 365px)
+        const frameMargin = 36; // ~10% от 365px
         const innerWidth = canvas.width - (frameMargin * 2);
         const innerHeight = canvas.height - (frameMargin * 2);
         const innerX = frameMargin;
@@ -345,10 +390,11 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
           drawHeight = size;
         }
         
-        // Центрируем изображение с учетом position
+        // Центрируем изображение с учетом position (масштабируем для preview)
         const currentPos = getCurrentPosition();
-        drawX = innerX + (innerWidth - drawWidth) / 2 + (currentPos.x * 0.3); // масштабируем для preview
-        drawY = innerY + (innerHeight - drawHeight) / 2 + (currentPos.y * 0.3); // масштабируем для preview
+        const previewScaleFactor = 0.3; // Коэффициент масштабирования для preview
+        drawX = innerX + (innerWidth - drawWidth) / 2 + (currentPos.x * previewScaleFactor);
+        drawY = innerY + (innerHeight - drawHeight) / 2 + (currentPos.y * previewScaleFactor);
         
         // Рисуем изображение
         ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
@@ -371,8 +417,8 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         // Fallback - простая рамка
         drawUserImageInPreview(userImg, ctx, canvas, autoDetectedRatio);
         ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 4;
-        ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
+        ctx.lineWidth = 9;
+        ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
         console.log('✅ Frame Preview: Fallback rendering completed!');
       };
       
@@ -437,6 +483,17 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
   useEffect(() => {
     setSelectedSize(getDefaultSize(detectedAspectRatio));
   }, [detectedAspectRatio]);
+  
+  // Обновление мокапов при изменении настроек позиционирования и масштаба
+  useEffect(() => {
+    if (imageUrl && isVisible) {
+      // Небольшая задержка для избежания частых перерисовок
+      const timeoutId = setTimeout(() => {
+        setIsLoading(true);
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [scalePerSize, positionPerSize, selectedSize]);
 
   // Рендеринг мокапа
   useEffect(() => {
@@ -550,9 +607,9 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         const innerX = frameMargin;
         const innerY = frameMargin;
         
-        // 🎯 ФИКСИРОВАННЫЕ НАСТРОЙКИ ДЛЯ ОСНОВНОГО CANVAS
-        const mainCanvasScale = 0.85; // увеличенный масштаб 85% для лучшей видимости
-        const mainCanvasPosition = { x: 0, y: 0 }; // центрировано
+        // 🎯 ДИНАМИЧЕСКИЕ НАСТРОЙКИ ДЛЯ ОСНОВНОГО CANVAS
+        const mainCanvasScale = getCurrentScale(); // используем настройки пользователя
+        const mainCanvasPosition = getCurrentPosition(); // используем настройки пользователя
         
         // 🎯 ОПРЕДЕЛЯЕМ КАК ВПИСАТЬ ИЗОБРАЖЕНИЕ В БЕЛУЮ ОБЛАСТЬ
         let drawWidth, drawHeight, drawX, drawY;
@@ -578,7 +635,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
           drawHeight = size;
         }
         
-        // 📍 ЦЕНТРИРУЕМ ИЗОБРАЖЕНИЕ В БЕЛОЙ ОБЛАСТИ (фиксированная позиция)
+        // 📍 ПОЗИЦИОНИРУЕМ ИЗОБРАЖЕНИЕ В БЕЛОЙ ОБЛАСТИ С НАСТРОЙКАМИ ПОЛЬЗОВАТЕЛЯ
         drawX = innerX + (innerWidth - drawWidth) / 2 + mainCanvasPosition.x;
         drawY = innerY + (innerHeight - drawHeight) / 2 + mainCanvasPosition.y;
         
@@ -707,8 +764,8 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         frameImg.src = '/Mockup images/Frames 3-4/6-8.png';
         console.log('🖼️ Using portrait frame for 3:4 image:', frameImg.src);
       } else if (autoDetectedRatio === '4:3') {
-        // Для ландшафтных изображений 4:3
-        frameImg.src = '/Mockup images/Frames 4-3/8-6.png';
+        // Для ландшафтных изображений 4:3 - используем Front, 8_ x 6_ (Horizontal).png
+        frameImg.src = '/Mockup images/Frames 4-3/Front, 8_ x 6_ (Horizontal).png';
         console.log('🖼️ Using landscape frame for 4:3 image:', frameImg.src);
       } else {
         // Fallback
@@ -734,7 +791,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
     console.log('🔄 Main Canvas: useEffect completed setup, waiting for image to load...');
     console.log('🔥 MAIN CANVAS useEffect ENDED - image loading started!');
     
-  }, [imageUrl, detectedAspectRatio, rotation, isVisible]); // Main canvas не зависит от scalePerSize/positionPerSize
+  }, [imageUrl, detectedAspectRatio, rotation, isVisible, scalePerSize, positionPerSize]); // Main canvas теперь зависит от настроек
 
   // Синхронизация мокапа в Frame Preview (только для выбранного размера)
   useEffect(() => {
@@ -744,7 +801,9 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       selectedSize,
       detectedAspectRatio,
       selectedColor,
-      frameCanvasRefReady: frameCanvasRef.current ? 'ready' : 'not ready'
+      frameCanvasRefReady: frameCanvasRef.current ? 'ready' : 'not ready',
+      currentScale: getCurrentScale(),
+      currentPosition: getCurrentPosition()
     });
     
     if (!imageUrl || !isVisible || !selectedSize) {
@@ -783,13 +842,13 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       originalImageUrl: imageUrl,
       frameColor: selectedColor,
       frameColorName: selectedColorData?.name,
-      size: '8x6', // фиксированный размер для основного canvas
-      sizeName: '8"×6"', // фиксированное название
-      price: 1, // фиксированная цена для основного canvas
+      size: selectedSize, // используем выбранный размер
+      sizeName: selectedSizeData?.name || selectedSize, // используем название выбранного размера
+      price: selectedSizeData?.price || 1, // используем цену выбранного размера
       aspectRatio: detectedAspectRatio,
       rotation: rotation,
-      scale: 0.7, // фиксированный scale 70% для основного canvas
-      position: { x: 0, y: 0 }, // фиксированная позиция по центру
+      scale: getCurrentScale(), // используем настройки пользователя
+      position: getCurrentPosition(), // используем настройки пользователя
       type: 'mockup'
     };
     
@@ -819,12 +878,85 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
     link.click();
   };
 
+  // Просмотр мокапа в новом окне
+  const viewMockup = () => {
+    if (!mainCanvasRef.current) return;
+    
+    // Конвертируем canvas в data URL
+    const dataURL = mainCanvasRef.current.toDataURL('image/png');
+    
+    // Открываем в новом окне
+    viewImage(dataURL);
+  };
+
+  // Показать модальное окно с Frame Preview
+  const showFramePreviewModal = () => {
+    if (!frameCanvasRef.current) return;
+    
+    try {
+      // Создаем data URL из canvas
+      const dataURL = frameCanvasRef.current.toDataURL('image/png');
+      setPreviewImageData(dataURL);
+      setPreviewTitle(`Frame Preview - ${currentFrameSizes.find(s => s.id === selectedSize)?.name}`);
+      setPreviewType('frame');
+      setShowPreviewModal(true);
+    } catch (error) {
+      console.error('Error creating preview:', error);
+    }
+  };
+
+  // Показать модальное окно с Frame Preview (то же что и маленькая кнопка)
+  const showOriginalImageModal = () => {
+    if (!frameCanvasRef.current) return;
+    
+    try {
+      // Создаем data URL из Frame Preview canvas (тот же что в маленьком окне)
+      const dataURL = frameCanvasRef.current.toDataURL('image/png');
+      setPreviewImageData(dataURL);
+      setPreviewTitle(`${currentFrameSizes.find(s => s.id === selectedSize)?.name} Frame Preview`);
+      setPreviewType('frame');
+      setShowPreviewModal(true);
+    } catch (error) {
+      console.error('Error creating preview:', error);
+    }
+  };
+
+  // Закрыть модальное окно
+  const closePreviewModal = () => {
+    setShowPreviewModal(false);
+    setPreviewImageData(null);
+    setPreviewTitle('');
+    setPreviewType('');
+  };
+
+  // Обработка клавиш для модального окна
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && showPreviewModal) {
+        closePreviewModal();
+      }
+    };
+
+    if (showPreviewModal) {
+      document.addEventListener('keydown', handleKeyDown);
+      // Блокируем скролл страницы при открытом модальном окне
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showPreviewModal]);
+
   if (!imageUrl) {
     return null;
   }
 
   return (
-    <div className="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <>
+    <div className="relative">
+      <div className="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* Заголовок с кнопкой показать/скрыть */}
       <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-200">
         <div className="flex items-center gap-3">
@@ -951,14 +1083,24 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
                     Frame Preview - {currentFrameSizes.find(s => s.id === selectedSize)?.name}
                   </label>
                   <div className="text-center">
-                    <div className="bg-gray-100 rounded-lg border-2 border-gray-200 overflow-hidden mx-auto" style={{ width: '160px', height: '160px' }}>
+                    <div className="bg-gray-100 rounded-lg border-2 border-gray-200 overflow-hidden mx-auto relative" style={{ width: '365px', height: '365px' }}>
                       <canvas
                         ref={frameCanvasRef}
-                        width={160}
-                        height={160}
+                        width={365}
+                        height={365}
                         className="w-full h-full object-contain"
                         style={{ imageRendering: 'crisp-edges' }}
                       />
+                      {/* View Frame Preview Button */}
+                      {!isLoading && imageUrl && (
+                        <button
+                          onClick={showFramePreviewModal}
+                          className="absolute bottom-2 right-2 p-1.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors shadow-lg"
+                          title="View Frame Preview"
+                        >
+                          <ZoomIn className="w-3 h-3" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -971,7 +1113,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
                   <Ruler className="w-4 h-4 inline mr-1" />
                   Size
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className={`grid ${detectedAspectRatio === '4:3' ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
                   {currentFrameSizes.map((size) => (
                     <button
                       key={size.id}
@@ -989,10 +1131,109 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
                 </div>
               </div>
               
-{/* Position controls are hidden but functionality remains */}
+              {/* Position and Scale Controls */}
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Ruler className="w-4 h-4 inline mr-1" />
+                  Position & Scale
+                </label>
+                
+                {/* X Position */}
+                <div className="flex items-center space-x-3">
+                  <label className="text-xs text-gray-600 w-8">X:</label>
+                  <input
+                    type="number"
+                    value={getCurrentPosition().x}
+                    onChange={(e) => setCurrentPosition({ ...getCurrentPosition(), x: parseInt(e.target.value) || 0 })}
+                    className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    step="1"
+                    placeholder="0"
+                  />
+                  <span className="text-xs text-gray-500">px</span>
+                </div>
+                
+                {/* Y Position */}
+                <div className="flex items-center space-x-3">
+                  <label className="text-xs text-gray-600 w-8">Y:</label>
+                  <input
+                    type="number"
+                    value={getCurrentPosition().y}
+                    onChange={(e) => setCurrentPosition({ ...getCurrentPosition(), y: parseInt(e.target.value) || 0 })}
+                    className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    step="1"
+                    placeholder="0"
+                  />
+                  <span className="text-xs text-gray-500">px</span>
+                </div>
+                
+                {/* Scale */}
+                <div className="flex items-center space-x-3">
+                  <label className="text-xs text-gray-600 w-8">Scale:</label>
+                  <input
+                    type="number"
+                    value={Math.round(getCurrentScale() * 100)}
+                    onChange={(e) => setCurrentScale((parseInt(e.target.value) || 50) / 100)}
+                    className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    step="1"
+                    min="10"
+                    max="200"
+                    placeholder="85"
+                  />
+                  <span className="text-xs text-gray-500">%</span>
+                </div>
+                
+                {/* Reset Button */}
+                <button
+                  onClick={() => {
+                    const defaultPos = {
+                      '6x8': { x: -5, y: -22 },
+                      '12x16': { x: -4, y: -39 },
+                      '18x24': { x: 0, y: -41 },
+                      '24x32': { x: 0, y: -70 },
+                      '8x6': { x: -11, y: -58 },
+                      '24x18': { x: -5, y: -122 },
+                      '32x24': { x: -7, y: -177 },
+                      '10x10': { x: 0, y: 0 },
+                      '12x12': { x: 0, y: 0 },
+                      '16x16': { x: 0, y: 0 },
+                      '18x18': { x: 0, y: 0 }
+                    };
+                    const defaultScales = {
+                      '6x8': 0.26,
+                      '12x16': 0.43,
+                      '18x24': 0.40,
+                      '24x32': 0.47,
+                      '8x6': 0.22,
+                      '24x18': 0.42,
+                      '32x24': 0.44,
+                      '10x10': 0.85,
+                      '12x12': 0.85,
+                      '16x16': 0.85,
+                      '18x18': 0.85
+                    };
+                    setCurrentPosition(defaultPos[selectedSize] || { x: 0, y: 0 });
+                    setCurrentScale(defaultScales[selectedSize] || 0.85);
+                  }}
+                  className="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-colors"
+                >
+                  Reset
+                </button>
+              </div>
 
               {/* Action Buttons */}
-              <div className="pt-4 border-t">
+              <div className="pt-4 border-t space-y-3">
+                {/* View Images Button */}
+                {imageUrl && (
+                  <button
+                    onClick={showOriginalImageModal}
+                    className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 disabled:bg-gray-300 flex items-center justify-center gap-2 transition-colors font-semibold shadow-lg"
+                  >
+                    <ZoomIn className="w-5 h-5" />
+                    VIEW IMAGES
+                  </button>
+                )}
+                
+                {/* Add to Cart Button */}
                 <button
                   onClick={addToCart}
                   disabled={isLoading}
@@ -1006,7 +1247,89 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
           </div>
         </div>
       )}
+      </div>
+
+      {/* Modal for Frame Preview */}
+      {showPreviewModal && previewImageData && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={(e) => {
+            // Закрываем модальное окно при клике по фону
+            if (e.target === e.currentTarget) {
+              closePreviewModal();
+            }
+          }}
+        >
+          <div className="relative bg-white rounded-xl shadow-2xl p-6 w-[50vw] h-[50vw] overflow-auto flex flex-col">
+            {/* Close Button */}
+            <button
+              onClick={closePreviewModal}
+              className="absolute top-4 right-4 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors z-10"
+              title="Close Preview"
+            >
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
+            
+            {/* Header */}
+            <div className="mb-4 pr-12">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {previewTitle}
+              </h3>
+              {previewType === 'original' && (
+                <p className="text-sm text-gray-600 mt-1">
+                  Source image for mockup generation
+                </p>
+              )}
+            </div>
+            
+            {/* Preview Image */}
+            <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-center flex-1 min-h-0">
+              <img
+                src={previewImageData}
+                alt="Frame Preview"
+                className="w-full h-full object-contain rounded"
+                style={{ imageRendering: 'crisp-edges' }}
+              />
+            </div>
+            
+            {/* Actions */}
+            <div className="mt-4 flex justify-between items-center">
+              <div className="text-sm text-gray-500">
+                Click outside or press ESC to close
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    // Download the preview
+                    const link = document.createElement('a');
+                    if (previewType === 'frame') {
+                      link.download = `frame-preview-${selectedSize}-${detectedAspectRatio}.png`;
+                    } else {
+                      link.download = `original-image.png`;
+                    }
+                    link.href = previewImageData;
+                    link.click();
+                  }}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Download
+                </button>
+                <button
+                  onClick={closePreviewModal}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+    </>
   );
 };
 
