@@ -572,13 +572,18 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
           setIsLoading(false);
         };
 
-        // Используем правильные пути к рамкам для каждого соотношения сторон
-        const frameConfigs = {
-          '1:1': '/Mockup images/Frames 1-1/12-12white.png',
-          '3:4': '/Mockup images/Frames 3-4/12-16white.png',
-          '4:3': '/Mockup images/Frames 4-3/Front, 8_ x 6_ (Horizontal).png'
-        };
-        frameImg.src = frameConfigs[autoDetectedRatio] || '/Mockup images/Frames 1-1/12-12white.png';
+        // Используем правильные пути к рамкам для каждого соотношения сторон в зависимости от размера
+        let framePath;
+        if (autoDetectedRatio === '3:4') {
+          // Для 3:4 используем размер в зависимости от selectedSize
+          const sizeFormatted = selectedSize.replace('x', '-');
+          framePath = `/Mockup images/Frames 3-4/${sizeFormatted}.png`;
+        } else if (autoDetectedRatio === '4:3') {
+          framePath = '/Mockup images/Frames 4-3/Front, 8_ x 6_ (Horizontal).png';
+        } else {
+          framePath = '/Mockup images/Frames 1-1/12-12white.png';
+        }
+        frameImg.src = framePath;
       };
 
       userImg.onload = () => {
