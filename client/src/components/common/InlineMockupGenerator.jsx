@@ -1,17 +1,14 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { Frame, ShoppingCart, Maximize, X, ChevronUp, ChevronDown, Palette, Ruler, ZoomIn } from 'lucide-react';
 import useCartStore from '../../stores/cartStore';
 import toast from 'react-hot-toast';
 import { viewImage } from '../../utils/downloadUtils';
 
 const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
-  // DEBUG: Логируем когда получаем новое изображение для мокапа
-  console.log('🖼️ InlineMockupGenerator received imageUrl:', imageUrl ? 'URL provided' : 'no URL', { autoShow, aspectRatio });
   
   // Функция автоматического определения соотношения сторон
   const detectAspectRatio = (width, height) => {
     const ratio = width / height;
-    console.log('🔍 Detecting aspect ratio:', { width, height, ratio });
     
     // Определяем соотношение сторон с небольшой погрешностью
     if (Math.abs(ratio - 1) < 0.1) {
@@ -41,15 +38,6 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
   const [previewTitle, setPreviewTitle] = useState('');
   const [previewType, setPreviewType] = useState(''); // 'frame' or 'original'
   
-  // Debug isVisible changes
-  useEffect(() => {
-    console.log('🔄 isVisible changed to:', isVisible);
-  }, [isVisible]);
-  
-  // Debug isLoading changes
-  useEffect(() => {
-    console.log('🔄 isLoading changed to:', isLoading);
-  }, [isLoading]);
   const [rotation, setRotation] = useState(0);
   // Индивидуальные настройки scale и position для каждого размера
   const [scalePerSize, setScalePerSize] = useState({});
@@ -228,15 +216,6 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
     
     const fullPath = `/Mockup images/${folderName}/${filename}`;
     
-    console.log('🖼️ Frame path with ratio:', { 
-      aspectRatio, 
-      size, 
-      color, 
-      previewType,
-      folderName, 
-      filename, 
-      fullPath 
-    });
     
     return fullPath;
   };
@@ -295,51 +274,36 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         break;
     }
     
-    const fullPath = `/Mockup images/${folderName}/${filename}`;
-    
-    console.log('🖼️ Auto-selected mockup:', { 
-      detectedAspectRatio, 
-      size, 
-      color, 
-      previewType,
-      folderName, 
-      filename, 
-      fullPath 
-    });
-    
-    return fullPath;
+    return `/Mockup images/${folderName}/${filename}`;
   };
 
-  // Конфигурация рамок для разных соотношений сторон
-  const frameConfig = {
-    '1:1': {
-      name: 'Square Frame 1:1',
-      frame: getMockupFramePath(selectedSize, selectedColor),
-    },
-    '3:4': {
-      name: 'Portrait Frame 3:4',
-      frame: getMockupFramePath(selectedSize, selectedColor),
-    },
-    '4:3': {
-      name: 'Landscape Frame 4:3',
-      frame: getMockupFramePath(selectedSize, selectedColor),
-    }
-  };
+  // Мемоизированный путь к frame для избежания повторных вызовов
+  const framePath = useMemo(() => {
+    return getMockupFramePath(selectedSize, selectedColor);
+  }, [selectedSize, selectedColor]);
 
-  const currentFrame = frameConfig[detectedAspectRatio] || frameConfig['1:1'];
+  // Мемоизированная конфигурация рамок
+  const currentFrame = useMemo(() => {
+    const frameConfigs = {
+      '1:1': {
+        name: 'Square Frame 1:1',
+        frame: framePath,
+      },
+      '3:4': {
+        name: 'Portrait Frame 3:4',
+        frame: framePath,
+      },
+      '4:3': {
+        name: 'Landscape Frame 4:3',
+        frame: framePath,
+      }
+    };
+    return frameConfigs[detectedAspectRatio] || frameConfigs['1:1'];
+  }, [detectedAspectRatio, framePath]);
 
   // Функция для создания мокапа в Frame Preview
   const renderFramePreview = (size, canvasRef) => {
-    console.log('🎨 renderFramePreview called:', {
-      size,
-      imageUrl: imageUrl ? 'exists' : 'missing',
-      canvasRefReady: canvasRef.current ? 'ready' : 'not ready',
-      selectedColor,
-      detectedAspectRatio
-    });
-    
     if (!imageUrl || !canvasRef.current) {
-      console.log('❌ renderFramePreview: Early return - missing requirements');
       return;
     }
     
@@ -356,7 +320,6 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
     userImg.crossOrigin = 'anonymous';
     
     userImg.onload = () => {
-      console.log('✅ Frame Preview: User image loaded');
       const autoDetectedRatio = detectAspectRatio(userImg.width, userImg.height);
       
       // Функция для отрисовки изображения в frame preview
@@ -370,6 +333,22 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         const innerX = frameMargin;
         const innerY = frameMargin;
         
+        // Frame Preview использует фиксированные настройки по умолчанию (не зависит от пользовательских настроек)
+        const defaultScales = {
+          '8x6': 0.22,   // 22%
+          '24x18': 0.42, // 42%
+          '32x24': 0.44, // 44%
+        };
+        const defaultPositions = {
+          '8x6': { x: -11, y: -58 },
+          '24x18': { x: -5, y: -122 },
+          '32x24': { x: -7, y: -177 },
+        };
+        
+        // Получаем фиксированные настройки для Frame Preview
+        const previewScale = defaultScales[selectedSize] || 0.85;
+        const previewPosition = defaultPositions[selectedSize] || { x: 0, y: 0 };
+        
         // Определяем размеры изображения
         let drawWidth, drawHeight, drawX, drawY;
         
@@ -378,23 +357,22 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
           const innerAspect = innerWidth / innerHeight;
           
           if (imgAspect > innerAspect) {
-            drawWidth = innerWidth * getCurrentScale();
-            drawHeight = (innerWidth / imgAspect) * getCurrentScale();
+            drawWidth = innerWidth * previewScale;
+            drawHeight = (innerWidth / imgAspect) * previewScale;
           } else {
-            drawHeight = innerHeight * getCurrentScale();
-            drawWidth = (innerHeight * imgAspect) * getCurrentScale();
+            drawHeight = innerHeight * previewScale;
+            drawWidth = (innerHeight * imgAspect) * previewScale;
           }
         } else {
-          const size = Math.min(innerWidth, innerHeight) * getCurrentScale();
+          const size = Math.min(innerWidth, innerHeight) * previewScale;
           drawWidth = size;
           drawHeight = size;
         }
         
-        // Центрируем изображение с учетом position (масштабируем для preview)
-        const currentPos = getCurrentPosition();
-        const previewScaleFactor = 0.3; // Коэффициент масштабирования для preview
-        drawX = innerX + (innerWidth - drawWidth) / 2 + (currentPos.x * previewScaleFactor);
-        drawY = innerY + (innerHeight - drawHeight) / 2 + (currentPos.y * previewScaleFactor);
+        // Центрируем изображение с фиксированными настройками (масштабируем для preview)
+        const previewScaleFactor = 0.3; // Коэффициент масштабирования позиции для preview
+        drawX = innerX + (innerWidth - drawWidth) / 2 + (previewPosition.x * previewScaleFactor);
+        drawY = innerY + (innerHeight - drawHeight) / 2 + (previewPosition.y * previewScaleFactor);
         
         // Рисуем изображение
         ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
@@ -404,27 +382,22 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       // Загружаем рамку для данного размера
       const frameImg = new Image();
       frameImg.onload = () => {
-        console.log('✅ Frame Preview: Context frame loaded:', frameImg.src);
         // Сначала рисуем пользовательское изображение
         drawUserImageInPreview(userImg, ctx, canvas, autoDetectedRatio);
         // Затем рамку поверх
         ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
-        console.log('✅ Frame Preview: Rendering completed!');
       };
       
       frameImg.onerror = (error) => {
-        console.error('❌ Frame Preview: Context frame failed to load:', frameImg.src, error);
         // Fallback - простая рамка
         drawUserImageInPreview(userImg, ctx, canvas, autoDetectedRatio);
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = 9;
         ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
-        console.log('✅ Frame Preview: Fallback rendering completed!');
       };
       
       // Для Frame Preview используем Context изображения
       const contextFramePath = getMockupFramePathWithRatio(size, selectedColor, 'context', autoDetectedRatio);
-      console.log('🖼️ Frame Preview: Loading context frame:', contextFramePath);
       frameImg.src = contextFramePath;
     };
     
@@ -433,49 +406,25 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       ? `/api/image-proxy/proxy?url=${encodeURIComponent(imageUrl)}`
       : imageUrl;
       
-    console.log('🎨 Frame Preview: Using proxied image:', proxiedImageUrlForPreview);
     userImg.src = proxiedImageUrlForPreview;
   };
 
   // Автоматический показ при появлении изображения
   useEffect(() => {
-    console.log('🔍 Auto-show check:', {
-      autoShow,
-      imageUrl: imageUrl ? 'exists' : 'missing',
-      hasShownAuto,
-      willShow: autoShow && imageUrl && !hasShownAuto
-    });
-    
     if (autoShow && imageUrl) {
       if (!hasShownAuto) {
-        console.log('✅ Auto-showing mockup generator (first time)');
         setHasShownAuto(true);
-      } else {
-        console.log('✅ Auto-showing mockup generator (image changed)');
       }
-      
-      // Показываем мокап немедленно для любого нового изображения
-      console.log('🔄 Setting isVisible to TRUE');
       setIsVisible(true);
     }
   }, [imageUrl, autoShow, hasShownAuto]);
 
   // Сброс только при полном удалении изображения
   useEffect(() => {
-    console.log('🔄 Image change detected:', {
-      imageUrl: imageUrl ? 'exists' : 'missing',
-      willReset: !imageUrl
-    });
-    
     if (!imageUrl) {
-      console.log('🧹 Resetting mockup state (no image)');
-      console.log('🔄 Setting isVisible to FALSE');
       setIsVisible(false);
       setHasShownAuto(false);
       setIsExpanded(true);
-    } else {
-      // Когда появляется новое изображение и мокап уже был показан, оставляем его видимым
-      console.log('🔄 New image detected, keeping mockup visible if already shown');
     }
   }, [imageUrl]);
 
@@ -484,347 +433,200 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
     setSelectedSize(getDefaultSize(detectedAspectRatio));
   }, [detectedAspectRatio]);
   
-  // Обновление мокапов при изменении настроек позиционирования и масштаба
-  useEffect(() => {
-    if (imageUrl && isVisible) {
-      // Небольшая задержка для избежания частых перерисовок
-      const timeoutId = setTimeout(() => {
-        setIsLoading(true);
-      }, 100);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [scalePerSize, positionPerSize, selectedSize]);
+  // Мемоизированный ключ для перерисовки основного мокапа
+  const mainCanvasRenderKey = useMemo(() => {
+    if (!imageUrl || !isVisible) return null;
+    return `${imageUrl}_${detectedAspectRatio}_${selectedSize}_${JSON.stringify(scalePerSize[selectedSize])}_${JSON.stringify(positionPerSize[selectedSize])}_${rotation}`;
+  }, [imageUrl, detectedAspectRatio, selectedSize, scalePerSize, positionPerSize, rotation, isVisible]);
 
-  // Рендеринг мокапа
+  // Рендеринг основного мокапа - объединенный useEffect
   useEffect(() => {
-    console.log('🔥 MAIN CANVAS useEffect STARTED!');
-    console.log('🎨 Main Mockup render effect triggered:', { 
-      imageUrl: imageUrl ? 'exists' : 'missing', 
-      isVisible, 
-      detectedAspectRatio,
-      selectedSize,
-      mainCanvasRef: mainCanvasRef.current ? 'ready' : 'not ready'
-    });
-    
-    if (!imageUrl || !isVisible) {
-      console.log('❌ Main Canvas: Stopping render - imageUrl:', imageUrl ? 'exists' : 'missing', 'isVisible:', isVisible);
+    if (!imageUrl || !isVisible || !mainCanvasRef.current) {
       setIsLoading(false);
       return;
     }
-    
-    if (!mainCanvasRef.current) {
-      console.log('❌ Main Canvas: Canvas ref not ready, retrying in 100ms');
-      const timeout = setTimeout(() => {
-        setIsLoading(true);
-      }, 100);
-      return () => clearTimeout(timeout);
-    }
-    
-    const canvas = mainCanvasRef.current;
-    const ctx = canvas.getContext('2d');
-    
-    // 🔍 DEBUG: Проверяем canvas и context
-    console.log('🔍 Canvas details:', {
-      canvas: !!canvas,
-      ctx: !!ctx,
-      canvasWidth: canvas.width,
-      canvasHeight: canvas.height,
-      canvasStyle: canvas.style.width + 'x' + canvas.style.height
-    });
-    
-    // ВРЕМЕННО установим размер - будем менять после загрузки изображения
-    canvas.width = 800; // временный размер
-    canvas.height = 600; // временный размер
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    const userImg = new Image();
-    
-    userImg.onerror = (error) => {
-      console.error('❌ Main Canvas: User image failed to load:', error);
-      const fallbackImg = new Image();
-      fallbackImg.onload = () => {
-        console.log('✅ Main Canvas: Fallback image loaded');
-        renderImageOnCanvas(fallbackImg);
-      };
-      fallbackImg.onerror = () => {
-        console.error('❌ Main Canvas: Fallback image also failed');
-        setIsLoading(false);
-      };
-      fallbackImg.src = imageUrl;
-    };
-    
-    const renderImageOnCanvas = (img) => {
-      console.log('🚀 MAIN CANVAS: renderImageOnCanvas CALLED!');
-      console.log('🎨 Main Canvas: Starting renderImageOnCanvas with:', {
-        imageWidth: img.width,
-        imageHeight: img.height,
-        selectedSize,
-        selectedColor,
-        detectedAspectRatio,
-        imageUrl,
-        isVisible
-      });
+
+    const timeoutId = setTimeout(() => {
+      setIsLoading(true);
       
-      // 📝 РЕВОЛЮЦИОННЫЙ ПОДХОД: Адаптируем размер канваса под изображение!
-      const imageAspectRatio = img.width / img.height;
+      const canvas = mainCanvasRef.current;
+      if (!canvas) return;
       
-      // 🎯 АВТОМАТИЧЕСКОЕ ОПРЕДЕЛЕНИЕ СООТНОШЕНИЯ СТОРОН
-      const autoDetectedRatio = detectAspectRatio(img.width, img.height);
-      console.log('🎯 Aspect ratio analysis:', {
-        currentDetected: detectedAspectRatio,
-        autoDetected: autoDetectedRatio,
-        imageSize: `${img.width}x${img.height}`,
-        imageRatio: (img.width / img.height).toFixed(3),
-        willUpdate: autoDetectedRatio !== detectedAspectRatio
-      });
-      
-      if (autoDetectedRatio !== detectedAspectRatio) {
-        console.log('🔄 Auto-updating aspect ratio:', detectedAspectRatio, '→', autoDetectedRatio);
-        setDetectedAspectRatio(autoDetectedRatio);
-        
-        // 🎯 КРИТИЧЕСКИЙ ФИКС: Также обновляем размер для нового соотношения сторон
-        const newDefaultSize = getDefaultSize(autoDetectedRatio);
-        console.log('🔄 Auto-updating size for aspect ratio change:', selectedSize, '→', newDefaultSize);
-        setSelectedSize(newDefaultSize);
-      }
-      
-      // 🎯 ФИКСИРОВАННЫЙ РАЗМЕР КАНВАСА: ВСЕГДА КВАДРАТНЫЙ 1:1
-      const canvasSize = 500; // Квадратный canvas 500x500
-      const canvasWidth = canvasSize;
-      const canvasHeight = canvasSize;
-      
-      console.log('📐 Canvas dimensions fixed to:', { canvasWidth, canvasHeight, aspectRatio: '1:1' });
-      
-      // 📋 ФУНКЦИЯ ДЛЯ ОТРИСОВКИ ПОЛЬЗОВАТЕЛЬСКОГО ИЗОБРАЖЕНИЯ (ПОД РАМКОЙ)
-      const drawUserImageFirst = (img, ctx, canvas, aspectRatio) => {
-        ctx.save();
-        
-        // 📏 ОПРЕДЕЛЯЕМ РАЗМЕРЫ БЕЛОЙ ОБЛАСТИ ВНУТРИ РАМКИ
-        // Рамка обычно имеет отступы ~10% с каждой стороны
-        const frameMargin = 30; // уменьшенные отступы рамки в пикселях
-        const innerWidth = canvas.width - (frameMargin * 2);
-        const innerHeight = canvas.height - (frameMargin * 2);
-        const innerX = frameMargin;
-        const innerY = frameMargin;
-        
-        // 🎯 ДИНАМИЧЕСКИЕ НАСТРОЙКИ ДЛЯ ОСНОВНОГО CANVAS
-        const mainCanvasScale = getCurrentScale(); // используем настройки пользователя
-        const mainCanvasPosition = getCurrentPosition(); // используем настройки пользователя
-        
-        // 🎯 ОПРЕДЕЛЯЕМ КАК ВПИСАТЬ ИЗОБРАЖЕНИЕ В БЕЛУЮ ОБЛАСТЬ
-        let drawWidth, drawHeight, drawX, drawY;
-        
-        if (aspectRatio === '3:4' || aspectRatio === '4:3') {
-          // Для прямоугольных изображений - вписываем с сохранением пропорций
-          const imgAspect = img.width / img.height;
-          const innerAspect = innerWidth / innerHeight;
-          
-          if (imgAspect > innerAspect) {
-            // Изображение шире - ограничиваем по ширине
-            drawWidth = innerWidth * mainCanvasScale;
-            drawHeight = (innerWidth / imgAspect) * mainCanvasScale;
-          } else {
-            // Изображение выше - ограничиваем по высоте
-            drawHeight = innerHeight * mainCanvasScale;
-            drawWidth = (innerHeight * imgAspect) * mainCanvasScale;
-          }
-        } else {
-          // Для квадратных изображений - используем меньшую сторону
-          const size = Math.min(innerWidth, innerHeight) * mainCanvasScale;
-          drawWidth = size;
-          drawHeight = size;
-        }
-        
-        // 📍 ПОЗИЦИОНИРУЕМ ИЗОБРАЖЕНИЕ В БЕЛОЙ ОБЛАСТИ С НАСТРОЙКАМИ ПОЛЬЗОВАТЕЛЯ
-        drawX = innerX + (innerWidth - drawWidth) / 2 + mainCanvasPosition.x;
-        drawY = innerY + (innerHeight - drawHeight) / 2 + mainCanvasPosition.y;
-        
-        // 🔄 ПРИМЕНЯЕМ ПОВОРОТ ЕСЛИ НУЖНО
-        if (rotation !== 0) {
-          const centerX = drawX + drawWidth / 2;
-          const centerY = drawY + drawHeight / 2;
-          ctx.translate(centerX, centerY);
-          ctx.rotate((rotation * Math.PI) / 180);
-          ctx.translate(-centerX, -centerY);
-        }
-        
-        console.log('🖼️ Main Canvas: Drawing user image first (under frame):', {
-          aspectRatio,
-          innerArea: `${innerWidth}x${innerHeight}`,
-          imageSize: `${drawWidth.toFixed(0)}x${drawHeight.toFixed(0)}`,
-          position: `${drawX.toFixed(0)}, ${drawY.toFixed(0)}`,
-          scale: mainCanvasScale,
-          rotation,
-          note: 'Fixed 85% scale for main canvas'
-        });
-        
-        // 🎨 РИСУЕМ БЕЛЫЙ ФОН ДЛЯ ОБЛАСТИ ИЗОБРАЖЕНИЯ (для лучшей видимости)
-        ctx.fillStyle = 'white';
-        ctx.fillRect(innerX, innerY, innerWidth, innerHeight);
-        
-        // 🎨 РИСУЕМ ИЗОБРАЖЕНИЕ
-        ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
-        
-        ctx.restore();
-      };
-      
-      // 🎯 УСТАНАВЛИВАЕМ ФИКСИРОВАННЫЙ КВАДРАТНЫЙ РАЗМЕР КАНВАСА
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
-      
-      // Очищаем канвас с новыми размерами
+      const ctx = canvas.getContext('2d');
+
+      // Устанавливаем временный размер canvas
+      canvas.width = 800;
+      canvas.height = 600;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      // 🖼️ ЭТАП 1: ЗАГРУЖАЕМ РАМКУ И ОТРИСОВЫВАЕМ ВСЁ
-      const frameImg = new Image();
-      frameImg.onload = () => {
-        console.log('✅ Main Canvas: Frame image loaded successfully:', {
-          src: frameImg.src,
-          aspectRatio: detectedAspectRatio,
-          dimensions: `${frameImg.width}x${frameImg.height}`,
-          selectedSize,
-          selectedColor
-        });
-        
-        // 🖼️ ЭТАП 1: РИСУЕМ ПОЛЬЗОВАТЕЛЬСКОЕ ИЗОБРАЖЕНИЕ СНАЧАЛА
-        console.log('🎨 Main Canvas: Drawing user image first...');
-        console.log('🔍 Main Canvas: Image details:', {
-          imgExists: !!img,
-          imgComplete: img?.complete,
-          imgWidth: img?.width || 'UNDEFINED',
-          imgHeight: img?.height || 'UNDEFINED',
-          canvasWidth: canvas.width,
-          canvasHeight: canvas.height,
-          aspectRatio: autoDetectedRatio
-        });
-        
-        if (!img || !img.complete) {
-          console.error('❌ Main Canvas: User image not ready in frameImg.onload!');
-          return;
-        }
-        
-        drawUserImageFirst(img, ctx, canvas, autoDetectedRatio);
-        
-        // 🎨 ЭТАП 2: РИСУЕМ РАМКУ ПОВЕРХ ИЗОБРАЖЕНИЯ
-        ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
-        
-        console.log('✅ Main Canvas: Frame drawn successfully');
-        console.log('🔍 Canvas state:', {
-          width: canvas.width,
-          height: canvas.height,
-          hasContext: !!ctx,
-          frameImgLoaded: frameImg.complete,
-          userImgLoaded: userImg.complete
-        });
-        
-        // Main canvas rendering completed
-        setIsLoading(false);
+      const userImg = new Image();
+      
+      userImg.onerror = (error) => {
+        const fallbackImg = new Image();
+        fallbackImg.onload = () => {
+          renderImageOnCanvas(fallbackImg);
+        };
+        fallbackImg.onerror = () => {
+          setIsLoading(false);
+        };
+        fallbackImg.src = imageUrl;
       };
-      frameImg.onerror = (error) => {
-        console.error('❌ Main Canvas: Frame image failed to load:', {
-          src: frameImg.src,
-          aspectRatio: detectedAspectRatio,
-          selectedSize,
-          selectedColor,
-          error
-        });
+      
+      const renderImageOnCanvas = (img) => {
+        // Автоматическое определение соотношения сторон
+        const autoDetectedRatio = detectAspectRatio(img.width, img.height);
+
+        if (autoDetectedRatio !== detectedAspectRatio) {
+          setDetectedAspectRatio(autoDetectedRatio);
+          setSelectedSize(getDefaultSize(autoDetectedRatio));
+        }
+
+        // Фиксированный размер canvas
+        const canvasWidth = 500;
+        const canvasHeight = 500;
+
+        // Функция для отрисовки пользовательского изображения под рамкой
+        const drawUserImageFirst = (img, ctx, canvas, aspectRatio) => {
+          ctx.save();
+          
+          // Размеры белой области внутри рамки
+          const frameMargin = 30;
+          const innerWidth = canvas.width - (frameMargin * 2);
+          const innerHeight = canvas.height - (frameMargin * 2);
+          const innerX = frameMargin;
+          const innerY = frameMargin;
+          
+          // Динамические настройки для основного canvas
+          const mainCanvasScale = getCurrentScale();
+          const mainCanvasPosition = getCurrentPosition();
+
+          // Определяем как вписать изображение в белую область
+          let drawWidth, drawHeight, drawX, drawY;
+          
+          if (aspectRatio === '3:4' || aspectRatio === '4:3') {
+            const imgAspect = img.width / img.height;
+            const innerAspect = innerWidth / innerHeight;
+            
+            if (imgAspect > innerAspect) {
+              drawWidth = innerWidth * mainCanvasScale;
+              drawHeight = (innerWidth / imgAspect) * mainCanvasScale;
+            } else {
+              drawHeight = innerHeight * mainCanvasScale;
+              drawWidth = (innerHeight * imgAspect) * mainCanvasScale;
+            }
+          } else {
+            const size = Math.min(innerWidth, innerHeight) * mainCanvasScale;
+            drawWidth = size;
+            drawHeight = size;
+          }
+          
+          // Позиционирование изображения с настройками пользователя
+          drawX = innerX + (innerWidth - drawWidth) / 2 + mainCanvasPosition.x;
+          drawY = innerY + (innerHeight - drawHeight) / 2 + mainCanvasPosition.y;
+          
+          // Применяем поворот если нужно
+          if (rotation !== 0) {
+            const centerX = drawX + drawWidth / 2;
+            const centerY = drawY + drawHeight / 2;
+            ctx.translate(centerX, centerY);
+            ctx.rotate((rotation * Math.PI) / 180);
+            ctx.translate(-centerX, -centerY);
+          }
+
+          // Рисуем белый фон для области изображения
+          ctx.fillStyle = 'white';
+          ctx.fillRect(innerX, innerY, innerWidth, innerHeight);
+          
+          // Рисуем изображение
+          ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+          
+          ctx.restore();
+        };
+
+        // Меняем размер canvas
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        
+        // Очищаем и заливаем серым
+        ctx.fillStyle = '#f5f5f5';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         
         // Сначала рисуем пользовательское изображение
-        console.log('🎨 Main Canvas: Drawing user image (fallback mode)...');
         drawUserImageFirst(img, ctx, canvas, autoDetectedRatio);
         
-        // Затем рисуем простую черную рамку
-        console.warn('🔄 Main Canvas: Falling back to programmatic frame for:', detectedAspectRatio);
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 20;
-        ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
-        ctx.strokeStyle = '#1a1a1a';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
-        
-        console.log('✅ Main Canvas: Fallback rendering completed!');
-        setIsLoading(false);
-      };
-      // 🖼️ ВЫБОР РАМКИ НА ОСНОВЕ АВТОМАТИЧЕСКИ ДЕТЕКТИРОВАННОГО СООТНОШЕНИЯ
-      console.log('🎨 Frame selection logic:', {
-        currentDetected: detectedAspectRatio,
-        autoDetected: autoDetectedRatio,
-        selectedSize,
-        selectedColor,
-        explanation: 'Using autoDetected ratio for immediate frame selection'
-      });
-      
-      // Выбираем правильную рамку в зависимости от соотношения сторон
-      if (autoDetectedRatio === '1:1') {
-        // Для квадратных изображений
-        frameImg.src = '/Mockup images/Frames 1-1/12-12white.png';
-        console.log('🖼️ Using square frame for 1:1 image:', frameImg.src);
-      } else if (autoDetectedRatio === '3:4') {
-        // Для портретных изображений 3:4
-        frameImg.src = '/Mockup images/Frames 3-4/6-8.png';
-        console.log('🖼️ Using portrait frame for 3:4 image:', frameImg.src);
-      } else if (autoDetectedRatio === '4:3') {
-        // Для ландшафтных изображений 4:3 - используем Front, 8_ x 6_ (Horizontal).png
-        frameImg.src = '/Mockup images/Frames 4-3/Front, 8_ x 6_ (Horizontal).png';
-        console.log('🖼️ Using landscape frame for 4:3 image:', frameImg.src);
-      } else {
-        // Fallback
-        frameImg.src = '/Mockup images/Frames 1-1/12-12white.png';
-        console.log('🖼️ Using fallback frame:', frameImg.src);
-      }
-    };
-    
-    // Устанавливаем обработчик успешной загрузки
-    userImg.onload = () => {
-      console.log('✅ Main Canvas: User image loaded successfully');
-      renderImageOnCanvas(userImg);
-    };
-    
-    // Проксируем внешние изображения через наш сервер для обхода CORS
-    const proxiedImageUrl = imageUrl.startsWith('http') 
-      ? `/api/image-proxy/proxy?url=${encodeURIComponent(imageUrl)}`
-      : imageUrl;
-      
-    userImg.crossOrigin = 'anonymous';
-    userImg.src = proxiedImageUrl;
-    console.log('🔄 Main Canvas: Loading user image from:', proxiedImageUrl, '(original:', imageUrl, ')');
-    console.log('🔄 Main Canvas: useEffect completed setup, waiting for image to load...');
-    console.log('🔥 MAIN CANVAS useEffect ENDED - image loading started!');
-    
-  }, [imageUrl, detectedAspectRatio, rotation, isVisible, scalePerSize, positionPerSize]); // Main canvas теперь зависит от настроек
+        // Затем загружаем и рисуем рамку поверх
+        const frameImg = new Image();
+        frameImg.onload = () => {
+          ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+          setIsLoading(false);
+        };
+        frameImg.onerror = (error) => {
+          // Попробуем JPG версию для 4:3
+          if (frameImg.src.includes('.png') && autoDetectedRatio === '4:3') {
+            frameImg.src = '/Mockup images/Frames 4-3/Front, 8_ x 6_ (Horizontal).jpg';
+            return;
+          }
+          
+          // Простая черная рамка в случае ошибки
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 15;
+          ctx.strokeRect(7.5, 7.5, canvas.width - 15, canvas.height - 15);
+          
+          ctx.strokeStyle = '#cccccc';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
+          
+          setIsLoading(false);
+        };
 
-  // Синхронизация мокапа в Frame Preview (только для выбранного размера)
-  useEffect(() => {
-    console.log('🖼️ Frame Preview useEffect triggered:', {
-      imageUrl: imageUrl ? 'exists' : 'missing',
-      isVisible,
-      selectedSize,
-      detectedAspectRatio,
-      selectedColor,
-      frameCanvasRefReady: frameCanvasRef.current ? 'ready' : 'not ready',
-      currentScale: getCurrentScale(),
-      currentPosition: getCurrentPosition()
-    });
-    
-    if (!imageUrl || !isVisible || !selectedSize) {
-      console.log('❌ Frame Preview: Stopping - missing requirements');
+        // Используем getMockupFramePathWithRatio для правильного выбора рамки
+        const frameConfigs = {
+          '1:1': '/Mockup images/Frames 1-1/12-12white.png',
+          '3:4': '/Mockup images/Frames 3-4/12-16white.png',
+          '4:3': '/Mockup images/Frames 4-3/16-12white.png'
+        };
+        frameImg.src = frameConfigs[autoDetectedRatio] || '/Mockup images/Frames 1-1/12-12white.png';
+      };
+
+      userImg.onload = () => {
+        renderImageOnCanvas(userImg);
+      };
+      
+      const proxiedImageUrl = imageUrl.startsWith('http') 
+        ? `/api/image-proxy/proxy?url=${encodeURIComponent(imageUrl)}`
+        : imageUrl;
+        
+      userImg.crossOrigin = 'anonymous';
+      userImg.src = proxiedImageUrl;
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [imageUrl, isVisible, detectedAspectRatio, selectedSize, selectedColor, rotation, scalePerSize, positionPerSize]);
+
+
+  // Мемоизированный ключ для Frame Preview
+  const framePreviewRenderKey = useMemo(() => {
+    if (!imageUrl || !isVisible || !selectedSize) return null;
+    return `${imageUrl}_${detectedAspectRatio}_${selectedSize}_${selectedColor}`;
+  }, [imageUrl, detectedAspectRatio, selectedSize, selectedColor, isVisible]);
+
+  // Мемоизированная функция рендеринга Frame Preview
+  const renderMemoizedFramePreview = useCallback(() => {
+    if (!framePreviewRenderKey || !frameCanvasRef.current) {
       return;
     }
-    
-    console.log('🔄 Frame Preview: Updating for selected size:', selectedSize, '(using Context images)');
-    
-    // Обновляем мокап только для выбранного размера
-    const canvasRef = frameCanvasRef.current;
-    if (canvasRef) {
-      console.log('🎨 Frame Preview: Starting render with timeout...');
-      setTimeout(() => {
-        renderFramePreview(selectedSize, { current: canvasRef });
-      }, 100); // Небольшая задержка для корректного рендеринга
-    } else {
-      console.log('❌ Frame Preview: Canvas ref not ready');
+    renderFramePreview(selectedSize, { current: frameCanvasRef.current });
+  }, [framePreviewRenderKey, selectedSize]);
+
+  // Синхронизация мокапа в Frame Preview
+  useEffect(() => {
+    if (framePreviewRenderKey) {
+      const timeoutId = setTimeout(() => {
+        renderMemoizedFramePreview();
+      }, 100);
+      return () => clearTimeout(timeoutId);
     }
-    
-  }, [imageUrl, detectedAspectRatio, selectedColor, scalePerSize, positionPerSize, rotation, isVisible, selectedSize]);
+  }, [framePreviewRenderKey, renderMemoizedFramePreview]);
 
   const { addItem, openCart } = useCartStore();
 
@@ -901,7 +703,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       setPreviewType('frame');
       setShowPreviewModal(true);
     } catch (error) {
-      console.error('Error creating preview:', error);
+      // Ошибка создания превью
     }
   };
 
@@ -917,7 +719,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       setPreviewType('frame');
       setShowPreviewModal(true);
     } catch (error) {
-      console.error('Error creating preview:', error);
+      // Ошибка создания превью
     }
   };
 
