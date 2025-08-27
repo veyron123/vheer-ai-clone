@@ -49,22 +49,23 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       return scalePerSize[selectedSize];
     }
     
-    // Значения по умолчанию для каждого размера
+    // Значения по умолчанию для каждого размера - всё установлено в 71%
     const defaultScales = {
-      '6x8': 0.26,   // 26%
-      '12x16': 0.43, // 43%
-      '18x24': 0.40, // 40%
-      '24x32': 0.47, // 47%
-      '8x6': 0.22,   // 22% - для 4:3 (обновлено)
-      '24x18': 0.42, // 42% - для 4:3 (обновлено)
-      '32x24': 0.44, // 44% - для 4:3 (обновлено)
-      '10x10': 0.85, // 85% - для 1:1
-      '12x12': 0.85, // 85% - для 1:1
-      '16x16': 0.85, // 85% - для 1:1
-      '18x18': 0.85  // 85% - для 1:1
+      '6x8': 0.71,   // 71%
+      '12x16': 0.71, // 71%
+      '18x24': 0.71, // 71%
+      '24x32': 0.71, // 71%
+      '8x6': 0.71,   // 71% - для 4:3
+      '24x18': 0.71, // 71% - для 4:3
+      '32x24': 0.71, // 71% - для 4:3
+      '10x10': 0.71, // 71% - для 1:1
+      '12x12': 0.71, // 71% - для 1:1
+      '14x14': 0.71, // 71% - для 1:1
+      '16x16': 0.71, // 71% - для 1:1
+      '18x18': 0.71  // 71% - для 1:1
     };
     
-    return defaultScales[selectedSize] || 0.9; // Основной canvas теперь 90%
+    return defaultScales[selectedSize] || 0.71; // По умолчанию 71%
   };
   
   // Функция для установки scale для текущего размера
@@ -81,19 +82,20 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       return positionPerSize[selectedSize];
     }
     
-    // Значения по умолчанию для каждого размера
+    // Значения по умолчанию для каждого размера - всё установлено в X: 0, Y: 0
     const defaultPositions = {
-      '6x8': { x: -5, y: -22 },  // X=-5px, Y=-22px
-      '12x16': { x: -4, y: -39 }, // X=-4px, Y=-39px
-      '18x24': { x: 0, y: -41 }, // Y=-41px
-      '24x32': { x: 0, y: -70 }, // Y=-70px
-      '8x6': { x: -11, y: -58 },     // X=-11px, Y=-58px - для 4:3 (обновлено)
-      '24x18': { x: -5, y: -122 },   // X=-5px, Y=-122px - для 4:3 (обновлено)
-      '32x24': { x: -7, y: -177 },   // X=-7px, Y=-177px - для 4:3 (обновлено)
-      '10x10': { x: 0, y: 0 },   // Центрированно - для 1:1
-      '12x12': { x: 0, y: 0 },   // Центрированно - для 1:1
-      '16x16': { x: 0, y: 0 },   // Центрированно - для 1:1
-      '18x18': { x: 0, y: 0 }    // Центрированно - для 1:1
+      '6x8': { x: 0, y: 0 },    // X=0px, Y=0px
+      '12x16': { x: 0, y: 0 },  // X=0px, Y=0px
+      '18x24': { x: 0, y: 0 },  // X=0px, Y=0px
+      '24x32': { x: 0, y: 0 },  // X=0px, Y=0px
+      '8x6': { x: 0, y: 0 },    // X=0px, Y=0px - для 4:3
+      '24x18': { x: 0, y: 0 },  // X=0px, Y=0px - для 4:3
+      '32x24': { x: 0, y: 0 },  // X=0px, Y=0px - для 4:3
+      '10x10': { x: 0, y: 0 },  // X=0px, Y=0px - для 1:1
+      '12x12': { x: 0, y: 0 },  // X=0px, Y=0px - для 1:1
+      '14x14': { x: 0, y: 0 },  // X=0px, Y=0px - для 1:1
+      '16x16': { x: 0, y: 0 },  // X=0px, Y=0px - для 1:1
+      '18x18': { x: 0, y: 0 }   // X=0px, Y=0px - для 1:1
     };
     
     return defaultPositions[selectedSize] || { x: 0, y: 0 }; // По умолчанию центрировано
@@ -936,94 +938,94 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
                 </div>
               </div>
               
-              {/* Position and Scale Controls */}
-              <div className="space-y-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Ruler className="w-4 h-4 inline mr-1" />
-                  Position & Scale
-                </label>
-                
-                {/* X Position */}
-                <div className="flex items-center space-x-3">
-                  <label className="text-xs text-gray-600 w-8">X:</label>
-                  <input
-                    type="number"
-                    value={getCurrentPosition().x}
-                    onChange={(e) => setCurrentPosition({ ...getCurrentPosition(), x: parseInt(e.target.value) || 0 })}
-                    className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    step="1"
-                    placeholder="0"
-                  />
-                  <span className="text-xs text-gray-500">px</span>
+              {/* Position and Scale Controls - показывается только для 3:4 */}
+              {aspectRatio === '3:4' && (
+                <div className="space-y-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Ruler className="w-4 h-4 inline mr-1" />
+                    Position & Scale
+                  </label>
+                  
+                  <div className="flex items-center space-x-3">
+                    <label className="text-xs text-gray-600 w-8">X:</label>
+                    <input
+                      type="number"
+                      value={getCurrentPosition().x}
+                      onChange={(e) => setCurrentPosition({ ...getCurrentPosition(), x: parseInt(e.target.value) || 0 })}
+                      className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      step="1"
+                      placeholder="0"
+                    />
+                    <span className="text-xs text-gray-500">px</span>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <label className="text-xs text-gray-600 w-8">Y:</label>
+                    <input
+                      type="number"
+                      value={getCurrentPosition().y}
+                      onChange={(e) => setCurrentPosition({ ...getCurrentPosition(), y: parseInt(e.target.value) || 0 })}
+                      className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      step="1"
+                      placeholder="0"
+                    />
+                    <span className="text-xs text-gray-500">px</span>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <label className="text-xs text-gray-600 w-8">Scale:</label>
+                    <input
+                      type="number"
+                      value={Math.round(getCurrentScale() * 100)}
+                      onChange={(e) => setCurrentScale((parseInt(e.target.value) || 50) / 100)}
+                      className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      step="1"
+                      min="10"
+                      max="200"
+                      placeholder="85"
+                    />
+                    <span className="text-xs text-gray-500">%</span>
+                  </div>
+                  
+                  <button
+                    onClick={() => {
+                      const defaultPos = {
+                        '6x8': { x: 0, y: 0 },
+                        '12x16': { x: 0, y: 0 },
+                        '18x24': { x: 0, y: 0 },
+                        '24x32': { x: 0, y: 0 },
+                        '8x6': { x: 0, y: 0 },
+                        '24x18': { x: 0, y: 0 },
+                        '32x24': { x: 0, y: 0 },
+                        '10x10': { x: 0, y: 0 },
+                        '12x12': { x: 0, y: 0 },
+                        '14x14': { x: 0, y: 0 },
+                        '16x16': { x: 0, y: 0 },
+                        '18x18': { x: 0, y: 0 }
+                      };
+                      const defaultScales = {
+                        '6x8': 0.71,
+                        '12x16': 0.71,
+                        '18x24': 0.71,
+                        '24x32': 0.71,
+                        '8x6': 0.71,
+                        '24x18': 0.71,
+                        '32x24': 0.71,
+                        '10x10': 0.71,
+                        '12x12': 0.71,
+                        '14x14': 0.71,
+                        '16x16': 0.71,
+                        '18x18': 0.71
+                      };
+                      setCurrentPosition(defaultPos[selectedSize] || { x: 0, y: 0 });
+                      setCurrentScale(defaultScales[selectedSize] || 0.71);
+                    }}
+                    className="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-colors"
+                  >
+                    Reset
+                  </button>
                 </div>
-                
-                {/* Y Position */}
-                <div className="flex items-center space-x-3">
-                  <label className="text-xs text-gray-600 w-8">Y:</label>
-                  <input
-                    type="number"
-                    value={getCurrentPosition().y}
-                    onChange={(e) => setCurrentPosition({ ...getCurrentPosition(), y: parseInt(e.target.value) || 0 })}
-                    className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    step="1"
-                    placeholder="0"
-                  />
-                  <span className="text-xs text-gray-500">px</span>
-                </div>
-                
-                {/* Scale */}
-                <div className="flex items-center space-x-3">
-                  <label className="text-xs text-gray-600 w-8">Scale:</label>
-                  <input
-                    type="number"
-                    value={Math.round(getCurrentScale() * 100)}
-                    onChange={(e) => setCurrentScale((parseInt(e.target.value) || 50) / 100)}
-                    className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    step="1"
-                    min="10"
-                    max="200"
-                    placeholder="85"
-                  />
-                  <span className="text-xs text-gray-500">%</span>
-                </div>
-                
-                {/* Reset Button */}
-                <button
-                  onClick={() => {
-                    const defaultPos = {
-                      '6x8': { x: -5, y: -22 },
-                      '12x16': { x: -4, y: -39 },
-                      '18x24': { x: 0, y: -41 },
-                      '24x32': { x: 0, y: -70 },
-                      '8x6': { x: -11, y: -58 },
-                      '24x18': { x: -5, y: -122 },
-                      '32x24': { x: -7, y: -177 },
-                      '10x10': { x: 0, y: 0 },
-                      '12x12': { x: 0, y: 0 },
-                      '16x16': { x: 0, y: 0 },
-                      '18x18': { x: 0, y: 0 }
-                    };
-                    const defaultScales = {
-                      '6x8': 0.26,
-                      '12x16': 0.43,
-                      '18x24': 0.40,
-                      '24x32': 0.47,
-                      '8x6': 0.22,
-                      '24x18': 0.42,
-                      '32x24': 0.44,
-                      '10x10': 0.85,
-                      '12x12': 0.85,
-                      '16x16': 0.85,
-                      '18x18': 0.85
-                    };
-                    setCurrentPosition(defaultPos[selectedSize] || { x: 0, y: 0 });
-                    setCurrentScale(defaultScales[selectedSize] || 0.85);
-                  }}
-                  className="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-colors"
-                >
-                  Reset
-                </button>
-              </div>
+              )}
 
               {/* Action Buttons */}
               <div className="pt-4 border-t space-y-3">

@@ -5,7 +5,7 @@ const MockupGenerator = ({ imageUrl, aspectRatio, onClose }) => {
   const canvasRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [rotation, setRotation] = useState(0);
-  const [scale, setScale] = useState(0.7);
+  const [scale, setScale] = useState(0.71);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   // Конфигурация рамок
@@ -16,6 +16,13 @@ const MockupGenerator = ({ imageUrl, aspectRatio, onClose }) => {
       height: 600,
       frame: '/mockups/frame-1x1.png',
       screen: { x: 50, y: 50, width: 500, height: 500 }
+    },
+    '3:4': {
+      name: 'Portrait Frame 3:4',
+      width: 600,
+      height: 800,
+      frame: '/mockups/frame-3x4.png',
+      screen: { x: 60, y: 80, width: 480, height: 640 }
     },
     '4:3': {
       name: 'Landscape Frame 4:3',
@@ -257,7 +264,7 @@ const MockupGenerator = ({ imageUrl, aspectRatio, onClose }) => {
                   onClick={() => {
                     setRotation(0);
                     setPosition({ x: 0, y: 0 });
-                    setScale(0.7);
+                    setScale(0.71);
                   }}
                   className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                 >
