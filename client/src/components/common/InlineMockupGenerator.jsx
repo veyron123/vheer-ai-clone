@@ -551,12 +551,12 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         ctx.fillStyle = '#f5f5f5';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Сначала рисуем пользовательское изображение
-        drawUserImageFirst(img, ctx, canvas, autoDetectedRatio);
-        
-        // Затем загружаем и рисуем рамку поверх
+        // Загружаем рамку, а затем рисуем изображение и рамку
         const frameImg = new Image();
         frameImg.onload = () => {
+          // Сначала рисуем пользовательское изображение
+          drawUserImageFirst(img, ctx, canvas, autoDetectedRatio);
+          // Затем рисуем рамку поверх
           ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
           setIsLoading(false);
         };
@@ -567,7 +567,10 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
             return;
           }
           
-          // Простая черная рамка в случае ошибки
+          // Сначала рисуем пользовательское изображение
+          drawUserImageFirst(img, ctx, canvas, autoDetectedRatio);
+          
+          // Затем простая черная рамка в случае ошибки
           ctx.strokeStyle = '#000000';
           ctx.lineWidth = 15;
           ctx.strokeRect(7.5, 7.5, canvas.width - 15, canvas.height - 15);
@@ -579,11 +582,11 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
           setIsLoading(false);
         };
 
-        // Используем getMockupFramePathWithRatio для правильного выбора рамки
+        // Используем правильные пути к рамкам для каждого соотношения сторон
         const frameConfigs = {
           '1:1': '/Mockup images/Frames 1-1/12-12white.png',
           '3:4': '/Mockup images/Frames 3-4/12-16white.png',
-          '4:3': '/Mockup images/Frames 4-3/16-12white.png'
+          '4:3': '/Mockup images/Frames 4-3/Front, 8_ x 6_ (Horizontal).png'
         };
         frameImg.src = frameConfigs[autoDetectedRatio] || '/Mockup images/Frames 1-1/12-12white.png';
       };
