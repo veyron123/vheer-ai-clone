@@ -49,12 +49,12 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       return scalePerSize[selectedSize];
     }
     
-    // Значения по умолчанию для каждого размера - всё установлено в 71%
+    // Значения по умолчанию для каждого размера - специфичные настройки для Frame Preview
     const defaultScales = {
-      '6x8': 0.71,   // 71%
-      '12x16': 0.71, // 71%
-      '18x24': 0.71, // 71%
-      '24x32': 0.71, // 71%
+      '6x8': 0.25,   // 25% - для Frame Preview 3:4
+      '12x16': 0.47, // 47% - для Frame Preview 3:4
+      '18x24': 0.43, // 43% - для Frame Preview 3:4
+      '24x32': 0.49, // 49% - для Frame Preview 3:4
       '8x6': 0.71,   // 71% - для 4:3
       '24x18': 0.71, // 71% - для 4:3
       '32x24': 0.71, // 71% - для 4:3
@@ -65,7 +65,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       '18x18': 0.71  // 71% - для 1:1
     };
     
-    return defaultScales[selectedSize] || 0.71; // По умолчанию 71%
+    return defaultScales[selectedSize] || 0.71; // По умолчанию 71% (как в Mockup Generator 4:3)
   };
   
   // Функция для установки scale для текущего размера
@@ -82,23 +82,23 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       return positionPerSize[selectedSize];
     }
     
-    // Значения по умолчанию для каждого размера - всё установлено в X: 0, Y: 0
+    // Значения по умолчанию для каждого размера - специфичные настройки для Frame Preview
     const defaultPositions = {
-      '6x8': { x: 0, y: 0 },    // X=0px, Y=0px
-      '12x16': { x: 0, y: 0 },  // X=0px, Y=0px
-      '18x24': { x: 0, y: 0 },  // X=0px, Y=0px
-      '24x32': { x: 0, y: 0 },  // X=0px, Y=0px
-      '8x6': { x: 0, y: 0 },    // X=0px, Y=0px - для 4:3
-      '24x18': { x: 0, y: 0 },  // X=0px, Y=0px - для 4:3
-      '32x24': { x: 0, y: 0 },  // X=0px, Y=0px - для 4:3
-      '10x10': { x: 0, y: 0 },  // X=0px, Y=0px - для 1:1
-      '12x12': { x: 0, y: 0 },  // X=0px, Y=0px - для 1:1
-      '14x14': { x: 0, y: 0 },  // X=0px, Y=0px - для 1:1
-      '16x16': { x: 0, y: 0 },  // X=0px, Y=0px - для 1:1
-      '18x18': { x: 0, y: 0 }   // X=0px, Y=0px - для 1:1
+      '6x8': { x: -2, y: -20 },   // X=-2px, Y=-20px - для Frame Preview 3:4
+      '12x16': { x: -3, y: -33 }, // X=-3px, Y=-33px - для Frame Preview 3:4
+      '18x24': { x: -1, y: -37 }, // X=-1px, Y=-37px - для Frame Preview 3:4
+      '24x32': { x: -3, y: -5 },  // X=-3px, Y=-5px - для Frame Preview 3:4
+      '8x6': { x: 0, y: 0 },      // X=0px, Y=0px - для 4:3
+      '24x18': { x: 0, y: 0 },    // X=0px, Y=0px - для 4:3
+      '32x24': { x: 0, y: 0 },    // X=0px, Y=0px - для 4:3
+      '10x10': { x: 0, y: 0 },    // X=0px, Y=0px - для 1:1
+      '12x12': { x: 0, y: 0 },    // X=0px, Y=0px - для 1:1
+      '14x14': { x: 0, y: 0 },    // X=0px, Y=0px - для 1:1
+      '16x16': { x: 0, y: 0 },    // X=0px, Y=0px - для 1:1
+      '18x18': { x: 0, y: 0 }     // X=0px, Y=0px - для 1:1
     };
     
-    return defaultPositions[selectedSize] || { x: 0, y: 0 }; // По умолчанию центрировано
+    return defaultPositions[selectedSize] || { x: 0, y: 0 }; // По умолчанию центрировано (как в Mockup Generator 4:3)
   };
   
   // Функция для установки position для текущего размера
@@ -978,32 +978,32 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
                   <button
                     onClick={() => {
                       const defaultPos = {
-                        '6x8': { x: 0, y: 0 },
-                        '12x16': { x: 0, y: 0 },
-                        '18x24': { x: 0, y: 0 },
-                        '24x32': { x: 0, y: 0 },
-                        '8x6': { x: 0, y: 0 },
-                        '24x18': { x: 0, y: 0 },
-                        '32x24': { x: 0, y: 0 },
-                        '10x10': { x: 0, y: 0 },
-                        '12x12': { x: 0, y: 0 },
-                        '14x14': { x: 0, y: 0 },
-                        '16x16': { x: 0, y: 0 },
-                        '18x18': { x: 0, y: 0 }
+                        '6x8': { x: -2, y: -20 },   // Специфичные настройки для Frame Preview 3:4
+                        '12x16': { x: -3, y: -33 }, // Специфичные настройки для Frame Preview 3:4
+                        '18x24': { x: -1, y: -37 }, // Специфичные настройки для Frame Preview 3:4
+                        '24x32': { x: -3, y: -5 },  // Специфичные настройки для Frame Preview 3:4
+                        '8x6': { x: 0, y: 0 },      // Для 4:3
+                        '24x18': { x: 0, y: 0 },    // Для 4:3
+                        '32x24': { x: 0, y: 0 },    // Для 4:3
+                        '10x10': { x: 0, y: 0 },    // Для 1:1
+                        '12x12': { x: 0, y: 0 },    // Для 1:1
+                        '14x14': { x: 0, y: 0 },    // Для 1:1
+                        '16x16': { x: 0, y: 0 },    // Для 1:1
+                        '18x18': { x: 0, y: 0 }     // Для 1:1
                       };
                       const defaultScales = {
-                        '6x8': 0.71,
-                        '12x16': 0.71,
-                        '18x24': 0.71,
-                        '24x32': 0.71,
-                        '8x6': 0.71,
-                        '24x18': 0.71,
-                        '32x24': 0.71,
-                        '10x10': 0.71,
-                        '12x12': 0.71,
-                        '14x14': 0.71,
-                        '16x16': 0.71,
-                        '18x18': 0.71
+                        '6x8': 0.25,   // 25% для Frame Preview 3:4
+                        '12x16': 0.47, // 47% для Frame Preview 3:4
+                        '18x24': 0.43, // 43% для Frame Preview 3:4
+                        '24x32': 0.49, // 49% для Frame Preview 3:4
+                        '8x6': 0.71,   // Для 4:3
+                        '24x18': 0.71, // Для 4:3
+                        '32x24': 0.71, // Для 4:3
+                        '10x10': 0.71, // Для 1:1
+                        '12x12': 0.71, // Для 1:1
+                        '14x14': 0.71, // Для 1:1
+                        '16x16': 0.71, // Для 1:1
+                        '18x18': 0.71  // Для 1:1
                       };
                       setCurrentPosition(defaultPos[selectedSize] || { x: 0, y: 0 });
                       setCurrentScale(defaultScales[selectedSize] || 0.71);
