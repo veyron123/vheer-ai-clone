@@ -335,33 +335,10 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         const innerX = frameMargin;
         const innerY = frameMargin;
         
-        // Frame Preview использует фиксированные настройки по умолчанию (не зависит от пользовательских настроек)
-        const defaultScales = {
-          // Настройки для 4:3 (ландшафт)
-          '8x6': 0.22,   // 22%
-          '24x18': 0.42, // 42%
-          '32x24': 0.44, // 44%
-          // Настройки для 3:4 (портрет) - такие же как для 4:3
-          '6x8': 0.22,   // 22%
-          '12x16': 0.42, // 42%
-          '18x24': 0.44, // 44%
-          '24x32': 0.44, // 44%
-        };
-        const defaultPositions = {
-          // Позиции для 4:3 (ландшафт)
-          '8x6': { x: -11, y: -58 },
-          '24x18': { x: -5, y: -122 },
-          '32x24': { x: -7, y: -177 },
-          // Позиции для 3:4 (портрет) - такие же как для 4:3
-          '6x8': { x: -11, y: -58 },
-          '12x16': { x: -5, y: -122 },
-          '18x24': { x: -7, y: -177 },
-          '24x32': { x: -7, y: -177 },
-        };
-        
-        // Получаем фиксированные настройки для Frame Preview
-        const previewScale = defaultScales[selectedSize] || 0.85;
-        const previewPosition = defaultPositions[selectedSize] || { x: 0, y: 0 };
+        // Frame Preview теперь использует пользовательские настройки позиционирования
+        // Получаем текущие настройки пользователя для Frame Preview
+        const previewScale = getCurrentScale(); // Используем пользовательские настройки scale
+        const previewPosition = getCurrentPosition(); // Используем пользовательские настройки position
         
         // Определяем размеры изображения
         let drawWidth, drawHeight, drawX, drawY;
@@ -383,10 +360,9 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
           drawHeight = size;
         }
         
-        // Центрируем изображение с фиксированными настройками (масштабируем для preview)
-        const previewScaleFactor = 0.3; // Коэффициент масштабирования позиции для preview
-        drawX = innerX + (innerWidth - drawWidth) / 2 + (previewPosition.x * previewScaleFactor);
-        drawY = innerY + (innerHeight - drawHeight) / 2 + (previewPosition.y * previewScaleFactor);
+        // Центрируем изображение с пользовательскими настройками
+        drawX = innerX + (innerWidth - drawWidth) / 2 + previewPosition.x;
+        drawY = innerY + (innerHeight - drawHeight) / 2 + previewPosition.y;
         
         // Рисуем изображение
         ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
@@ -624,8 +600,8 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
   // Мемоизированный ключ для Frame Preview
   const framePreviewRenderKey = useMemo(() => {
     if (!imageUrl || !isVisible || !selectedSize) return null;
-    return `${imageUrl}_${detectedAspectRatio}_${selectedSize}_${selectedColor}`;
-  }, [imageUrl, detectedAspectRatio, selectedSize, selectedColor, isVisible]);
+    return `${imageUrl}_${detectedAspectRatio}_${selectedSize}_${selectedColor}_${JSON.stringify(scalePerSize[selectedSize])}_${JSON.stringify(positionPerSize[selectedSize])}`;
+  }, [imageUrl, detectedAspectRatio, selectedSize, selectedColor, isVisible, scalePerSize, positionPerSize]);
 
   // Мемоизированная функция рендеринга Frame Preview
   const renderMemoizedFramePreview = useCallback(() => {
