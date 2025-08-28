@@ -679,7 +679,7 @@ export const initializeCartPayment = async (req, res) => {
       console.log('👤 Created temporary guest user for payment:', userId);
     }
     
-    // Store cart order in database with detailed cart items
+    // Store cart order in database
     const payment = await prisma.payment.create({
       data: {
         userId: userId, // Now always has a valid userId
@@ -687,20 +687,33 @@ export const initializeCartPayment = async (req, res) => {
         currency: currency,
         status: 'PENDING',
         description: `Cart payment - ${productNames.join(', ')}`,
-        wayforpayOrderReference: orderReference,
-        cartItems: items.map(item => ({
-          ...item,
-          // Ensure all item properties are preserved
-          frameColor: item.frameColor || item.frameColorName,
-          size: item.size || item.sizeName,
-          originalData: item // Keep full original data as backup
-        })),
-        // Store user info if available
-        metadata: {
-          userEmail: userEmail,
-          userName: userName,
-          isGuest: !req.user?.id
-        }
+        wayforpayOrderReference: orderReference
+      }
+    });
+    
+    // Store cart items and metadata separately in memory for callback use
+    const paymentMetadata = {
+      cartItems: items.map(item => ({
+        ...item,
+        // Ensure all item properties are preserved
+        frameColor: item.frameColor || item.frameColorName,
+        size: item.size || item.sizeName,
+        originalData: item // Keep full original data as backup
+      })),
+      userEmail: userEmail,
+      userName: userName,
+      isGuest: !req.user?.id
+    };
+    
+    // Store in a temporary cache (you could use Redis or in-memory Map)
+    // For now, we'll store it in the payment description as JSON
+    await prisma.payment.update({
+      where: { id: payment.id },
+      data: {
+        description: JSON.stringify({
+          text: `Cart payment - ${productNames.join(', ')}`,
+          metadata: paymentMetadata
+        })
       }
     });
     
@@ -884,6 +897,19 @@ export const handleCartCallback = async (req, res) => {
       }
     });
     
+    // Parse metadata from description if stored as JSON
+    let paymentMetadata = null;
+    if (payment && payment.description) {
+      try {
+        const parsed = JSON.parse(payment.description);
+        if (parsed.metadata) {
+          paymentMetadata = parsed.metadata;
+        }
+      } catch (e) {
+        // Description is not JSON, ignore
+      }
+    }
+    
     if (!payment) {
       console.error('❌ Payment record not found for orderReference:', orderReference);
       return res.status(404).json({ 
@@ -944,12 +970,12 @@ export const handleCartCallback = async (req, res) => {
       
       // Create order record with full customer and product details
       try {
-        // Build cart items array - use saved cart items from payment record
+        // Build cart items array - use saved cart items from metadata
         let items = [];
         
-        // Use saved cart items from payment record
-        if (payment.cartItems && Array.isArray(payment.cartItems)) {
-          items = payment.cartItems.map(item => {
+        // Use saved cart items from payment metadata
+        if (paymentMetadata && paymentMetadata.cartItems && Array.isArray(paymentMetadata.cartItems)) {
+          items = paymentMetadata.cartItems.map(item => {
             // Restore original item structure
             const originalItem = item.originalData || item;
             return {
@@ -961,7 +987,7 @@ export const handleCartCallback = async (req, res) => {
               ...originalItem // Include all other properties
             };
           });
-          console.log('✅ Using detailed cart items from payment record:', items);
+          console.log('✅ Using detailed cart items from payment metadata:', items);
         } 
         // Fallback to WayForPay product data if no saved items
         else if (productName && productCount && productPrice) {
@@ -986,7 +1012,7 @@ export const handleCartCallback = async (req, res) => {
         }
         
         // Update guest user with real customer data if available
-        if (payment.metadata && payment.metadata.isGuest && parsedEmail) {
+        if (paymentMetadata && paymentMetadata.isGuest && parsedEmail) {
           try {
             const fullName = parsedFirstName || parsedLastName 
               ? `${parsedFirstName || ''} ${parsedLastName || ''}`.trim() 
@@ -1022,17 +1048,17 @@ export const handleCartCallback = async (req, res) => {
             cardPan,
             
             // Customer information - use parsed data from WayForPay or payment metadata
-            customerFirstName: parsedFirstName || payment.metadata?.userName?.split(' ')[0] || '',
-            customerLastName: parsedLastName || payment.metadata?.userName?.split(' ')[1] || '',
-            customerEmail: parsedEmail || payment.metadata?.userEmail || `${orderReference}@order.com`,
+            customerFirstName: parsedFirstName || paymentMetadata?.userName?.split(' ')[0] || '',
+            customerLastName: parsedLastName || paymentMetadata?.userName?.split(' ')[1] || '',
+            customerEmail: parsedEmail || paymentMetadata?.userEmail || `${orderReference}@order.com`,
             customerPhone: parsedPhone || '',
             customerAddress: clientAddress || '',
             customerCity: clientCity || '',
             customerCountry: clientCountry || '',
             
             // Shipping address
-            shippingFirstName: deliveryFirstName || parsedFirstName || payment.metadata?.userName?.split(' ')[0] || '',
-            shippingLastName: deliveryLastName || parsedLastName || payment.metadata?.userName?.split(' ')[1] || '',
+            shippingFirstName: deliveryFirstName || parsedFirstName || paymentMetadata?.userName?.split(' ')[0] || '',
+            shippingLastName: deliveryLastName || parsedLastName || paymentMetadata?.userName?.split(' ')[1] || '',
             shippingAddress: deliveryAddress || clientAddress || '',
             shippingCity: deliveryCity || clientCity || '',
             shippingCountry: deliveryCountry || clientCountry || '',
