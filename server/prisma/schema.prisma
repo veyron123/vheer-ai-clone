@@ -33,6 +33,7 @@ model User {
   payments        Payment[]
   favorites       Favorite[]
   cartOrders      CartOrder[]
+  cartSessions    CartSession[]
 
   @@map("colibrrri_users")
 }
@@ -214,21 +215,24 @@ model Session {
 }
 
 model CartSession {
-  id            String    @id @default(cuid())
-  sessionId     String    @unique
-  userId        String?
-  items         Json      // Array of cart items
-  totalAmount   Float
-  itemCount     Int
-  currency      String    @default("UAH")
-  customerEmail String?
-  userIp        String?
-  userAgent     String?
-  isAbandoned   Boolean   @default(false)
-  isConverted   Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  expiresAt     DateTime?
+  id                    String    @id @default(cuid())
+  sessionId             String    @unique
+  userId                String?
+  user                  User?     @relation(fields: [userId], references: [id])
+  items                 Json      // Array of cart items
+  totalAmount           Float
+  itemCount             Int
+  currency              String    @default("UAH")
+  customerEmail         String?
+  userIp                String?
+  userAgent             String?
+  status                String    @default("active") // active, abandoned, converted
+  lastActivityAt        DateTime  @default(now())
+  abandonedAt           DateTime?
+  convertedToOrderId    String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  expiresAt             DateTime?
 
   @@map("colibrrri_cart_sessions")
 }
