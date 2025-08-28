@@ -38,10 +38,10 @@ const getPlanConfig = (language = 'en') => {
       }
     };
   } else {
-    // English pricing ($ - USD equivalent)  
+    // English pricing (UAH for testing)  
     return {
       BASIC: {
-        amount: 400,
+        amount: 1,
         currency: 'UAH', // WayForPay works in UAH
         credits: 800,
         name: 'Basic Plan',

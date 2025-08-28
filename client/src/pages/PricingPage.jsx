@@ -32,8 +32,8 @@ const PricingPage = () => {
     {
       id: 'BASIC',
       name: 'Basic',
-      price: currentLang === 'uk' ? 1 : 10,
-      currency: currentLang === 'uk' ? '₴' : '$',
+      price: 1,
+      currency: '₴',
       credits: 800,
       features: []
     },
