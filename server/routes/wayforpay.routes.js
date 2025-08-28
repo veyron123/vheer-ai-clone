@@ -188,6 +188,28 @@ router.all('/debug-callback', (req, res) => {
   });
 });
 
+// Temporary logs endpoint to help debug payment issues
+router.get('/recent-logs', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  
+  // This is a basic endpoint - in production you'd want proper log aggregation
+  res.json({
+    message: 'Check Render dashboard logs or server console for detailed payment logs',
+    timestamp: new Date().toISOString(),
+    instructions: [
+      '1. Go to dashboard.render.com',
+      '2. Find colibrrri-fullstack service', 
+      '3. Click on "Logs" tab',
+      '4. Look for 🔍 SUCCESS PAGE logs from recent payments'
+    ],
+    expectedLogPatterns: [
+      '🔍 SUCCESS PAGE - Method:',
+      '🔍 SUCCESS PAGE - All params:',
+      '🔍 SUCCESS PAGE - Detailed status check:'
+    ]
+  });
+});
+
 // Failure page for WayForPay redirects
 router.get('/failure', (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
