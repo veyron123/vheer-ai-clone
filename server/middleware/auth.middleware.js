@@ -20,6 +20,7 @@ export const authenticate = async (req, res, next) => {
         username: true,
         fullName: true,
         avatar: true,
+        role: true,
         subscription: true
       }
     });
@@ -96,15 +97,17 @@ export const checkCredits = async (req, res, next) => {
 
 export const isAdmin = async (req, res, next) => {
   try {
-    // For now, check if user email is in admin list
-    // Later can add role field to User model
+    // Check both role and email for admin access
     const adminEmails = [
       'admin@colibrrri.com',
       'denisbelikin31@gmail.com', // Add your admin email here
       process.env.ADMIN_EMAIL
     ].filter(Boolean);
     
-    if (!req.user || !adminEmails.includes(req.user.email)) {
+    const isAdminByRole = req.user?.role === 'ADMIN';
+    const isAdminByEmail = adminEmails.includes(req.user?.email);
+    
+    if (!req.user || (!isAdminByRole && !isAdminByEmail)) {
       return res.status(403).json({ error: 'Admin access required' });
     }
     

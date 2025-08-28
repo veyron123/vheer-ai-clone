@@ -17,6 +17,7 @@ model User {
   bio             String?
   website         String?
   location        String?
+  role            String    @default("USER") // USER, ADMIN
   totalCredits    Int       @default(100)
   lastCreditUpdate DateTime  @default(now())
   emailVerified   Boolean   @default(false)
