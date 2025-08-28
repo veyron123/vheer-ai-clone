@@ -40,9 +40,32 @@ const handleSuccess = (req, res) => {
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   
   // Get parameters from query (GET) or body (POST)
-  const { orderReference, status } = req.method === 'GET' ? req.query : req.body;
+  const params = req.method === 'GET' ? req.query : req.body;
   
-  if (status === 'Approved') {
+  // Debug: log all received parameters
+  console.log('🔍 SUCCESS PAGE - Method:', req.method);
+  console.log('🔍 SUCCESS PAGE - All params:', JSON.stringify(params, null, 2));
+  console.log('🔍 SUCCESS PAGE - Available keys:', Object.keys(params));
+  
+  // WayForPay может передавать status или transactionStatus
+  const { 
+    orderReference, 
+    status, 
+    transactionStatus, 
+    reasonCode,
+    authCode 
+  } = params;
+  
+  // Определяем финальный статус (WayForPay использует разные поля)
+  const finalStatus = status || transactionStatus;
+  
+  console.log('🔍 SUCCESS PAGE - Final status:', finalStatus);
+  console.log('🔍 SUCCESS PAGE - Order ref:', orderReference);
+  
+  // Определяем правильный frontend URL для редиректа
+  const frontendUrl = process.env.FRONTEND_URL || 'https://vheer-client.onrender.com';
+  
+  if (finalStatus === 'Approved') {
     res.send(`
       <!DOCTYPE html>
       <html>
@@ -62,7 +85,7 @@ const handleSuccess = (req, res) => {
         <div class="redirect">Переносим вас на главную страницу...</div>
         <script>
           setTimeout(() => {
-            window.location.href = 'https://colibrrri-fullstack.onrender.com';
+            window.location.href = '${frontendUrl}';
           }, 3000);
         </script>
       </body>
@@ -84,11 +107,11 @@ const handleSuccess = (req, res) => {
       </head>
       <body>
         <div class="error">❌ Ошибка платежа</div>
-        <div class="info">Статус: ${status || 'Неизвестно'}</div>
+        <div class="info">Статус: ${finalStatus || 'Неизвестно'}</div>
         <div class="redirect">Переносим вас на главную страницу...</div>
         <script>
           setTimeout(() => {
-            window.location.href = 'https://colibrrri-fullstack.onrender.com';
+            window.location.href = '${frontendUrl}';
           }, 3000);
         </script>
       </body>
