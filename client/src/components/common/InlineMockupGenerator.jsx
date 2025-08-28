@@ -132,7 +132,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
   // Конфигурация размеров и цен для разных соотношений сторон
   const frameSizes = {
     '1:1': [
-      { id: '10x10', name: '10"×10"', price: 0.01 },
+      { id: '10x10', name: '10"×10"', price: 1.00 },
       { id: '12x12', name: '12"×12"', price: 80 },
       { id: '14x14', name: '14"×14"', price: 90 },
       { id: '16x16', name: '16"×16"', price: 100 },
