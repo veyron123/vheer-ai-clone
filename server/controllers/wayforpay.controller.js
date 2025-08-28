@@ -986,9 +986,9 @@ export const handleCartCallback = async (req, res) => {
                 { 
                   AND: [
                     { totalAmount: parseFloat(amount) },
-                    { status: 'active' },
+                    { isAbandoned: false }, // Use existing field instead of status
                     { 
-                      lastActivityAt: {
+                      updatedAt: {
                         gte: new Date(Date.now() - 2 * 60 * 60 * 1000) // За последние 2 часа
                       }
                     }
@@ -997,7 +997,7 @@ export const handleCartCallback = async (req, res) => {
               ]
             },
             orderBy: {
-              lastActivityAt: 'desc'
+              updatedAt: 'desc' // Use existing field instead of lastActivityAt
             }
           });
           
