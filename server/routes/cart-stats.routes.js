@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { getCartStats, getAbandonedCartStats, getCarts } from '../controllers/cart-stats.controller.js';
+import { getCartStats, getAbandonedCartStats, getCarts, getCartById } from '../controllers/cart-stats.controller.js';
 
 const router = Router();
 
@@ -8,5 +8,6 @@ const router = Router();
 router.get('/', authenticate, getCarts);
 router.get('/stats', authenticate, getCartStats);
 router.get('/abandoned', authenticate, getAbandonedCartStats);
+router.get('/:id', authenticate, getCartById);
 
 export default router;

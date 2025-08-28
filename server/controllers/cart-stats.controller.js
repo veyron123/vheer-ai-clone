@@ -212,6 +212,88 @@ export const getCarts = async (req, res) => {
 };
 
 /**
+ * Get single cart by ID
+ */
+export const getCartById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const cart = await prisma.cartOrder.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            fullName: true
+          }
+        }
+      }
+    });
+
+    if (!cart) {
+      return res.status(404).json({
+        success: false,
+        message: 'Cart not found'
+      });
+    }
+
+    // Transform to match expected cart format
+    const transformedCart = {
+      id: cart.id,
+      sessionId: cart.orderReference,
+      userId: cart.userId,
+      user: cart.user,
+      items: cart.items,
+      totalAmount: cart.amount,
+      itemCount: Array.isArray(cart.items) ? cart.items.length : 0,
+      currency: cart.currency,
+      customerEmail: cart.customerEmail || cart.user?.email,
+      customerFirstName: cart.customerFirstName,
+      customerLastName: cart.customerLastName,
+      customerPhone: cart.customerPhone,
+      customerAddress: cart.customerAddress,
+      customerCity: cart.customerCity,
+      customerCountry: cart.customerCountry,
+      shippingFirstName: cart.shippingFirstName,
+      shippingLastName: cart.shippingLastName,
+      shippingPhone: cart.shippingPhone,
+      shippingAddress: cart.shippingAddress,
+      shippingCity: cart.shippingCity,
+      shippingCountry: cart.shippingCountry,
+      shippingPostalCode: cart.shippingPostalCode,
+      status: cart.orderStatus,
+      paymentStatus: cart.paymentStatus,
+      orderStatus: cart.orderStatus,
+      adminNotes: cart.adminNotes,
+      trackingNumber: cart.trackingNumber,
+      trackingCarrier: cart.trackingCarrier,
+      createdAt: cart.createdAt,
+      updatedAt: cart.updatedAt,
+      paidAt: cart.paidAt,
+      shippedAt: cart.shippedAt,
+      deliveredAt: cart.deliveredAt,
+      lastActivityAt: cart.updatedAt,
+      isAbandoned: cart.paymentStatus !== 'PAID',
+      isConverted: cart.paymentStatus === 'PAID'
+    };
+
+    res.json({
+      success: true,
+      cart: transformedCart
+    });
+  } catch (error) {
+    console.error('Error fetching cart by ID:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch cart details',
+      error: error.message
+    });
+  }
+};
+
+/**
  * Get abandoned cart statistics (placeholder for now)
  */
 export const getAbandonedCartStats = async (req, res) => {
