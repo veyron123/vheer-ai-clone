@@ -32,13 +32,15 @@ router.post('/cart-checkout', initializeCartPayment);
 router.post('/cart-callback', handleCartCallback);
 
 // Success page for WayForPay redirects (no CORS restrictions)
-router.get('/success', (req, res) => {
+// Handle both GET and POST requests from WayForPay
+const handleSuccess = (req, res) => {
   // Allow any origin for success page
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   
-  const { orderReference, status } = req.query;
+  // Get parameters from query (GET) or body (POST)
+  const { orderReference, status } = req.method === 'GET' ? req.query : req.body;
   
   if (status === 'Approved') {
     res.send(`
@@ -93,7 +95,11 @@ router.get('/success', (req, res) => {
       </html>
     `);
   }
-});
+};
+
+// Register success handler for both GET and POST methods
+router.get('/success', handleSuccess);
+router.post('/success', handleSuccess);
 
 // Failure page for WayForPay redirects
 router.get('/failure', (req, res) => {
