@@ -127,6 +127,91 @@ export const getCartStats = async (req, res) => {
 };
 
 /**
+ * Get list of carts (using CartOrder data for now)
+ */
+export const getCarts = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 20,
+      status = '',
+      sortBy = 'createdAt',
+      sortOrder = 'desc'
+    } = req.query;
+
+    const skip = (page - 1) * limit;
+
+    // Build where clause
+    const where = {};
+    
+    if (status) {
+      where.orderStatus = status;
+    }
+
+    // Get total count
+    const totalCarts = await prisma.cartOrder.count({ where });
+
+    // Get cart orders
+    const carts = await prisma.cartOrder.findMany({
+      where,
+      skip,
+      take: parseInt(limit),
+      orderBy: {
+        [sortBy === 'lastActivityAt' ? 'updatedAt' : sortBy]: sortOrder
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            fullName: true
+          }
+        }
+      }
+    });
+
+    // Transform to match expected cart format
+    const transformedCarts = carts.map(cart => ({
+      id: cart.id,
+      sessionId: cart.orderReference,
+      userId: cart.userId,
+      user: cart.user,
+      items: cart.items,
+      totalAmount: cart.amount,
+      itemCount: Array.isArray(cart.items) ? cart.items.length : 0,
+      currency: cart.currency,
+      customerEmail: cart.customerEmail || cart.user?.email,
+      status: cart.orderStatus,
+      paymentStatus: cart.paymentStatus,
+      createdAt: cart.createdAt,
+      updatedAt: cart.updatedAt,
+      lastActivityAt: cart.updatedAt,
+      isAbandoned: cart.paymentStatus !== 'PAID',
+      isConverted: cart.paymentStatus === 'PAID'
+    }));
+
+    res.json({
+      success: true,
+      carts: transformedCarts,
+      pagination: {
+        total: totalCarts,
+        pages: Math.ceil(totalCarts / limit),
+        currentPage: parseInt(page),
+        limit: parseInt(limit)
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching carts:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch carts',
+      error: error.message
+    });
+  }
+};
+
+/**
  * Get abandoned cart statistics (placeholder for now)
  */
 export const getAbandonedCartStats = async (req, res) => {
