@@ -57,7 +57,11 @@ function getAllowedOrigins() {
       'http://localhost:5177',
       'http://localhost:5178',
       'http://127.0.0.1:3000',
-      'http://127.0.0.1:5173'
+      'http://127.0.0.1:5173',
+      // WayForPay domains for payment callbacks (also needed in development)
+      'https://secure.wayforpay.com',
+      'https://api.wayforpay.com',
+      'https://www.wayforpay.com'
     ];
     
     // Add custom dev origin if specified

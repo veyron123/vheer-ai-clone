@@ -4,12 +4,12 @@ import { getCartStats, getAbandonedCartStats, getCarts, getCartById, updateCartB
 
 const router = Router();
 
-// Cart routes (temporarily without authentication for testing)
-router.get('/', getCarts);
-router.get('/stats', getCartStats);
-router.get('/abandoned', getAbandonedCartStats);
-router.get('/:id', getCartById);
-router.patch('/:id', updateCartById);
-router.put('/:id', updateCartById);
+// Cart routes (require authentication)
+router.get('/', authenticate, getCarts);
+router.get('/stats', authenticate, getCartStats);
+router.get('/abandoned', authenticate, getAbandonedCartStats);
+router.get('/:id', authenticate, getCartById);
+router.patch('/:id', authenticate, updateCartById);
+router.put('/:id', authenticate, updateCartById);
 
 export default router;
