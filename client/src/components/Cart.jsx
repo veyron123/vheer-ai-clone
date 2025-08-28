@@ -164,7 +164,8 @@ const Cart = () => {
       console.log('Cart data for WayForPay:', cartData);
 
       // Call backend to initialize WayForPay payment  
-      const response = await fetch('http://localhost:5000/api/payments/wayforpay/cart-checkout', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${apiUrl}/payments/wayforpay/cart-checkout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

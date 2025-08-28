@@ -33,7 +33,8 @@ const OAuthTest = () => {
 
   const testAPIConnection = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/health');
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${apiUrl}/health`);
       const data = await response.json();
       if (data.status === 'OK') {
         addTestResult('API Connection', 'SUCCESS', 'Server is running');
@@ -50,7 +51,8 @@ const OAuthTest = () => {
   const testOAuthEndpoints = async () => {
     try {
       // Test Google endpoint
-      const googleResponse = await fetch('http://localhost:5000/auth/google', {
+      const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+      const googleResponse = await fetch(`${baseUrl}/auth/google`, {
         method: 'HEAD',
         redirect: 'manual'
       });
@@ -62,7 +64,7 @@ const OAuthTest = () => {
       }
 
       // Test Facebook endpoint
-      const facebookResponse = await fetch('http://localhost:5000/auth/facebook', {
+      const facebookResponse = await fetch(`${baseUrl}/auth/facebook`, {
         method: 'HEAD',
         redirect: 'manual'
       });

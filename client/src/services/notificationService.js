@@ -144,7 +144,8 @@ class NotificationService {
       this.ws.close();
     }
 
-    const wsUrl = `ws://localhost:5000/ws/admin`;
+    const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+    const wsUrl = `${baseUrl.replace('http', 'ws')}/ws/admin`;
     this.ws = new WebSocket(wsUrl);
 
     this.ws.onopen = () => {
