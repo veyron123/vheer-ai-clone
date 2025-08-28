@@ -31,6 +31,7 @@ import wayforpayRoutes from './routes/wayforpay.routes.js';
 import testSubscriptionRoutes from './routes/test-subscription-expiry.js';
 import adminRoutes from './routes/admin.routes.js';
 import ordersRoutes from './routes/orders.routes.js';
+import cartOrdersRoutes from './routes/cartOrders.routes.js';
 import cartTrackingRoutes from './routes/cart-tracking.routes.js';
 import notificationsRoutes from './routes/notifications.routes.js';
 import imageProxyRoutes from './routes/image-proxy.routes.js';
@@ -149,6 +150,7 @@ if (process.env.NODE_ENV === 'development') {
 // Admin routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/orders', ordersRoutes);
+app.use('/api/cart-orders', cartOrdersRoutes);
 app.use('/api/carts', cartTrackingRoutes);
 app.use('/api/notifications', notificationsRoutes);
 

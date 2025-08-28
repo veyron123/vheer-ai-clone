@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -31,6 +31,7 @@ model User {
   credits         Credit[]
   payments        Payment[]
   favorites       Favorite[]
+  cartOrders      CartOrder[]
 
   @@map("colibrrri_users")
 }
@@ -133,10 +134,63 @@ model Payment {
   currency        String    @default("USD")
   status          String
   stripePaymentId String?   @unique
+  wayforpayOrderReference String? @unique
   description     String?
   createdAt       DateTime  @default(now())
 
   @@map("colibrrri_payments")
+}
+
+model CartOrder {
+  id                      String    @id @default(cuid())
+  orderReference          String    @unique
+  userId                  String?
+  user                    User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // Payment info
+  amount                  Float
+  currency                String    @default("UAH")
+  paymentStatus           String    @default("PENDING") // PENDING, PAID, FAILED, REFUNDED
+  transactionStatus       String?   // From WayForPay
+  reasonCode              String?   // From WayForPay
+  authCode                String?   // From WayForPay
+  cardPan                 String?   // Masked card number
+  
+  // Customer info (from payment form)
+  customerEmail           String?
+  customerFirstName       String?
+  customerLastName        String?
+  customerPhone           String?
+  customerAddress         String?
+  customerCity            String?
+  customerCountry         String?
+  
+  // Shipping info (from payment form)
+  shippingFirstName       String?
+  shippingLastName        String?
+  shippingPhone           String?
+  shippingAddress         String?
+  shippingCity            String?
+  shippingCountry         String?
+  shippingPostalCode      String?
+  
+  // Order items (stored as JSON)
+  items                   Json      // Array of { image, frameColor, size, quantity, price }
+  
+  // Order management
+  orderStatus             String    @default("PENDING") // PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED
+  trackingNumber          String?
+  trackingCarrier         String?
+  adminNotes              String?
+  
+  // Timestamps
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  paidAt                  DateTime?
+  shippedAt               DateTime?
+  deliveredAt             DateTime?
+  
+  @@map("colibrrri_cart_orders")
 }
 
 model Tag {

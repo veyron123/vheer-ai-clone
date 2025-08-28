@@ -917,22 +917,29 @@ export const handleCartCallback = async (req, res) => {
           }
         }
         
-        // Create the order in the database
-        const order = await prisma.order.create({
+        // Create the cart order in the database
+        const cartOrder = await prisma.cartOrder.create({
           data: {
             userId: payment.userId,
             orderReference,
             
-            // Customer information
+            // Payment information
+            amount: parseFloat(amount),
+            currency: currency || 'UAH',
+            paymentStatus: 'PAID',
+            transactionStatus,
+            reasonCode,
+            authCode,
+            cardPan,
+            
+            // Customer information  
             customerFirstName: clientFirstName || '',
             customerLastName: clientLastName || '',
             customerEmail: clientEmail || `${orderReference}@order.com`,
             customerPhone: clientPhone || '',
-            
-            // Billing address
-            billingAddress: clientAddress || '',
-            billingCity: clientCity || '',
-            billingCountry: clientCountry || '',
+            customerAddress: clientAddress || '',
+            customerCity: clientCity || '',
+            customerCountry: clientCountry || '',
             
             // Shipping address
             shippingFirstName: deliveryFirstName || clientFirstName || '',
@@ -943,27 +950,18 @@ export const handleCartCallback = async (req, res) => {
             shippingPostalCode: deliveryPostalCode || '',
             shippingPhone: deliveryPhone || clientPhone || '',
             
-            // Order details
+            // Order items as JSON
             items: items,
-            subtotal: parseFloat(amount),
-            total: parseFloat(amount),
-            currency: currency || 'UAH',
             
-            // Payment information
-            paymentMethod: 'card',
-            paymentStatus: 'paid',
-            paymentReference: authCode || transactionStatus,
-            paidAt: new Date(),
+            // Order status
+            orderStatus: 'PROCESSING',
             
-            // Initial status
-            status: 'processing',
-            
-            // Notes
-            customerNotes: `Order from WayForPay: ${orderReference}`
+            // Timestamps
+            paidAt: new Date()
           }
         });
         
-        console.log('✅ Order created:', order.id);
+        console.log('✅ Cart order created:', cartOrder.id);
         
         // Помечаем корзину как оплаченную
         try {

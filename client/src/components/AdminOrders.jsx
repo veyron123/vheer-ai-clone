@@ -65,7 +65,7 @@ const AdminOrders = () => {
 
   const fetchNewOrderNotifications = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/orders/notifications`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/cart-orders/notifications`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -81,7 +81,7 @@ const AdminOrders = () => {
         
         // Mark as read after showing
         const notificationIds = newNotifications.map(n => n.id);
-        await axios.post(`${import.meta.env.VITE_API_URL}/orders/notifications/read`, 
+        await axios.post(`${import.meta.env.VITE_API_URL}/cart-orders/notifications/read`, 
           { notificationIds },
           { headers: { Authorization: `Bearer ${token}` }}
         );
@@ -121,7 +121,7 @@ const AdminOrders = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/orders`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/cart-orders`, {
         headers: { Authorization: `Bearer ${token}` },
         params: {
           page: currentPage,
@@ -147,7 +147,7 @@ const AdminOrders = () => {
 
   const fetchOrderStats = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/orders/stats`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/cart-orders/stats`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Additional stats can be shown in dashboard
@@ -158,7 +158,7 @@ const AdminOrders = () => {
 
   const fetchOrderDetails = async (orderId) => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/orders/${orderId}`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/cart-orders/${orderId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSelectedOrder(response.data.order);
@@ -169,7 +169,7 @@ const AdminOrders = () => {
 
   const updateOrder = async (orderId, updates) => {
     try {
-      await axios.patch(`${import.meta.env.VITE_API_URL}/orders/${orderId}`, updates, {
+      await axios.patch(`${import.meta.env.VITE_API_URL}/cart-orders/${orderId}`, updates, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Order updated successfully');
@@ -186,7 +186,8 @@ const AdminOrders = () => {
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
+    const normalizedStatus = (status || '').toLowerCase();
+    switch (normalizedStatus) {
       case 'pending': return 'bg-yellow-100 text-yellow-800';
       case 'processing': return 'bg-blue-100 text-blue-800';
       case 'shipped': return 'bg-purple-100 text-purple-800';
@@ -197,7 +198,8 @@ const AdminOrders = () => {
   };
 
   const getPaymentStatusColor = (status) => {
-    switch (status) {
+    const normalizedStatus = (status || '').toLowerCase();
+    switch (normalizedStatus) {
       case 'paid': return 'bg-green-100 text-green-800';
       case 'pending': return 'bg-yellow-100 text-yellow-800';
       case 'failed': return 'bg-red-100 text-red-800';
@@ -207,14 +209,14 @@ const AdminOrders = () => {
   };
 
   const OrderModal = ({ order, onClose, onUpdate }) => {
-    const [status, setStatus] = useState(order.status);
+    const [orderStatus, setOrderStatus] = useState(order.orderStatus || order.status || 'PENDING');
     const [trackingNumber, setTrackingNumber] = useState(order.trackingNumber || '');
     const [trackingCarrier, setTrackingCarrier] = useState(order.trackingCarrier || '');
     const [adminNotes, setAdminNotes] = useState(order.adminNotes || '');
 
     const handleSave = () => {
       onUpdate(order.id, {
-        status,
+        orderStatus,
         trackingNumber,
         trackingCarrier,
         adminNotes
@@ -258,13 +260,13 @@ const AdminOrders = () => {
                 <div className="flex items-center gap-2">
                   <span className="text-gray-600">Name:</span>
                   <span className="font-medium">
-                    {order.customerFirstName} {order.customerLastName}
+                    {order.customerFirstName || order.user?.fullName || 'Guest'} {order.customerLastName || ''}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="w-3 h-3 text-gray-500" />
-                  <span>{order.customerEmail}</span>
-                  <button onClick={() => copyToClipboard(order.customerEmail)}>
+                  <span>{order.customerEmail || order.user?.email || 'No email'}</span>
+                  <button onClick={() => copyToClipboard(order.customerEmail || order.user?.email)}>
                     <Copy className="w-3 h-3 text-gray-400 hover:text-gray-600" />
                   </button>
                 </div>
@@ -308,20 +310,32 @@ const AdminOrders = () => {
               </h3>
               <div className="space-y-2">
                 {order.items && order.items.map((item, index) => (
-                  <div key={index} className="flex justify-between items-center bg-white rounded p-2">
-                    <div>
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
+                  <div key={index} className="flex justify-between items-center bg-white rounded p-3 gap-4">
+                    <div className="flex items-center gap-3">
+                      {item.image && (
+                        <img 
+                          src={item.image} 
+                          alt="Order item" 
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                      )}
+                      <div>
+                        <p className="font-medium">{item.name || 'Mockup Design'}</p>
+                        <p className="text-sm text-gray-600">
+                          Frame: {item.frameColor || 'N/A'} | Size: {item.size || 'N/A'}
+                        </p>
+                        <p className="text-sm text-gray-500">Quantity: {item.quantity || 1}</p>
+                      </div>
                     </div>
-                    <p className="font-semibold">
-                      {order.currency} {(item.price * item.quantity).toFixed(2)}
+                    <p className="font-semibold whitespace-nowrap">
+                      {order.currency || 'UAH'} {((item.price || 0) * (item.quantity || 1)).toFixed(2)}
                     </p>
                   </div>
                 ))}
                 <div className="border-t pt-2 mt-2">
                   <div className="flex justify-between font-semibold">
                     <span>Total:</span>
-                    <span>{order.currency} {order.total.toFixed(2)}</span>
+                    <span>{order.currency} {(order.total || order.amount || 0).toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -334,15 +348,15 @@ const AdminOrders = () => {
                 <div>
                   <label className="text-sm text-gray-600">Order Status</label>
                   <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
+                    value={orderStatus}
+                    onChange={(e) => setOrderStatus(e.target.value)}
                     className="w-full mt-1 px-3 py-2 border rounded-lg"
                   >
-                    <option value="pending">Pending</option>
-                    <option value="processing">Processing</option>
-                    <option value="shipped">Shipped</option>
-                    <option value="delivered">Delivered</option>
-                    <option value="cancelled">Cancelled</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="PROCESSING">Processing</option>
+                    <option value="SHIPPED">Shipped</option>
+                    <option value="DELIVERED">Delivered</option>
+                    <option value="CANCELLED">Cancelled</option>
                   </select>
                 </div>
                 <div>
@@ -602,24 +616,26 @@ const AdminOrders = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900">
-                            {order.customerFirstName} {order.customerLastName}
+                            {order.customerFirstName || order.user?.fullName || 'Guest'} {order.customerLastName || ''}
                           </div>
-                          <div className="text-sm text-gray-500">{order.customerEmail}</div>
+                          <div className="text-sm text-gray-500">
+                            {order.customerEmail || order.user?.email || 'No email'}
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium">
-                          {order.currency} {order.total.toFixed(2)}
+                          {order.currency} {(order.total || order.amount || 0).toFixed(2)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs rounded-full ${getPaymentStatusColor(order.paymentStatus)}`}>
-                          {order.paymentStatus}
+                          {(order.paymentStatus || 'PENDING').toLowerCase()}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(order.status)}`}>
-                          {order.status}
+                        <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(order.orderStatus || order.status)}`}>
+                          {(order.orderStatus || order.status || 'PENDING').toLowerCase()}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

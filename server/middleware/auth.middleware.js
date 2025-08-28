@@ -93,3 +93,23 @@ export const checkCredits = async (req, res, next) => {
     res.status(500).json({ error: 'Error checking credits' });
   }
 };
+
+export const isAdmin = async (req, res, next) => {
+  try {
+    // For now, check if user email is in admin list
+    // Later can add role field to User model
+    const adminEmails = [
+      'admin@colibrrri.com',
+      'denisbelikin31@gmail.com', // Add your admin email here
+      process.env.ADMIN_EMAIL
+    ].filter(Boolean);
+    
+    if (!req.user || !adminEmails.includes(req.user.email)) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    
+    next();
+  } catch (error) {
+    res.status(500).json({ error: 'Error checking admin status' });
+  }
+};

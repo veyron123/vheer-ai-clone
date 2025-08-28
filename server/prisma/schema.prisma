@@ -5,7 +5,6 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL")
 }
 
 model User {
@@ -32,9 +31,7 @@ model User {
   credits         Credit[]
   payments        Payment[]
   favorites       Favorite[]
-  orders          Order[]
-  cartSessions    CartSession[]
-  notificationSubscriptions NotificationSubscription[]
+  cartOrders      CartOrder[]
 
   @@map("colibrrri_users")
 }
@@ -49,16 +46,6 @@ model Subscription {
   stripeCustomerId String?  @unique
   stripeSubscriptionId String? @unique
   wayforpayOrderReference String? // WayForPay orderReference for cancellation
-  
-  // Recurring payment fields
-  isRecurring     Boolean   @default(false) // Is this a recurring subscription
-  recurringToken  String?   // WayForPay recToken for recurring payments
-  recurringMode   String?   // "MONTHLY", "YEARLY" - frequency of recurring payments
-  nextPaymentDate DateTime? // Date of next automatic payment attempt
-  lastPaymentDate DateTime? // Date of last successful payment
-  failedPaymentAttempts Int @default(0) // Count of failed payment attempts
-  maxFailedAttempts Int @default(3) // Maximum failed attempts before cancellation
-  
   cancelledAt     DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -140,82 +127,70 @@ model Favorite {
 }
 
 model Payment {
-  id                      String    @id @default(cuid())
-  userId                  String
-  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  amount                  Float
-  currency                String    @default("USD")
-  status                  String
-  stripePaymentId         String?   @unique
-  wayforpayOrderReference String?   @unique
-  description             String?
-  createdAt               DateTime  @default(now())
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount          Float
+  currency        String    @default("USD")
+  status          String
+  stripePaymentId String?   @unique
+  wayforpayOrderReference String? @unique
+  description     String?
+  createdAt       DateTime  @default(now())
 
   @@map("colibrrri_payments")
 }
 
-model Order {
+model CartOrder {
   id                      String    @id @default(cuid())
+  orderReference          String    @unique
   userId                  String?
   user                    User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  orderReference          String    @unique
   
-  // Customer information
+  // Payment info
+  amount                  Float
+  currency                String    @default("UAH")
+  paymentStatus           String    @default("PENDING") // PENDING, PAID, FAILED, REFUNDED
+  transactionStatus       String?   // From WayForPay
+  reasonCode              String?   // From WayForPay
+  authCode                String?   // From WayForPay
+  cardPan                 String?   // Masked card number
+  
+  // Customer info (from payment form)
+  customerEmail           String?
   customerFirstName       String?
   customerLastName        String?
-  customerEmail           String
   customerPhone           String?
+  customerAddress         String?
+  customerCity            String?
+  customerCountry         String?
   
-  // Billing address
-  billingAddress          String?
-  billingCity             String?
-  billingCountry          String?
-  billingPostalCode       String?
-  
-  // Shipping address
+  // Shipping info (from payment form)
   shippingFirstName       String?
   shippingLastName        String?
-  shippingAddress        String?
+  shippingPhone           String?
+  shippingAddress         String?
   shippingCity            String?
   shippingCountry         String?
   shippingPostalCode      String?
-  shippingPhone           String?
   
-  // Order details
-  items                   Json      // Array of cart items
-  subtotal                Float
-  shippingCost            Float     @default(0)
-  tax                     Float     @default(0)
-  total                   Float
-  currency                String    @default("UAH")
+  // Order items (stored as JSON)
+  items                   Json      // Array of { image, frameColor, size, quantity, price }
   
-  // Payment information
-  paymentMethod           String?   // card, paypal, etc.
-  paymentStatus           String    @default("pending") // pending, paid, failed, refunded
-  paymentReference        String?   // WayForPay transaction ID
-  paidAt                  DateTime?
-  
-  // Fulfillment
-  status                  String    @default("pending") // pending, processing, shipped, delivered, cancelled
+  // Order management
+  orderStatus             String    @default("PENDING") // PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED
   trackingNumber          String?
-  trackingCarrier         String?   // ups, fedex, dhl, etc.
-  shippedAt               DateTime?
-  deliveredAt             DateTime?
-  
-  // Notes
-  adminNotes              String?   @db.Text
-  customerNotes           String?   @db.Text
+  trackingCarrier         String?
+  adminNotes              String?
   
   // Timestamps
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
+  paidAt                  DateTime?
+  shippedAt               DateTime?
+  deliveredAt             DateTime?
   
-  @@index([userId])
-  @@index([orderReference])
-  @@index([customerEmail])
-  @@index([status])
-  @@index([paymentStatus])
-  @@map("colibrrri_orders")
+  @@map("colibrrri_cart_orders")
 }
 
 model Tag {
@@ -234,78 +209,4 @@ model Session {
   expiresAt DateTime
 
   @@map("colibrrri_sessions")
-}
-
-model CartSession {
-  id              String    @id @default(cuid())
-  sessionId       String    @unique // Идентификатор сессии (анонимный или пользовательский)
-  userId          String?   // Может быть null для анонимных пользователей
-  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  
-  // Информация о корзине
-  items           Json      // Массив товаров в корзине
-  totalAmount     Float     @default(0)
-  itemCount       Int       @default(0)
-  currency        String    @default("UAH")
-  
-  // Статусы
-  status          String    @default("active") // active, abandoned, converted
-  convertedToOrderId String? // ID заказа, если корзина была оплачена
-  
-  // Информация о пользователе (для анонимных)
-  userIp          String?
-  userAgent       String?
-  userCountry     String?
-  userCity        String?
-  
-  // Временные метки
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  lastActivityAt  DateTime  @default(now())
-  abandonedAt     DateTime? // Когда корзина была брошена
-  
-  // Email уведомления
-  customerEmail   String?   // Email для напоминаний
-  emailSent       Boolean   @default(false) // Отправлено ли напоминание
-  emailSentAt     DateTime? // Когда отправлено напоминание
-  
-  @@index([userId])
-  @@index([sessionId])
-  @@index([status])
-  @@index([lastActivityAt])
-  @@map("colibrrri_cart_sessions")
-}
-
-model NotificationSubscription {
-  id              String    @id @default(cuid())
-  userId          String?
-  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  
-  // Push notification data
-  endpoint        String    @unique
-  p256dh          String    // Public key for encryption
-  auth            String    // Authentication secret
-  
-  // Status
-  isActive        Boolean   @default(true)
-  
-  // Timestamps
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  @@index([userId])
-  @@index([endpoint])
-  @@map("colibrrri_notification_subscriptions")
-}
-
-model AppSetting {
-  id              String    @id @default(cuid())
-  key             String    @unique
-  value           String    @db.Text
-  description     String?
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  @@map("colibrrri_app_settings")
 }
