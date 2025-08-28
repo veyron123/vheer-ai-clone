@@ -294,6 +294,103 @@ export const getCartById = async (req, res) => {
 };
 
 /**
+ * Update cart (order) by ID
+ */
+export const updateCartById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      orderStatus,
+      trackingNumber,
+      trackingCarrier,
+      adminNotes
+    } = req.body;
+
+    const data = {
+      updatedAt: new Date()
+    };
+
+    if (orderStatus) {
+      data.orderStatus = orderStatus;
+      
+      // Update timestamps based on status
+      if (orderStatus === 'SHIPPED' && !data.shippedAt) {
+        data.shippedAt = new Date();
+      }
+      if (orderStatus === 'DELIVERED' && !data.deliveredAt) {
+        data.deliveredAt = new Date();
+      }
+    }
+
+    if (trackingNumber !== undefined) {
+      data.trackingNumber = trackingNumber;
+    }
+
+    if (trackingCarrier !== undefined) {
+      data.trackingCarrier = trackingCarrier;
+    }
+
+    if (adminNotes !== undefined) {
+      data.adminNotes = adminNotes;
+    }
+
+    const cart = await prisma.cartOrder.update({
+      where: { id },
+      data,
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            fullName: true
+          }
+        }
+      }
+    });
+
+    // Transform to match expected cart format
+    const transformedCart = {
+      id: cart.id,
+      sessionId: cart.orderReference,
+      userId: cart.userId,
+      user: cart.user,
+      items: cart.items,
+      totalAmount: cart.amount,
+      itemCount: Array.isArray(cart.items) ? cart.items.length : 0,
+      currency: cart.currency,
+      customerEmail: cart.customerEmail || cart.user?.email,
+      status: cart.orderStatus,
+      paymentStatus: cart.paymentStatus,
+      orderStatus: cart.orderStatus,
+      adminNotes: cart.adminNotes,
+      trackingNumber: cart.trackingNumber,
+      trackingCarrier: cart.trackingCarrier,
+      createdAt: cart.createdAt,
+      updatedAt: cart.updatedAt,
+      paidAt: cart.paidAt,
+      shippedAt: cart.shippedAt,
+      deliveredAt: cart.deliveredAt,
+      lastActivityAt: cart.updatedAt,
+      isAbandoned: cart.paymentStatus !== 'PAID',
+      isConverted: cart.paymentStatus === 'PAID'
+    };
+
+    res.json({
+      success: true,
+      cart: transformedCart
+    });
+  } catch (error) {
+    console.error('Error updating cart:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update cart',
+      error: error.message
+    });
+  }
+};
+
+/**
  * Get abandoned cart statistics (placeholder for now)
  */
 export const getAbandonedCartStats = async (req, res) => {
