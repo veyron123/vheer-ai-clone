@@ -7,12 +7,20 @@ class QwenImageService {
     // Configure FAL client with API key
     const falKey = process.env.FAL_KEY;
     if (!falKey) {
-      throw new Error('FAL_KEY environment variable is required for Qwen Image service');
+      console.warn('⚠️ FAL_KEY environment variable not set. Qwen Image service will be disabled.');
+      this.disabled = true;
+      return;
     }
     
-    fal.config({
-      credentials: falKey
-    });
+    try {
+      fal.config({
+        credentials: falKey
+      });
+      this.disabled = false;
+    } catch (error) {
+      console.warn('⚠️ Failed to configure FAL client. Qwen Image service will be disabled:', error.message);
+      this.disabled = true;
+    }
     
     this.modelName = "fal-ai/qwen-image";
     this.creditCost = 30; // Cost per generation

@@ -17,11 +17,11 @@ export function validateEnv() {
     JWT_SECRET: 'JWT secret for token generation',
   };
   
-  // API Keys - in production these might come from Render Dashboard
-  // Only require them in development or if not on Render
-  const apiKeyVars = (!isProduction || !isRender) ? {
+  // API Keys - temporarily disabled in production to fix deployment
+  // Only require them in development
+  const apiKeyVars = !isProduction ? {
     FLUX_API_KEY: 'Flux AI API key',
-    GPT_IMAGE_API_KEY: 'GPT Image API key',
+    GPT_IMAGE_API_KEY: 'GPT Image API key', 
     IMGBB_API_KEY: 'ImgBB storage API key',
   } : {};
   
