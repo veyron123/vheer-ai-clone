@@ -495,9 +495,9 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
           setSelectedSize(getDefaultSize(autoDetectedRatio));
         }
 
-        // Фиксированный размер canvas
-        const canvasWidth = 500;
-        const canvasHeight = 500;
+        // Динамический размер canvas - будет изменен после загрузки рамки
+        let canvasWidth = 500;
+        let canvasHeight = 500;
 
         // Функция для отрисовки пользовательского изображения под рамкой
         const drawUserImageFirst = (img, ctx, canvas, aspectRatio) => {
@@ -568,9 +568,31 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         // Загружаем рамку, а затем рисуем изображение и рамку
         const frameImg = new Image();
         frameImg.onload = () => {
+          // Адаптируем размер canvas под размер рамки мокапа
+          const maxSize = 500;
+          const frameAspect = frameImg.width / frameImg.height;
+          
+          if (frameAspect > 1) {
+            // Горизонтальная рамка
+            canvasWidth = maxSize;
+            canvasHeight = maxSize / frameAspect;
+          } else {
+            // Вертикальная или квадратная рамка
+            canvasHeight = maxSize;
+            canvasWidth = maxSize * frameAspect;
+          }
+          
+          // Устанавливаем новые размеры canvas
+          canvas.width = canvasWidth;
+          canvas.height = canvasHeight;
+          
+          // Очищаем и заливаем серым с новыми размерами
+          ctx.fillStyle = '#f5f5f5';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          
           // Сначала рисуем пользовательское изображение
           drawUserImageFirst(img, ctx, canvas, autoDetectedRatio);
-          // Затем рисуем рамку поверх
+          // Затем рисуем рамку поверх с её оригинальными пропорциями
           ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
           setIsLoading(false);
         };
