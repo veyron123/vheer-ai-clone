@@ -860,7 +860,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
             {/* Превью */}
             <div>
               <h4 className="text-sm font-medium text-gray-700 mb-3">Preview</h4>
-              <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-center relative">
+              <div className="bg-gray-50 rounded-lg flex items-center justify-center relative">
                 {isLoading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-gray-50 rounded-lg z-10">
                     <div className="text-center">
