@@ -23,6 +23,7 @@ export function validateEnv() {
     FLUX_API_KEY: 'Flux AI API key',
     GPT_IMAGE_API_KEY: 'GPT Image API key', 
     IMGBB_API_KEY: 'ImgBB storage API key',
+    FAL_KEY: 'FAL AI API key',
   } : {};
   
   const requiredVars = {
@@ -36,6 +37,7 @@ export function validateEnv() {
     // Optional APIs
     MIDJOURNEY_API_KEY: 'MidJourney API key (optional)',
     MIDJOURNEY_API_URL: 'MidJourney API URL (optional)',
+    FAL_KEY: 'FAL AI API key (optional)',
     
     // OAuth (optional if not using social login)
     GOOGLE_CLIENT_ID: 'Google OAuth client ID',
@@ -130,6 +132,7 @@ export function maskSensitiveData(key, value) {
     'GPT_IMAGE_API_KEY',
     'IMGBB_API_KEY',
     'MIDJOURNEY_API_KEY',
+    'FAL_KEY',
     'GOOGLE_CLIENT_SECRET',
     'SESSION_SECRET',
     'VITE_FAL_API_KEY',
