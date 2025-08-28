@@ -47,25 +47,38 @@ const handleSuccess = (req, res) => {
   console.log('🔍 SUCCESS PAGE - All params:', JSON.stringify(params, null, 2));
   console.log('🔍 SUCCESS PAGE - Available keys:', Object.keys(params));
   
-  // WayForPay может передавать status или transactionStatus
+  // WayForPay может передавать разные поля статуса в зависимости от типа операции
   const { 
     orderReference, 
     status, 
     transactionStatus, 
     reasonCode,
-    authCode 
+    authCode,
+    // Дополнительные поля которые может передавать WayForPay
+    paymentStatus,
+    orderStatus,
+    merchantTransactionSecureType,
+    cardPan,
+    paymentSystemTransactionId
   } = params;
   
-  // Определяем финальный статус (WayForPay использует разные поля)
-  const finalStatus = status || transactionStatus;
+  // Определяем финальный статус (проверяем все возможные поля)
+  const finalStatus = status || transactionStatus || paymentStatus || orderStatus;
   
   console.log('🔍 SUCCESS PAGE - Final status:', finalStatus);
   console.log('🔍 SUCCESS PAGE - Order ref:', orderReference);
+  console.log('🔍 SUCCESS PAGE - Reason code:', reasonCode);
   
   // Определяем правильный URL для редиректа
   const redirectUrl = 'https://colibrrri.com/en/';
   
-  if (finalStatus === 'Approved') {
+  // WayForPay: Успешный платеж = transactionStatus: "Approved" И reasonCode: "1100" (или без кода)
+  const isSuccessful = (finalStatus === 'Approved') && 
+    (reasonCode === '1100' || reasonCode === 1100 || !reasonCode || reasonCode === '');
+  
+  console.log('🔍 SUCCESS PAGE - Is successful:', isSuccessful, '(status:', finalStatus, ', code:', reasonCode, ')');
+  
+  if (isSuccessful) {
     res.send(`
       <!DOCTYPE html>
       <html>
