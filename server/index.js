@@ -86,6 +86,8 @@ app.use(securityHeaders);
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+// Add raw body parsing for multipart form data
+app.use(express.raw({ type: 'multipart/form-data', limit: '50mb' }));
 
 // Session configuration for OAuth with Prisma store
 app.use(session({

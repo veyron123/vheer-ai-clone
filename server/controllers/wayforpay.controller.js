@@ -928,7 +928,7 @@ export const handleCartCallback = async (req, res) => {
             currency: currency || 'UAH',
             paymentStatus: 'PAID',
             transactionStatus,
-            reasonCode,
+            reasonCode: String(reasonCode || ''), // Convert to string
             authCode,
             cardPan,
             

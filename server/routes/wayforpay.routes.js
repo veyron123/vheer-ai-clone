@@ -40,7 +40,33 @@ const handleSuccess = (req, res) => {
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   
   // Get parameters from query (GET) or body (POST)
-  const params = req.method === 'GET' ? req.query : req.body;
+  // For multipart/form-data, Express doesn't parse automatically, so we check multiple sources
+  let params = {};
+  
+  if (req.method === 'GET') {
+    params = req.query;
+  } else if (req.method === 'POST') {
+    // Try to get params from body first
+    params = req.body;
+    
+    // If body is empty but we have raw data, try to parse it
+    if (Object.keys(params).length === 0 && req.body) {
+      // For multipart data, the body might be a Buffer
+      if (Buffer.isBuffer(req.body)) {
+        try {
+          const bodyString = req.body.toString('utf-8');
+          console.log('🔍 SUCCESS PAGE - Raw body:', bodyString.substring(0, 500));
+        } catch (e) {
+          console.log('🔍 SUCCESS PAGE - Could not parse buffer');
+        }
+      }
+    }
+    
+    // If still no params, check query string (WayForPay might send POST with query params)
+    if (Object.keys(params).length === 0) {
+      params = req.query;
+    }
+  }
   
   // Debug: log all received parameters
   console.log('🔍 SUCCESS PAGE - Method:', req.method);
@@ -94,7 +120,9 @@ const handleSuccess = (req, res) => {
   // Платеж успешен если:
   // 1. Статус успешный И (код успешный ИЛИ нет кода)
   // 2. ИЛИ пришли на success URL и нет явного кода ошибки
-  const isSuccessful = (statusOk && codeOk) || (urlSuccess && codeOk);
+  // 3. ИЛИ пришли на success URL и вообще нет параметров (WayForPay может не передавать параметры при успехе)
+  const noParams = Object.keys(params).length === 0;
+  const isSuccessful = (statusOk && codeOk) || (urlSuccess && codeOk) || (urlSuccess && noParams);
   
   console.log('🔍 SUCCESS PAGE - Detailed status check:', {
     method: req.method,
