@@ -316,39 +316,107 @@ const AdminOrders = () => {
                   const handleDownloadImage = () => {
                     if (!imageUrl) return;
                     
+                    const fileName = `order_${order.orderReference || 'unknown'}_item_${index + 1}`;
+                    
+                    // Check if it's a base64 data URL
+                    if (imageUrl.startsWith('data:')) {
+                      // Convert base64 to blob and download
+                      try {
+                        // Extract base64 data
+                        const base64Data = imageUrl.split(',')[1];
+                        const mimeMatch = imageUrl.match(/data:([^;]+);/);
+                        const mimeType = mimeMatch ? mimeMatch[1] : 'image/png';
+                        const extension = mimeType.split('/')[1] || 'png';
+                        
+                        // Convert base64 to binary
+                        const byteCharacters = atob(base64Data);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        for (let i = 0; i < byteCharacters.length; i++) {
+                          byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        }
+                        const byteArray = new Uint8Array(byteNumbers);
+                        
+                        // Create blob and download
+                        const blob = new Blob([byteArray], { type: mimeType });
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${fileName}.${extension}`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                      } catch (err) {
+                        console.error('Failed to download base64 image:', err);
+                        toast.error('Failed to download image');
+                      }
+                    }
                     // Check if it's a Cloudinary URL
-                    if (imageUrl.includes('cloudinary.com')) {
-                      // Add fl_attachment to force download and set filename
-                      const orderRef = order.orderReference || 'order';
-                      const itemNum = index + 1;
-                      const downloadUrl = imageUrl.replace('/upload/', `/upload/fl_attachment:${orderRef}_item_${itemNum}/`);
+                    else if (imageUrl.includes('cloudinary.com')) {
+                      // Add fl_attachment to force download
+                      const downloadUrl = imageUrl.replace('/upload/', `/upload/fl_attachment:${fileName}/`);
                       window.open(downloadUrl, '_blank');
-                    } else {
-                      // For non-Cloudinary URLs, download using fetch
-                      fetch(imageUrl)
-                        .then(response => response.blob())
-                        .then(blob => {
-                          const url = window.URL.createObjectURL(blob);
-                          const a = document.createElement('a');
-                          a.href = url;
-                          a.download = `order_${order.orderReference}_item_${index + 1}.png`;
-                          document.body.appendChild(a);
-                          a.click();
-                          document.body.removeChild(a);
-                          window.URL.revokeObjectURL(url);
-                        })
-                        .catch(err => {
-                          console.error('Download failed:', err);
-                          window.open(imageUrl, '_blank');
-                        });
+                    }
+                    // Check if it's a blob URL
+                    else if (imageUrl.startsWith('blob:')) {
+                      // Blob URLs can be downloaded directly
+                      const a = document.createElement('a');
+                      a.href = imageUrl;
+                      a.download = `${fileName}.png`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                    }
+                    // For regular URLs
+                    else {
+                      // Try to download via creating a link
+                      const a = document.createElement('a');
+                      a.href = imageUrl;
+                      a.download = `${fileName}.png`;
+                      a.target = '_blank';
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
                     }
                   };
                   
                   const handleViewFullSize = () => {
                     if (!imageUrl) return;
                     
+                    // For base64 data URLs, create a blob URL and open it
+                    if (imageUrl.startsWith('data:')) {
+                      try {
+                        // Extract base64 data
+                        const base64Data = imageUrl.split(',')[1];
+                        const mimeMatch = imageUrl.match(/data:([^;]+);/);
+                        const mimeType = mimeMatch ? mimeMatch[1] : 'image/png';
+                        
+                        // Convert to blob
+                        const byteCharacters = atob(base64Data);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        for (let i = 0; i < byteCharacters.length; i++) {
+                          byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        }
+                        const byteArray = new Uint8Array(byteNumbers);
+                        const blob = new Blob([byteArray], { type: mimeType });
+                        
+                        // Create blob URL and open in new tab
+                        const blobUrl = window.URL.createObjectURL(blob);
+                        const newWindow = window.open(blobUrl, '_blank');
+                        
+                        // Clean up blob URL after a delay
+                        if (newWindow) {
+                          setTimeout(() => {
+                            window.URL.revokeObjectURL(blobUrl);
+                          }, 1000);
+                        }
+                      } catch (err) {
+                        console.error('Failed to open base64 image:', err);
+                        toast.error('Failed to open image');
+                      }
+                    }
                     // For Cloudinary, get high quality version
-                    if (imageUrl.includes('cloudinary.com')) {
+                    else if (imageUrl.includes('cloudinary.com')) {
                       // Remove transformations and get high quality
                       const parts = imageUrl.split('/upload/');
                       if (parts.length === 2) {
