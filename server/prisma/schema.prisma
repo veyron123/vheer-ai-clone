@@ -137,6 +137,7 @@ model Payment {
   stripePaymentId String?   @unique
   wayforpayOrderReference String? @unique
   description     String?
+  cartItems       Json?     // Store original cart items for WayForPay callbacks
   createdAt       DateTime  @default(now())
 
   @@map("colibrrri_payments")

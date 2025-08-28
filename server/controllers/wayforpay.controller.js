@@ -683,8 +683,8 @@ export const initializeCartPayment = async (req, res) => {
         currency: currency,
         status: 'PENDING',
         description: `Cart payment - ${productNames.join(', ')}`,
-        wayforpayOrderReference: orderReference
-        // Note: metadata field doesn't exist in current schema
+        wayforpayOrderReference: orderReference,
+        cartItems: items // Store original cart items for callback
       }
     });
     
@@ -901,9 +901,16 @@ export const handleCartCallback = async (req, res) => {
       
       // Create order record with full customer and product details
       try {
-        // Build cart items array from product data
-        const items = [];
-        if (productName && productCount && productPrice) {
+        // Build cart items array - use saved cart items from payment record first
+        let items = [];
+        
+        // Try to use saved cart items from payment record first
+        if (payment.cartItems && Array.isArray(payment.cartItems)) {
+          items = payment.cartItems;
+          console.log('✅ Using saved cart items from payment record:', items.length);
+        } 
+        // Fallback to WayForPay product data if no saved items
+        else if (productName && productCount && productPrice) {
           const names = Array.isArray(productName) ? productName : [productName];
           const counts = Array.isArray(productCount) ? productCount : [productCount];
           const prices = Array.isArray(productPrice) ? productPrice : [productPrice];
@@ -915,6 +922,9 @@ export const handleCartCallback = async (req, res) => {
               price: parseFloat(prices[i]) || 0
             });
           }
+          console.log('⚠️ Using WayForPay product data as fallback:', items.length);
+        } else {
+          console.log('❌ No cart items found in payment record or WayForPay data');
         }
         
         // Create the cart order in the database
