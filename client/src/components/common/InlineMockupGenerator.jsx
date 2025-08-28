@@ -605,7 +605,9 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
         } else if (autoDetectedRatio === '4:3') {
           framePath = '/Mockup images/Frames 4-3/Front, 8_ x 6_ (Horizontal).png';
         } else {
-          framePath = '/Mockup images/Frames 1-1/12-12white.png';
+          // Для 1:1 используем динамические selectedSize и selectedColor
+          const sizeFormatted = selectedSize.replace('x', '-');
+          framePath = `/Mockup images/Frames 1-1/${sizeFormatted}${selectedColor}.png`;
         }
         frameImg.src = framePath;
       };
@@ -855,6 +857,50 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
 
             {/* Controls */}
             <div className="space-y-4">
+              {/* Frame Color Selection - только для 1:1 */}
+              {detectedAspectRatio === '1:1' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Palette className="w-4 h-4 inline mr-1" />
+                    Frame color
+                  </label>
+                  <div className="flex gap-3">
+                    {frameColors.map((color) => (
+                      <label
+                        key={color.id}
+                        className="relative cursor-pointer"
+                      >
+                        <input
+                          type="radio"
+                          name="frameColor"
+                          value={color.id}
+                          checked={selectedColor === color.id}
+                          onChange={(e) => setSelectedColor(e.target.value)}
+                          className="sr-only"
+                        />
+                        <div className={`relative ${selectedColor === color.id ? 'ring-2 ring-purple-500 ring-offset-2' : ''} rounded-lg transition-all`}>
+                          <div 
+                            className="w-12 h-12 rounded-lg border-2"
+                            style={{ 
+                              backgroundColor: color.color,
+                              borderColor: color.borderColor
+                            }}
+                          >
+                            {selectedColor === color.id && (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
   
               {/* Frame Preview - динамический мокап для выбранного размера */}
               {(detectedAspectRatio === '3:4' || detectedAspectRatio === '4:3') && (
@@ -1003,17 +1049,6 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
 
               {/* Action Buttons */}
               <div className="pt-4 border-t space-y-3">
-                {/* View Images Button */}
-                {imageUrl && (
-                  <button
-                    onClick={showOriginalImageModal}
-                    className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 disabled:bg-gray-300 flex items-center justify-center gap-2 transition-colors font-semibold shadow-lg"
-                  >
-                    <ZoomIn className="w-5 h-5" />
-                    VIEW IMAGES
-                  </button>
-                )}
-                
                 {/* Add to Cart Button */}
                 <button
                   onClick={addToCart}
