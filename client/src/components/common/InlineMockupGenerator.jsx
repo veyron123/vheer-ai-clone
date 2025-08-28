@@ -49,12 +49,12 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       return scalePerSize[selectedSize];
     }
     
-    // Значения по умолчанию для каждого размера - специфичные настройки для Frame Preview
+    // Значения по умолчанию для каждого размера - настройки для основного левого мокапа
     const defaultScales = {
-      '6x8': 0.25,   // 25% - для Frame Preview 3:4
-      '12x16': 0.47, // 47% - для Frame Preview 3:4
-      '18x24': 0.43, // 43% - для Frame Preview 3:4
-      '24x32': 0.49, // 49% - для Frame Preview 3:4
+      '6x8': 0.71,   // 71% - для основного мокапа 3:4
+      '12x16': 0.71, // 71% - для основного мокапа 3:4
+      '18x24': 0.71, // 71% - для основного мокапа 3:4
+      '24x32': 0.71, // 71% - для основного мокапа 3:4
       '8x6': 0.71,   // 71% - для 4:3
       '24x18': 0.71, // 71% - для 4:3
       '32x24': 0.71, // 71% - для 4:3
@@ -82,12 +82,12 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       return positionPerSize[selectedSize];
     }
     
-    // Значения по умолчанию для каждого размера - специфичные настройки для Frame Preview
+    // Значения по умолчанию для каждого размера - настройки для основного левого мокапа
     const defaultPositions = {
-      '6x8': { x: -2, y: -20 },   // X=-2px, Y=-20px - для Frame Preview 3:4
-      '12x16': { x: -3, y: -33 }, // X=-3px, Y=-33px - для Frame Preview 3:4
-      '18x24': { x: -1, y: -37 }, // X=-1px, Y=-37px - для Frame Preview 3:4
-      '24x32': { x: -3, y: -5 },  // X=-3px, Y=-5px - для Frame Preview 3:4
+      '6x8': { x: 0, y: 0 },      // X=0px, Y=0px - для основного мокапа 3:4
+      '12x16': { x: 0, y: 0 },    // X=0px, Y=0px - для основного мокапа 3:4
+      '18x24': { x: 0, y: 0 },    // X=0px, Y=0px - для основного мокапа 3:4
+      '24x32': { x: 0, y: 0 },    // X=0px, Y=0px - для основного мокапа 3:4
       '8x6': { x: 0, y: 0 },      // X=0px, Y=0px - для 4:3
       '24x18': { x: 0, y: 0 },    // X=0px, Y=0px - для 4:3
       '32x24': { x: 0, y: 0 },    // X=0px, Y=0px - для 4:3
@@ -342,10 +342,10 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
           '24x18': 0.42, // 42%
           '32x24': 0.44, // 44%
           // Настройки для 3:4 (портрет) - специфичные для Frame Preview
-          '6x8': 0.25,   // 25%
-          '12x16': 0.47, // 47%
-          '18x24': 0.43, // 43%
-          '24x32': 0.49, // 49%
+          '6x8': 0.22,   // 22%
+          '12x16': 0.41, // 41%
+          '18x24': 0.38, // 38%
+          '24x32': 0.44, // 44%
         };
         const defaultPositions = {
           // Позиции для 4:3 (ландшафт)
@@ -353,10 +353,10 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
           '24x18': { x: -5, y: -122 },
           '32x24': { x: -7, y: -177 },
           // Позиции для 3:4 (портрет) - специфичные для Frame Preview
-          '6x8': { x: -2, y: -20 },
-          '12x16': { x: -3, y: -33 },
-          '18x24': { x: -1, y: -37 },
-          '24x32': { x: -3, y: -5 },
+          '6x8': { x: -11, y: -64 },
+          '12x16': { x: -13, y: -112 },
+          '18x24': { x: -4, y: -122 },
+          '24x32': { x: -11, y: -186 },
         };
         
         // Получаем фиксированные настройки для Frame Preview
@@ -856,7 +856,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       {/* Контент мокапа */}
       {isVisible && isExpanded && (
         <div className="p-6">
-          <div className="grid lg:grid-cols-2 gap-6">
+          <div className="grid lg:grid-cols-2">
             {/* Превью */}
             <div>
               <h4 className="text-sm font-medium text-gray-700 mb-3">Preview</h4>
@@ -878,7 +878,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
             </div>
 
             {/* Controls */}
-            <div className="space-y-4">
+            <div className="space-y-4 lg:pl-6">
               {/* Frame Color Selection - только для 1:1 */}
               {detectedAspectRatio === '1:1' && (
                 <div>
@@ -980,8 +980,8 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
                 </div>
               </div>
               
-              {/* Position and Scale Controls - всегда показывается для 3:4 */}
-              {detectedAspectRatio === '3:4' && (
+              {/* Position and Scale Controls - скрыто для 3:4 */}
+              {detectedAspectRatio === '3:4' && false && (
                 <div className="space-y-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Ruler className="w-4 h-4 inline mr-1" />
@@ -1032,10 +1032,10 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
                   <button
                     onClick={() => {
                       const defaultPos = {
-                        '6x8': { x: -2, y: -20 },   // Специфичные настройки для Frame Preview 3:4
-                        '12x16': { x: -3, y: -33 }, // Специфичные настройки для Frame Preview 3:4
-                        '18x24': { x: -1, y: -37 }, // Специфичные настройки для Frame Preview 3:4
-                        '24x32': { x: -3, y: -5 },  // Специфичные настройки для Frame Preview 3:4
+                        '6x8': { x: 0, y: 0 },      // X=0px, Y=0px - для основного мокапа 3:4
+                        '12x16': { x: 0, y: 0 },    // X=0px, Y=0px - для основного мокапа 3:4
+                        '18x24': { x: 0, y: 0 },    // X=0px, Y=0px - для основного мокапа 3:4
+                        '24x32': { x: 0, y: 0 },    // X=0px, Y=0px - для основного мокапа 3:4
                         '8x6': { x: 0, y: 0 },      // Для 4:3
                         '24x18': { x: 0, y: 0 },    // Для 4:3
                         '32x24': { x: 0, y: 0 },    // Для 4:3
@@ -1046,10 +1046,10 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
                         '18x18': { x: -2, y: 65 }   // Для 1:1
                       };
                       const defaultScales = {
-                        '6x8': 0.25,   // 25% для Frame Preview 3:4
-                        '12x16': 0.47, // 47% для Frame Preview 3:4
-                        '18x24': 0.43, // 43% для Frame Preview 3:4
-                        '24x32': 0.49, // 49% для Frame Preview 3:4
+                        '6x8': 0.71,   // 71% для основного мокапа 3:4
+                        '12x16': 0.71, // 71% для основного мокапа 3:4
+                        '18x24': 0.71, // 71% для основного мокапа 3:4
+                        '24x32': 0.71, // 71% для основного мокапа 3:4
                         '8x6': 0.71,   // Для 4:3
                         '24x18': 0.71, // Для 4:3
                         '32x24': 0.71, // Для 4:3
