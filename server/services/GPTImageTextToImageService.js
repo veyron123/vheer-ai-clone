@@ -8,14 +8,22 @@ class GPTImageTextToImageService {
     this.creditCost = 30; // Cost per generation
 
     if (!this.apiKey) {
-      throw new Error('GPT_IMAGE_API_KEY environment variable is required');
+      console.warn('⚠️ GPT_IMAGE_API_KEY environment variable not set. GPT Image Text-to-Image service will be disabled.');
+      this.disabled = true;
+      return;
     }
+    
+    this.disabled = false;
   }
 
   /**
    * Generate image using GPT Image model (text-to-image only)
    */
   async generateImage(prompt, options = {}) {
+    if (this.disabled) {
+      throw new Error('GPT Image Text-to-Image service is disabled due to missing API key');
+    }
+    
     try {
       console.log('🎨 Starting GPT Image text-to-image generation...');
       console.log('Prompt:', prompt);
