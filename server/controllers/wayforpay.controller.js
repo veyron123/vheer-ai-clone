@@ -776,7 +776,11 @@ export const handleCartCallback = async (req, res) => {
       reasonCode,
       authCode,
       cardPan,
-      // Additional fields filled by user on payment page
+      // WayForPay sends these fields in different formats
+      clientName, // Single field with full name (e.g., "John Doe" or "NoCLIENT NAME")
+      email, // Direct email field
+      phone, // Direct phone field
+      // Additional fields that might be filled on payment page
       clientFirstName,
       clientLastName,
       clientEmail,
@@ -803,15 +807,38 @@ export const handleCartCallback = async (req, res) => {
       currency,
       transactionStatus,
       reasonCode,
-      signature
-    });
-    
-    // Log additional user-filled fields if present
-    const additionalFields = {
+      signature,
+      clientName,
+      email,
+      phone,
       clientFirstName,
       clientLastName,
       clientEmail,
-      clientPhone,
+      clientPhone
+    });
+    
+    // Parse client name if provided as single field
+    let parsedFirstName = clientFirstName;
+    let parsedLastName = clientLastName;
+    let parsedEmail = clientEmail || email; // Use direct email field if clientEmail not provided
+    let parsedPhone = clientPhone || phone; // Use direct phone field if clientPhone not provided
+    
+    // Handle clientName field (single string with full name)
+    if (clientName && clientName !== 'NoCLIENT NAME' && !clientFirstName) {
+      const nameParts = clientName.trim().split(' ');
+      parsedFirstName = nameParts[0] || '';
+      parsedLastName = nameParts.slice(1).join(' ') || '';
+    }
+    
+    // Log additional user-filled fields if present
+    const additionalFields = {
+      clientFirstName: parsedFirstName,
+      clientLastName: parsedLastName,
+      clientEmail: parsedEmail,
+      clientPhone: parsedPhone,
+      clientName, // Log original clientName field
+      email, // Log direct email field
+      phone, // Log direct phone field
       clientAddress,
       clientCity,
       clientCountry,
@@ -822,7 +849,7 @@ export const handleCartCallback = async (req, res) => {
     };
     
     const filledFields = Object.entries(additionalFields)
-      .filter(([key, value]) => value && value.trim())
+      .filter(([key, value]) => value && (typeof value === 'string' ? value.trim() : value))
       .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
     
     if (Object.keys(filledFields).length > 0) {
@@ -959,17 +986,21 @@ export const handleCartCallback = async (req, res) => {
         }
         
         // Update guest user with real customer data if available
-        if (payment.metadata && payment.metadata.isGuest && clientEmail) {
+        if (payment.metadata && payment.metadata.isGuest && parsedEmail) {
           try {
+            const fullName = parsedFirstName || parsedLastName 
+              ? `${parsedFirstName || ''} ${parsedLastName || ''}`.trim() 
+              : (clientName && clientName !== 'NoCLIENT NAME' ? clientName : 'Customer');
+            
             await prisma.user.update({
               where: { id: payment.userId },
               data: {
-                email: clientEmail,
-                fullName: `${clientFirstName || ''} ${clientLastName || ''}`.trim() || 'Customer',
-                username: clientEmail.split('@')[0] + '_' + Date.now()
+                email: parsedEmail,
+                fullName: fullName,
+                username: parsedEmail.split('@')[0] + '_' + Date.now()
               }
             });
-            console.log('✅ Updated guest user with real customer info');
+            console.log('✅ Updated guest user with real customer info:', { email: parsedEmail, fullName });
           } catch (updateError) {
             console.log('⚠️ Could not update guest user:', updateError.message);
           }
@@ -990,18 +1021,18 @@ export const handleCartCallback = async (req, res) => {
             authCode,
             cardPan,
             
-            // Customer information - use real data from WayForPay or payment metadata
-            customerFirstName: clientFirstName || payment.metadata?.userName?.split(' ')[0] || '',
-            customerLastName: clientLastName || payment.metadata?.userName?.split(' ')[1] || '',
-            customerEmail: clientEmail || payment.metadata?.userEmail || `${orderReference}@order.com`,
-            customerPhone: clientPhone || '',
+            // Customer information - use parsed data from WayForPay or payment metadata
+            customerFirstName: parsedFirstName || payment.metadata?.userName?.split(' ')[0] || '',
+            customerLastName: parsedLastName || payment.metadata?.userName?.split(' ')[1] || '',
+            customerEmail: parsedEmail || payment.metadata?.userEmail || `${orderReference}@order.com`,
+            customerPhone: parsedPhone || '',
             customerAddress: clientAddress || '',
             customerCity: clientCity || '',
             customerCountry: clientCountry || '',
             
             // Shipping address
-            shippingFirstName: deliveryFirstName || clientFirstName || payment.metadata?.userName?.split(' ')[0] || '',
-            shippingLastName: deliveryLastName || clientLastName || payment.metadata?.userName?.split(' ')[1] || '',
+            shippingFirstName: deliveryFirstName || parsedFirstName || payment.metadata?.userName?.split(' ')[0] || '',
+            shippingLastName: deliveryLastName || parsedLastName || payment.metadata?.userName?.split(' ')[1] || '',
             shippingAddress: deliveryAddress || clientAddress || '',
             shippingCity: deliveryCity || clientCity || '',
             shippingCountry: deliveryCountry || clientCountry || '',
