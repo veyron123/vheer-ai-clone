@@ -30,10 +30,10 @@ export const API_CONFIG = {
 export const OAUTH_CONFIG = {
   googleURL: useLocalAPI 
     ? 'http://localhost:5000/auth/google'
-    : 'https://colibrrri.com/auth/google',
+    : 'https://colibrrri-fullstack.onrender.com/auth/google',
   facebookURL: useLocalAPI 
     ? 'http://localhost:5000/auth/facebook' 
-    : 'https://colibrrri.com/auth/facebook'
+    : 'https://colibrrri-fullstack.onrender.com/auth/facebook'
 };
 
 console.log('API Config:', API_CONFIG);
