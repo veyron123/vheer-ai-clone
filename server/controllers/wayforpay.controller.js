@@ -827,7 +827,15 @@ export const handleCartCallback = async (req, res) => {
       clientFirstName,
       clientLastName,
       clientEmail,
-      clientPhone
+      clientPhone,
+      // Log all address fields
+      clientAddress,
+      clientCity,
+      clientCountry,
+      deliveryAddress,
+      deliveryCity,
+      deliveryCountry,
+      deliveryPostalCode
     });
     
     // Parse client name if provided as single field
@@ -868,6 +876,10 @@ export const handleCartCallback = async (req, res) => {
     if (Object.keys(filledFields).length > 0) {
       console.log('👤 Additional fields filled by user:', filledFields);
     }
+    
+    // Log all available callback data to debug missing fields
+    console.log('🔍 All callback data fields:', Object.keys(callbackData));
+    console.log('🔍 Full callback data:', JSON.stringify(callbackData, null, 2));
     
     // Verify signature
     const expectedSignature = generateCallbackSignature({
@@ -984,6 +996,8 @@ export const handleCartCallback = async (req, res) => {
               price: originalItem.price || 0,
               frameColor: originalItem.frameColor || originalItem.frameColorName,
               size: originalItem.size || originalItem.sizeName,
+              image: originalItem.imageUrl || originalItem.image || originalItem.design, // Include image URL
+              imageUrl: originalItem.imageUrl || originalItem.image || originalItem.design, // Duplicate for compatibility
               ...originalItem // Include all other properties
             };
           });
@@ -1003,7 +1017,9 @@ export const handleCartCallback = async (req, res) => {
               quantity: parseInt(counts[i]) || 1,
               price: parseFloat(prices[i]) || 0,
               frameColor: nameMatch ? nameMatch[1].trim() : 'Unknown',
-              size: nameMatch ? nameMatch[2].trim() : 'Unknown'
+              size: nameMatch ? nameMatch[2].trim() : 'Unknown',
+              image: null, // No image data in fallback
+              imageUrl: null // No image data in fallback
             });
           }
           console.log('⚠️ Using WayForPay product data as fallback:', items);

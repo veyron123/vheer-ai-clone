@@ -312,11 +312,15 @@ const AdminOrders = () => {
                 {order.items && order.items.map((item, index) => (
                   <div key={index} className="flex justify-between items-center bg-white rounded p-3 gap-4">
                     <div className="flex items-center gap-3">
-                      {item.image && (
+                      {(item.image || item.imageUrl) && (
                         <img 
-                          src={item.image} 
+                          src={item.image || item.imageUrl} 
                           alt="Order item" 
                           className="w-16 h-16 object-cover rounded"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.style.display = 'none';
+                          }}
                         />
                       )}
                       <div>
