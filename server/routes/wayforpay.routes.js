@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { authenticate } from '../middleware/auth.middleware.js';
 import {
   initializePayment,
@@ -8,6 +9,9 @@ import {
   initializeCartPayment,
   handleCartCallback
 } from '../controllers/wayforpay.controller.js';
+
+// Configure multer for memory storage (no file uploads, just form data)
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = Router();
 
@@ -34,47 +38,36 @@ router.post('/cart-callback', handleCartCallback);
 // Success page for WayForPay redirects (no CORS restrictions)
 // Handle both GET and POST requests from WayForPay
 const handleSuccess = (req, res) => {
+  console.log('🔍 SUCCESS PAGE - Raw request received');
+  console.log('🔍 SUCCESS PAGE - Method:', req.method);
+  console.log('🔍 SUCCESS PAGE - Content-Type:', req.get('content-type'));
   // Allow any origin for success page
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   
   // Get parameters from query (GET) or body (POST)
-  // For multipart/form-data, Express doesn't parse automatically, so we check multiple sources
+  // For multipart/form-data, multer will parse it
   let params = {};
   
   if (req.method === 'GET') {
     params = req.query;
   } else if (req.method === 'POST') {
-    // Try to get params from body first
-    params = req.body;
-    
-    // If body is empty but we have raw data, try to parse it
-    if (Object.keys(params).length === 0 && req.body) {
-      // For multipart data, the body might be a Buffer
-      if (Buffer.isBuffer(req.body)) {
-        try {
-          const bodyString = req.body.toString('utf-8');
-          console.log('🔍 SUCCESS PAGE - Raw body:', bodyString.substring(0, 500));
-        } catch (e) {
-          console.log('🔍 SUCCESS PAGE - Could not parse buffer');
-        }
-      }
-    }
-    
-    // If still no params, check query string (WayForPay might send POST with query params)
-    if (Object.keys(params).length === 0) {
+    // Check if multer parsed multipart data
+    if (req.body && Object.keys(req.body).length > 0) {
+      params = req.body;
+      console.log('🔍 SUCCESS PAGE - Multer parsed body:', JSON.stringify(params, null, 2));
+    } 
+    // If no body params, check query string (WayForPay might send POST with query params)
+    else if (req.query && Object.keys(req.query).length > 0) {
       params = req.query;
+      console.log('🔍 SUCCESS PAGE - Using query params:', JSON.stringify(params, null, 2));
     }
   }
   
   // Debug: log all received parameters
-  console.log('🔍 SUCCESS PAGE - Method:', req.method);
-  console.log('🔍 SUCCESS PAGE - Headers:', JSON.stringify(req.headers, null, 2));
-  console.log('🔍 SUCCESS PAGE - All params:', JSON.stringify(params, null, 2));
+  console.log('🔍 SUCCESS PAGE - Final params:', JSON.stringify(params, null, 2));
   console.log('🔍 SUCCESS PAGE - Available keys:', Object.keys(params));
-  console.log('🔍 SUCCESS PAGE - Query params:', JSON.stringify(req.query, null, 2));
-  console.log('🔍 SUCCESS PAGE - Body params:', JSON.stringify(req.body, null, 2));
   
   // WayForPay может передавать разные поля статуса в зависимости от типа операции
   const { 
@@ -142,7 +135,7 @@ const handleSuccess = (req, res) => {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Платеж успешен</title>
+        <title>Payment Successful</title>
         <meta charset="utf-8">
         <style>
           body { font-family: Arial; text-align: center; padding: 50px; }
@@ -152,9 +145,9 @@ const handleSuccess = (req, res) => {
         </style>
       </head>
       <body>
-        <div class="success">✅ Платеж успешно завершен!</div>
-        <div class="info">Номер заказа: ${orderReference || 'N/A'}</div>
-        <div class="redirect">Переносим вас на главную страницу...</div>
+        <div class="success">✅ Payment completed successfully!</div>
+        <div class="info">Order number: ${orderReference || 'N/A'}</div>
+        <div class="redirect">Redirecting to the main page...</div>
         <script>
           setTimeout(() => {
             window.location.href = '${redirectUrl}';
@@ -168,7 +161,7 @@ const handleSuccess = (req, res) => {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Ошибка платежа</title>
+        <title>Payment Error</title>
         <meta charset="utf-8">
         <style>
           body { font-family: Arial; text-align: center; padding: 50px; }
@@ -178,9 +171,9 @@ const handleSuccess = (req, res) => {
         </style>
       </head>
       <body>
-        <div class="error">❌ Ошибка платежа</div>
-        <div class="info">Статус: ${finalStatus || 'Неизвестно'}</div>
-        <div class="redirect">Переносим вас на главную страницу...</div>
+        <div class="error">❌ Payment Error</div>
+        <div class="info">Status: ${finalStatus || 'Unknown'}</div>
+        <div class="redirect">Redirecting to the main page...</div>
         <script>
           setTimeout(() => {
             window.location.href = '${redirectUrl}';
@@ -194,7 +187,8 @@ const handleSuccess = (req, res) => {
 
 // Register success handler for both GET and POST methods
 router.get('/success', handleSuccess);
-router.post('/success', handleSuccess);
+// Use multer for POST to parse multipart/form-data
+router.post('/success', upload.none(), handleSuccess);
 
 // Debug endpoint to log what WayForPay sends (temporary)
 router.all('/debug-callback', (req, res) => {
@@ -250,7 +244,7 @@ router.get('/failure', (req, res) => {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Платеж отклонен</title>
+      <title>Payment Declined</title>
       <meta charset="utf-8">
       <style>
         body { font-family: Arial; text-align: center; padding: 50px; }
@@ -260,9 +254,9 @@ router.get('/failure', (req, res) => {
       </style>
     </head>
     <body>
-      <div class="error">❌ Платеж отклонен</div>
-      <div class="info">Заказ: ${orderReference || 'N/A'}<br>Код: ${reasonCode || 'N/A'}</div>
-      <div class="redirect">Переносим вас на главную страницу...</div>
+      <div class="error">❌ Payment Declined</div>
+      <div class="info">Order: ${orderReference || 'N/A'}<br>Code: ${reasonCode || 'N/A'}</div>
+      <div class="redirect">Redirecting to the main page...</div>
       <script>
         setTimeout(() => {
           window.location.href = 'https://colibrrri-fullstack.onrender.com';
