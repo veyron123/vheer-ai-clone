@@ -5,7 +5,7 @@ import {
   AlertCircle, DollarSign, Calendar, User, MapPin, Phone,
   Mail, ChevronDown, ChevronUp, ArrowUpDown, RefreshCw,
   Bell, BellOff, ShoppingBag, Clock, CheckCircle, XCircle,
-  FileText, Copy, ExternalLink, Hash
+  FileText, Copy, ExternalLink, Hash, Download, Image as ImageIcon
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -309,33 +309,132 @@ const AdminOrders = () => {
                 Order Items
               </h3>
               <div className="space-y-2">
-                {order.items && order.items.map((item, index) => (
-                  <div key={index} className="flex justify-between items-center bg-white rounded p-3 gap-4">
-                    <div className="flex items-center gap-3">
-                      {(item.image || item.imageUrl) && (
-                        <img 
-                          src={item.image || item.imageUrl} 
-                          alt="Order item" 
-                          className="w-16 h-16 object-cover rounded"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                      )}
-                      <div>
-                        <p className="font-medium">{item.name || 'Mockup Design'}</p>
-                        <p className="text-sm text-gray-600">
-                          Frame: {item.frameColor || 'N/A'} | Size: {item.size || 'N/A'}
-                        </p>
-                        <p className="text-sm text-gray-500">Quantity: {item.quantity || 1}</p>
+                {order.items && order.items.map((item, index) => {
+                  const imageUrl = item.image || item.imageUrl;
+                  
+                  // Function to handle image download
+                  const handleDownloadImage = () => {
+                    if (!imageUrl) return;
+                    
+                    // Check if it's a Cloudinary URL
+                    if (imageUrl.includes('cloudinary.com')) {
+                      // Add fl_attachment to force download and set filename
+                      const orderRef = order.orderReference || 'order';
+                      const itemNum = index + 1;
+                      const downloadUrl = imageUrl.replace('/upload/', `/upload/fl_attachment:${orderRef}_item_${itemNum}/`);
+                      window.open(downloadUrl, '_blank');
+                    } else {
+                      // For non-Cloudinary URLs, download using fetch
+                      fetch(imageUrl)
+                        .then(response => response.blob())
+                        .then(blob => {
+                          const url = window.URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `order_${order.orderReference}_item_${index + 1}.png`;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          window.URL.revokeObjectURL(url);
+                        })
+                        .catch(err => {
+                          console.error('Download failed:', err);
+                          window.open(imageUrl, '_blank');
+                        });
+                    }
+                  };
+                  
+                  const handleViewFullSize = () => {
+                    if (!imageUrl) return;
+                    
+                    // For Cloudinary, get high quality version
+                    if (imageUrl.includes('cloudinary.com')) {
+                      // Remove transformations and get high quality
+                      const parts = imageUrl.split('/upload/');
+                      if (parts.length === 2) {
+                        // Add quality auto and format auto for best results
+                        const highQualityUrl = parts[0] + '/upload/q_auto:best,f_auto/' + parts[1].split('/').slice(-2).join('/');
+                        window.open(highQualityUrl, '_blank');
+                      } else {
+                        window.open(imageUrl, '_blank');
+                      }
+                    } else {
+                      window.open(imageUrl, '_blank');
+                    }
+                  };
+                  
+                  return (
+                    <div key={index} className="flex justify-between items-center bg-white rounded p-3 gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="relative group">
+                          {imageUrl ? (
+                            <>
+                              <img 
+                                src={imageUrl} 
+                                alt="Order item" 
+                                className="w-16 h-16 object-cover rounded cursor-pointer transition-transform hover:scale-105"
+                                onClick={handleViewFullSize}
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yOCAxOEwzNiAyOE0zNiAxOEwyOCAyOCIgc3Ryb2tlPSIjOUI5Q0E0IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4=';
+                                }}
+                              />
+                              {/* Hover overlay with actions */}
+                              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-200 rounded flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                                <button
+                                  onClick={handleViewFullSize}
+                                  className="p-1.5 bg-white rounded hover:bg-gray-100 transition-colors"
+                                  title="View full size"
+                                >
+                                  <ExternalLink className="w-4 h-4 text-gray-700" />
+                                </button>
+                                <button
+                                  onClick={handleDownloadImage}
+                                  className="p-1.5 bg-white rounded hover:bg-gray-100 transition-colors"
+                                  title="Download image"
+                                >
+                                  <Download className="w-4 h-4 text-gray-700" />
+                                </button>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="w-16 h-16 bg-gray-100 rounded flex items-center justify-center">
+                              <ImageIcon className="w-6 h-6 text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium">{item.name || 'Mockup Design'}</p>
+                          <p className="text-sm text-gray-600">
+                            Frame: {item.frameColor || 'N/A'} | Size: {item.size || 'N/A'}
+                          </p>
+                          <p className="text-sm text-gray-500">Quantity: {item.quantity || 1}</p>
+                          {imageUrl && (
+                            <div className="flex gap-3 mt-1">
+                              <button
+                                onClick={handleDownloadImage}
+                                className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors"
+                              >
+                                <Download className="w-3 h-3" />
+                                Download
+                              </button>
+                              <button
+                                onClick={handleViewFullSize}
+                                className="text-xs text-gray-600 hover:text-gray-800 flex items-center gap-1 transition-colors"
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                                Full Size
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
+                      <p className="font-semibold whitespace-nowrap">
+                        {order.currency || 'UAH'} {((item.price || 0) * (item.quantity || 1)).toFixed(2)}
+                      </p>
                     </div>
-                    <p className="font-semibold whitespace-nowrap">
-                      {order.currency || 'UAH'} {((item.price || 0) * (item.quantity || 1)).toFixed(2)}
-                    </p>
-                  </div>
-                ))}
+                  );
+                })}
                 <div className="border-t pt-2 mt-2">
                   <div className="flex justify-between font-semibold">
                     <span>Total:</span>
