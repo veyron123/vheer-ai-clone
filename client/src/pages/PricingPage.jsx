@@ -172,13 +172,31 @@ const PricingPage = () => {
           window.location.href = 'https://secure.wayforpay.com/button/b85dd73ba8317';
         } else if (plan.id === 'PRO') {
           // For Pro and Enterprise, show coming soon
-          toast.info('Цей план буде доступний незабаром!');
+          toast('Цей план буде доступний незабаром!', { icon: 'ℹ️' });
         } else if (plan.id === 'ENTERPRISE') {
-          toast.info('Цей план буде доступний незабаром!');
+          toast('Цей план буде доступний незабаром!', { icon: 'ℹ️' });
         }
       } else {
-        // For English version, show coming soon
-        toast.info('Payment integration coming soon!');
+        // For English version
+        if (plan.id === 'BASIC') {
+          // 📊 Track subscription attempt for Basic plan
+          analytics.track('begin_checkout', {
+            currency: 'UAH',
+            value: plan.price,
+            items: [{
+              item_id: plan.id,
+              item_name: `${plan.name} Subscription`,
+              price: plan.price,
+              quantity: 1
+            }]
+          });
+          
+          // Redirect to WayForPay button URL for Basic plan (1₴ for testing)
+          window.location.href = 'https://secure.wayforpay.com/button/b85dd73ba8317';
+        } else {
+          // For Pro and Enterprise, show coming soon
+          toast('Payment integration coming soon!', { icon: 'ℹ️' });
+        }
       }
     }
   };
