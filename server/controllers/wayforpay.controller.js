@@ -16,7 +16,7 @@ const getPlanConfig = (language = 'en') => {
     // Ukrainian pricing (₴ - hryvnia)
     return {
       BASIC: {
-        amount: 400,
+        amount: 1,
         currency: 'UAH',
         credits: 800,
         name: 'Базовий план',
