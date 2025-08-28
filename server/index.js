@@ -32,7 +32,8 @@ import testSubscriptionRoutes from './routes/test-subscription-expiry.js';
 import adminRoutes from './routes/admin.routes.js';
 import ordersRoutes from './routes/orders.routes.js';
 import cartOrdersRoutes from './routes/cartOrders.routes.js';
-import cartTrackingRoutes from './routes/cart-tracking.routes.js';
+// import cartTrackingRoutes from './routes/cart-tracking.routes.js';
+import cartStatsRoutes from './routes/cart-stats.routes.js';
 import notificationsRoutes from './routes/notifications.routes.js';
 import imageProxyRoutes from './routes/image-proxy.routes.js';
 import webhookRoutes, { setupWebSocket } from './routes/webhook.routes.js';
@@ -43,7 +44,7 @@ import { checkDailyCredits } from './middleware/credit.middleware.js';
 import CreditCronJob from './jobs/creditCronJob.js';
 import initializeSubscriptionExpiryJobs from './jobs/subscriptionExpiryJob.js';
 import initializeAutoPaymentJobs from './jobs/autoPaymentJob.js';
-import initializeCartTrackingJobs from './jobs/cartTrackingJob.js';
+// import initializeCartTrackingJobs from './jobs/cartTrackingJob.js';
 
 // Load environment variables first
 dotenv.config();
@@ -151,7 +152,7 @@ if (process.env.NODE_ENV === 'development') {
 app.use('/api/admin', adminRoutes);
 app.use('/api/orders', ordersRoutes);
 app.use('/api/cart-orders', cartOrdersRoutes);
-app.use('/api/carts', cartTrackingRoutes);
+app.use('/api/carts', cartStatsRoutes);
 app.use('/api/notifications', notificationsRoutes);
 
 // Image proxy routes (no authentication required for public images)
@@ -214,8 +215,8 @@ CreditCronJob.init();
 initializeSubscriptionExpiryJobs();
 initializeAutoPaymentJobs();
 
-// Initialize cart tracking jobs
-initializeCartTrackingJobs();
+// Initialize cart tracking jobs (temporarily disabled due to missing models)
+// initializeCartTrackingJobs();
 
 // Start server with increased timeout
 const server = app.listen(PORT, () => {
