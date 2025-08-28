@@ -149,15 +149,34 @@ const Cart = () => {
         id: 'checkout-loading'
       });
 
-      // Prepare cart data for WayForPay
+      // Get user data from localStorage if available
+      const userStr = localStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+
+      // Prepare cart data for WayForPay with complete item details
       const cartData = {
         items: items.map(item => ({
           name: `Frame Poster - ${item.frameColorName || item.frameColor} - ${item.sizeName || item.size}`,
           price: item.price,
-          quantity: item.quantity
+          quantity: item.quantity,
+          // Include all item details for proper order tracking
+          frameColor: item.frameColor,
+          frameColorName: item.frameColorName,
+          size: item.size,
+          sizeName: item.sizeName,
+          imageUrl: item.imageUrl,
+          design: item.design,
+          // Include any other relevant item properties
+          ...item
         })),
         total: getTotal(),
-        currency: 'UAH' // Changed to UAH for testing payments
+        currency: 'UAH', // Changed to UAH for testing payments
+        // Include user information if available
+        userInfo: user ? {
+          email: user.email,
+          fullName: user.fullName || user.username,
+          id: user.id
+        } : null
       };
 
       console.log('Checkout items:', items);
@@ -165,11 +184,20 @@ const Cart = () => {
 
       // Call backend to initialize WayForPay payment  
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const token = localStorage.getItem('token');
+      
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Include auth token if user is logged in
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${apiUrl}/payments/wayforpay/cart-checkout`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify(cartData)
       });
 

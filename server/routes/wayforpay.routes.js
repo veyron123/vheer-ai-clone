@@ -36,8 +36,36 @@ router.post('/cancel', authenticate, cancelSubscription);
 
 // === CART PAYMENT ROUTES (One-time payments) ===
 
-// Initialize cart payment (no auth required - allows guest checkout)
-router.post('/cart-checkout', initializeCartPayment);
+// Initialize cart payment (optional auth - supports both guest and user checkout)
+// Use a middleware that adds user if token exists but doesn't require it
+router.post('/cart-checkout', async (req, res, next) => {
+  // Check for authorization header
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    // If token exists, try to authenticate but don't fail if invalid
+    const token = authHeader.slice(7);
+    try {
+      const { authenticate } = await import('../middleware/auth.middleware.js');
+      // Create a modified authenticate that doesn't fail
+      authenticate(req, res, (err) => {
+        if (err) {
+          // Token invalid, continue as guest
+          console.log('Invalid token, continuing as guest');
+          req.user = null;
+        }
+        next();
+      });
+    } catch (error) {
+      // Auth failed, continue as guest
+      req.user = null;
+      next();
+    }
+  } else {
+    // No token, continue as guest
+    req.user = null;
+    next();
+  }
+}, initializeCartPayment);
 
 // Handle WayForPay callback for cart payments (no auth required)
 // Add CORS handling and multipart parsing for WayForPay callbacks

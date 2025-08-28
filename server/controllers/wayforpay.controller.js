@@ -609,21 +609,21 @@ export const initializeCartPayment = async (req, res) => {
       returnUrl: `${process.env.BASE_URL || 'http://localhost:5000'}/api/payments/wayforpay/success`,
       serviceUrl: `${process.env.BASE_URL || 'http://localhost:5000'}/api/payments/wayforpay/cart-callback`,
       
-      // Empty additional fields for user input on payment page
-      clientFirstName: '',
-      clientLastName: '',
-      clientEmail: '',
-      clientPhone: '',
-      clientAddress: '',
-      clientCity: '',
-      clientCountry: 'United States', // Set United States as default country
+      // Pre-fill fields if user is authenticated, otherwise leave empty
+      clientFirstName: req.user?.fullName?.split(' ')[0] || '',
+      clientLastName: req.user?.fullName?.split(' ')[1] || '',
+      clientEmail: req.user?.email || '',
+      clientPhone: req.user?.phone || '',
+      clientAddress: req.user?.address || '',
+      clientCity: req.user?.city || '',
+      clientCountry: req.user?.country || 'United States', // Use user's country or default to US
       
-      // Empty delivery fields for user input
-      deliveryFirstName: '',
-      deliveryLastName: '',
-      deliveryPhone: '',
-      deliveryAddress: '',
-      deliveryCountry: 'United States',
+      // Pre-fill delivery fields with client info if available
+      deliveryFirstName: req.user?.fullName?.split(' ')[0] || '',
+      deliveryLastName: req.user?.fullName?.split(' ')[1] || '',
+      deliveryPhone: req.user?.phone || '',
+      deliveryAddress: req.user?.address || '',
+      deliveryCountry: req.user?.country || 'United States',
       
       // Enable delivery options block on payment page (address delivery only)  
       deliveryList: 'other',
@@ -657,25 +657,29 @@ export const initializeCartPayment = async (req, res) => {
       signature: paymentData.merchantSignature
     });
     
-    // Handle user for payment - create guest user if needed
+    // Handle user for payment - use real user data if available
     let userId = req.user?.id;
+    let userEmail = req.user?.email;
+    let userName = req.user?.fullName || req.user?.username;
     
     if (!userId) {
-      // Create a temporary guest user for the payment
+      // For guest checkout, we'll update with real data from WayForPay callback
       const guestUser = await prisma.user.create({
         data: {
-          email: `guest_${orderReference}@temp.com`,
+          email: `${orderReference}@order.com`, // Temporary, will be updated from callback
           username: `guest_${Date.now()}`,
-          fullName: 'Guest User',
+          fullName: 'Pending Customer Info', // Will be updated from WayForPay
           emailVerified: false,
           totalCredits: 0
         }
       });
       userId = guestUser.id;
-      console.log('👤 Created guest user for payment:', userId);
+      userEmail = guestUser.email;
+      userName = guestUser.fullName;
+      console.log('👤 Created temporary guest user for payment:', userId);
     }
     
-    // Store cart order in database for tracking
+    // Store cart order in database with detailed cart items
     const payment = await prisma.payment.create({
       data: {
         userId: userId, // Now always has a valid userId
@@ -684,7 +688,19 @@ export const initializeCartPayment = async (req, res) => {
         status: 'PENDING',
         description: `Cart payment - ${productNames.join(', ')}`,
         wayforpayOrderReference: orderReference,
-        cartItems: items // Store original cart items for callback
+        cartItems: items.map(item => ({
+          ...item,
+          // Ensure all item properties are preserved
+          frameColor: item.frameColor || item.frameColorName,
+          size: item.size || item.sizeName,
+          originalData: item // Keep full original data as backup
+        })),
+        // Store user info if available
+        metadata: {
+          userEmail: userEmail,
+          userName: userName,
+          isGuest: !req.user?.id
+        }
       }
     });
     
@@ -901,13 +917,24 @@ export const handleCartCallback = async (req, res) => {
       
       // Create order record with full customer and product details
       try {
-        // Build cart items array - use saved cart items from payment record first
+        // Build cart items array - use saved cart items from payment record
         let items = [];
         
-        // Try to use saved cart items from payment record first
+        // Use saved cart items from payment record
         if (payment.cartItems && Array.isArray(payment.cartItems)) {
-          items = payment.cartItems;
-          console.log('✅ Using saved cart items from payment record:', items.length);
+          items = payment.cartItems.map(item => {
+            // Restore original item structure
+            const originalItem = item.originalData || item;
+            return {
+              name: originalItem.name || `Frame Poster - ${originalItem.frameColor} - ${originalItem.size}`,
+              quantity: originalItem.quantity || 1,
+              price: originalItem.price || 0,
+              frameColor: originalItem.frameColor || originalItem.frameColorName,
+              size: originalItem.size || originalItem.sizeName,
+              ...originalItem // Include all other properties
+            };
+          });
+          console.log('✅ Using detailed cart items from payment record:', items);
         } 
         // Fallback to WayForPay product data if no saved items
         else if (productName && productCount && productPrice) {
@@ -916,18 +943,39 @@ export const handleCartCallback = async (req, res) => {
           const prices = Array.isArray(productPrice) ? productPrice : [productPrice];
           
           for (let i = 0; i < names.length; i++) {
+            // Try to parse frame details from product name
+            const nameMatch = names[i].match(/Frame Poster - ([^-]+) - (.+)/);
             items.push({
               name: names[i],
               quantity: parseInt(counts[i]) || 1,
-              price: parseFloat(prices[i]) || 0
+              price: parseFloat(prices[i]) || 0,
+              frameColor: nameMatch ? nameMatch[1].trim() : 'Unknown',
+              size: nameMatch ? nameMatch[2].trim() : 'Unknown'
             });
           }
-          console.log('⚠️ Using WayForPay product data as fallback:', items.length);
+          console.log('⚠️ Using WayForPay product data as fallback:', items);
         } else {
           console.log('❌ No cart items found in payment record or WayForPay data');
         }
         
-        // Create the cart order in the database
+        // Update guest user with real customer data if available
+        if (payment.metadata && payment.metadata.isGuest && clientEmail) {
+          try {
+            await prisma.user.update({
+              where: { id: payment.userId },
+              data: {
+                email: clientEmail,
+                fullName: `${clientFirstName || ''} ${clientLastName || ''}`.trim() || 'Customer',
+                username: clientEmail.split('@')[0] + '_' + Date.now()
+              }
+            });
+            console.log('✅ Updated guest user with real customer info');
+          } catch (updateError) {
+            console.log('⚠️ Could not update guest user:', updateError.message);
+          }
+        }
+
+        // Create the cart order in the database with complete data
         const cartOrder = await prisma.cartOrder.create({
           data: {
             userId: payment.userId,
@@ -942,25 +990,25 @@ export const handleCartCallback = async (req, res) => {
             authCode,
             cardPan,
             
-            // Customer information  
-            customerFirstName: clientFirstName || '',
-            customerLastName: clientLastName || '',
-            customerEmail: clientEmail || `${orderReference}@order.com`,
+            // Customer information - use real data from WayForPay or payment metadata
+            customerFirstName: clientFirstName || payment.metadata?.userName?.split(' ')[0] || '',
+            customerLastName: clientLastName || payment.metadata?.userName?.split(' ')[1] || '',
+            customerEmail: clientEmail || payment.metadata?.userEmail || `${orderReference}@order.com`,
             customerPhone: clientPhone || '',
             customerAddress: clientAddress || '',
             customerCity: clientCity || '',
             customerCountry: clientCountry || '',
             
             // Shipping address
-            shippingFirstName: deliveryFirstName || clientFirstName || '',
-            shippingLastName: deliveryLastName || clientLastName || '',
+            shippingFirstName: deliveryFirstName || clientFirstName || payment.metadata?.userName?.split(' ')[0] || '',
+            shippingLastName: deliveryLastName || clientLastName || payment.metadata?.userName?.split(' ')[1] || '',
             shippingAddress: deliveryAddress || clientAddress || '',
             shippingCity: deliveryCity || clientCity || '',
             shippingCountry: deliveryCountry || clientCountry || '',
             shippingPostalCode: deliveryPostalCode || '',
             shippingPhone: deliveryPhone || clientPhone || '',
             
-            // Order items as JSON
+            // Order items with full details
             items: items,
             
             // Order status
@@ -1006,7 +1054,7 @@ export const handleCartCallback = async (req, res) => {
               where: { id: cartSession.id },
               data: {
                 status: 'converted',
-                convertedToOrderId: order.id
+                convertedToOrderId: cartOrder.id
               }
             });
             console.log('✅ Корзина помечена как оплаченная:', cartSession.id);
@@ -1022,7 +1070,7 @@ export const handleCartCallback = async (req, res) => {
             type: 'new_order',
             title: '🛍️ New Order Received!',
             message: `Order ${orderReference} from ${clientFirstName || 'Customer'} ${clientLastName || ''} for ${currency} ${amount}`,
-            orderId: order.id,
+            orderId: cartOrder.id,
             timestamp: new Date().toISOString()
           };
           
