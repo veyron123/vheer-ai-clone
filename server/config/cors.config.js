@@ -20,14 +20,19 @@ function getAllowedOrigins() {
       'https://colibrrri.com',
       'https://www.colibrrri.com',
       'https://vheer.ai',
-      'https://www.vheer.ai'
+      'https://www.vheer.ai',
+      // WayForPay domains for payment callbacks
+      'https://secure.wayforpay.com',
+      'https://api.wayforpay.com',
+      'https://www.wayforpay.com'
     ];
     
     // If deployed on Render, add Render URLs
     if (process.env.RENDER) {
       knownDomains.push(
         'https://vheer-client.onrender.com',
-        'https://vheer-api.onrender.com'
+        'https://vheer-api.onrender.com',
+        'https://colibrrri-fullstack.onrender.com'
       );
     }
     
