@@ -132,22 +132,22 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
   // Конфигурация размеров и цен для разных соотношений сторон
   const frameSizes = {
     '1:1': [
-      { id: '10x10', name: '10"×10"', price: 1 },
-      { id: '12x12', name: '12"×12"', price: 1 },
-      { id: '14x14', name: '14"×14"', price: 1 },
-      { id: '16x16', name: '16"×16"', price: 1 },
-      { id: '18x18', name: '18"×18"', price: 1 }
+      { id: '10x10', name: '10"×10"', price: 0.01 },
+      { id: '12x12', name: '12"×12"', price: 80 },
+      { id: '14x14', name: '14"×14"', price: 90 },
+      { id: '16x16', name: '16"×16"', price: 100 },
+      { id: '18x18', name: '18"×18"', price: 120 }
     ],
     '3:4': [
-      { id: '6x8', name: '6"×8"', price: 1 },
-      { id: '12x16', name: '12"×16"', price: 1 },
-      { id: '18x24', name: '18"×24"', price: 1 },
-      { id: '24x32', name: '24"×32"', price: 1 }
+      { id: '6x8', name: '6"×8"', price: 70 },
+      { id: '12x16', name: '12"×16"', price: 80 },
+      { id: '18x24', name: '18"×24"', price: 90 },
+      { id: '24x32', name: '24"×32"', price: 100 }
     ],
     '4:3': [
-      { id: '8x6', name: '8"×6"', price: 1 },
-      { id: '24x18', name: '24"×18"', price: 1 },
-      { id: '32x24', name: '32"×24"', price: 1 }
+      { id: '8x6', name: '8"×6"', price: 70 },
+      { id: '24x18', name: '24"×18"', price: 90 },
+      { id: '32x24', name: '32"×24"', price: 100 }
     ]
   };
 
