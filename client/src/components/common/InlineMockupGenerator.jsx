@@ -855,52 +855,9 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
 
             {/* Controls */}
             <div className="space-y-4">
-              {/* Frame Color Selection - только для 1:1 */}
-              {detectedAspectRatio === '1:1' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Palette className="w-4 h-4 inline mr-1" />
-                    Frame color
-                  </label>
-                  <div className="flex gap-3">
-                    {frameColors.map((color) => (
-                      <label
-                        key={color.id}
-                        className="relative cursor-pointer"
-                      >
-                        <input
-                          type="radio"
-                          name="frameColor"
-                          value={color.id}
-                          checked={selectedColor === color.id}
-                          onChange={(e) => setSelectedColor(e.target.value)}
-                          className="sr-only"
-                        />
-                        <div className={`relative ${selectedColor === color.id ? 'ring-2 ring-purple-500 ring-offset-2' : ''} rounded-lg transition-all`}>
-                          <div 
-                            className="w-12 h-12 rounded-lg border-2"
-                            style={{ 
-                              backgroundColor: color.color,
-                              borderColor: color.borderColor
-                            }}
-                          >
-                            {selectedColor === color.id && (
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
-
+  
               {/* Frame Preview - динамический мокап для выбранного размера */}
-              {(detectedAspectRatio === '3:4' || detectedAspectRatio === '4:3' || detectedAspectRatio === '1:1') && (
+              {(detectedAspectRatio === '3:4' || detectedAspectRatio === '4:3') && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     <Palette className="w-4 h-4 inline mr-1" />
