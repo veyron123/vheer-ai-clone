@@ -19,14 +19,14 @@ const router = Router();
 router.post('/init', authenticate, initializePayment);
 
 // Handle WayForPay callback (no auth required - called by WayForPay)  
-// Add CORS handling for WayForPay callbacks
+// Add CORS handling and multipart parsing for WayForPay callbacks
 router.post('/callback', (req, res, next) => {
   // Allow WayForPay callbacks from any origin
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   next();
-}, handleCallback);
+}, upload.none(), handleCallback);
 
 // Check payment status
 router.get('/status/:orderId', authenticate, checkPaymentStatus);
@@ -40,14 +40,14 @@ router.post('/cancel', authenticate, cancelSubscription);
 router.post('/cart-checkout', initializeCartPayment);
 
 // Handle WayForPay callback for cart payments (no auth required)
-// Add CORS handling for WayForPay callbacks
+// Add CORS handling and multipart parsing for WayForPay callbacks
 router.post('/cart-callback', (req, res, next) => {
   // Allow WayForPay callbacks from any origin
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   next();
-}, handleCartCallback);
+}, upload.none(), handleCartCallback);
 
 // Success page for WayForPay redirects (no CORS restrictions)
 // Handle both GET and POST requests from WayForPay
