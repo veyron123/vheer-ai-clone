@@ -86,8 +86,18 @@ app.use(securityHeaders);
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-// Add raw body parsing for multipart form data
-app.use(express.raw({ type: 'multipart/form-data', limit: '50mb' }));
+
+// Add raw body parsing for multipart form data - but exclude WayForPay callback endpoints
+app.use((req, res, next) => {
+  // Skip raw parsing for WayForPay endpoints - they use multer instead
+  if (req.path.includes('/payments/wayforpay/callback') || 
+      req.path.includes('/payments/wayforpay/cart-callback') ||
+      req.path.includes('/payments/wayforpay/success')) {
+    return next();
+  }
+  // Apply raw parsing for other multipart requests
+  express.raw({ type: 'multipart/form-data', limit: '50mb' })(req, res, next);
+});
 
 // Session configuration for OAuth with Prisma store
 app.use(session({

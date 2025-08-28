@@ -42,6 +42,11 @@ router.post('/cart-checkout', initializeCartPayment);
 // Handle WayForPay callback for cart payments (no auth required)
 // Add CORS handling and multipart parsing for WayForPay callbacks
 router.post('/cart-callback', (req, res, next) => {
+  console.log('🔍 CART-CALLBACK - Request received');
+  console.log('🔍 CART-CALLBACK - Content-Type:', req.get('content-type'));
+  console.log('🔍 CART-CALLBACK - Raw body type:', typeof req.body);
+  console.log('🔍 CART-CALLBACK - Body keys:', Object.keys(req.body || {}));
+  
   // Allow WayForPay callbacks from any origin
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
