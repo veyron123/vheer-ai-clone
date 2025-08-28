@@ -606,7 +606,7 @@ export const initializeCartPayment = async (req, res) => {
       // One-time payment settings (no recurring)
       merchantTransactionType: 'SALE', // Direct sale, not AUTH
       language: 'UA', // Changed to Ukrainian for UAH currency
-      returnUrl: `${process.env.FRONTEND_URL || 'http://localhost:5178'}/cart/payment/success`,
+      returnUrl: `${process.env.BASE_URL || 'http://localhost:5000'}/api/payments/wayforpay/success`,
       serviceUrl: `${process.env.BASE_URL || 'http://localhost:5000'}/api/payments/wayforpay/cart-callback`,
       
       // Empty additional fields for user input on payment page
