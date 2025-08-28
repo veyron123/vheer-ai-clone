@@ -49,3 +49,4 @@ pnpm-lock.yaml
 
 # Ignored/disabled features
 .ignore/
+temp/*.mp4
