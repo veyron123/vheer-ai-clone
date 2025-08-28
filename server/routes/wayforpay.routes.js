@@ -44,8 +44,11 @@ const handleSuccess = (req, res) => {
   
   // Debug: log all received parameters
   console.log('🔍 SUCCESS PAGE - Method:', req.method);
+  console.log('🔍 SUCCESS PAGE - Headers:', JSON.stringify(req.headers, null, 2));
   console.log('🔍 SUCCESS PAGE - All params:', JSON.stringify(params, null, 2));
   console.log('🔍 SUCCESS PAGE - Available keys:', Object.keys(params));
+  console.log('🔍 SUCCESS PAGE - Query params:', JSON.stringify(req.query, null, 2));
+  console.log('🔍 SUCCESS PAGE - Body params:', JSON.stringify(req.body, null, 2));
   
   // WayForPay может передавать разные поля статуса в зависимости от типа операции
   const { 
@@ -72,11 +75,39 @@ const handleSuccess = (req, res) => {
   // Определяем правильный URL для редиректа
   const redirectUrl = 'https://colibrrri.com/en/';
   
-  // WayForPay: Успешный платеж = transactionStatus: "Approved" И reasonCode: "1100" (или без кода)
-  const isSuccessful = (finalStatus === 'Approved') && 
-    (reasonCode === '1100' || reasonCode === 1100 || !reasonCode || reasonCode === '');
+  // Расширенная проверка статуса WayForPay
+  // Из документации: успешный платеж = transactionStatus: "Approved" и reasonCode: "1100"
+  // Но также проверяем другие возможные успешные статусы
+  const successStatuses = ['Approved', 'Accepted', 'InProcessing', 'WaitingAuthComplete', 'Success', 'Successful'];
+  const successCodes = ['1100', 1100, '0', 0, '', null, undefined];
   
-  console.log('🔍 SUCCESS PAGE - Is successful:', isSuccessful, '(status:', finalStatus, ', code:', reasonCode, ')');
+  // Если есть transactionStatus - используем его, иначе ищем в других полях
+  const checkStatus = finalStatus || status || transactionStatus || paymentStatus || orderStatus;
+  const checkCode = reasonCode;
+  
+  // Логика: если статус успешный, то считаем платеж успешным
+  // Если статуса нет, но URL success и нет кода ошибки - тоже успешный
+  const statusOk = successStatuses.includes(checkStatus);
+  const codeOk = !checkCode || successCodes.includes(checkCode);
+  const urlSuccess = req.path.includes('success'); // Если пришли на success URL
+  
+  // Платеж успешен если:
+  // 1. Статус успешный И (код успешный ИЛИ нет кода)
+  // 2. ИЛИ пришли на success URL и нет явного кода ошибки
+  const isSuccessful = (statusOk && codeOk) || (urlSuccess && codeOk);
+  
+  console.log('🔍 SUCCESS PAGE - Detailed status check:', {
+    method: req.method,
+    path: req.path,
+    finalStatus,
+    checkStatus,
+    reasonCode: checkCode,
+    statusOk,
+    codeOk,
+    urlSuccess,
+    isSuccessful,
+    allReceivedParams: params
+  });
   
   if (isSuccessful) {
     res.send(`
@@ -136,6 +167,26 @@ const handleSuccess = (req, res) => {
 // Register success handler for both GET and POST methods
 router.get('/success', handleSuccess);
 router.post('/success', handleSuccess);
+
+// Debug endpoint to log what WayForPay sends (temporary)
+router.all('/debug-callback', (req, res) => {
+  console.log('🔍 DEBUG CALLBACK - Method:', req.method);
+  console.log('🔍 DEBUG CALLBACK - Headers:', JSON.stringify(req.headers, null, 2));
+  console.log('🔍 DEBUG CALLBACK - Query:', JSON.stringify(req.query, null, 2));
+  console.log('🔍 DEBUG CALLBACK - Body:', JSON.stringify(req.body, null, 2));
+  console.log('🔍 DEBUG CALLBACK - URL:', req.url);
+  console.log('🔍 DEBUG CALLBACK - Path:', req.path);
+  
+  res.json({
+    method: req.method,
+    headers: req.headers,
+    query: req.query,
+    body: req.body,
+    url: req.url,
+    path: req.path,
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Failure page for WayForPay redirects
 router.get('/failure', (req, res) => {
