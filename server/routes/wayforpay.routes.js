@@ -62,8 +62,8 @@ const handleSuccess = (req, res) => {
   console.log('🔍 SUCCESS PAGE - Final status:', finalStatus);
   console.log('🔍 SUCCESS PAGE - Order ref:', orderReference);
   
-  // Определяем правильный frontend URL для редиректа
-  const frontendUrl = process.env.FRONTEND_URL || 'https://vheer-client.onrender.com';
+  // Определяем правильный URL для редиректа
+  const redirectUrl = 'https://colibrrri.com/en/';
   
   if (finalStatus === 'Approved') {
     res.send(`
@@ -85,7 +85,7 @@ const handleSuccess = (req, res) => {
         <div class="redirect">Переносим вас на главную страницу...</div>
         <script>
           setTimeout(() => {
-            window.location.href = '${frontendUrl}';
+            window.location.href = '${redirectUrl}';
           }, 3000);
         </script>
       </body>
@@ -111,7 +111,7 @@ const handleSuccess = (req, res) => {
         <div class="redirect">Переносим вас на главную страницу...</div>
         <script>
           setTimeout(() => {
-            window.location.href = '${frontendUrl}';
+            window.location.href = '${redirectUrl}';
           }, 3000);
         </script>
       </body>
