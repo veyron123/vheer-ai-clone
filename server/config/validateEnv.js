@@ -76,10 +76,20 @@ export function validateEnv() {
     console.error('\n🚨 Missing Required Environment Variables:');
     missing.forEach(msg => console.error(msg));
     
-    // In production, fail fast
+    // In production, warn but don't crash if only API keys are missing
     if (process.env.NODE_ENV === 'production') {
-      console.error('\n❌ Application cannot start without required environment variables!');
-      process.exit(1);
+      const criticalMissing = missing.filter(msg => 
+        msg.includes('DATABASE_URL') || msg.includes('JWT_SECRET')
+      );
+      
+      if (criticalMissing.length > 0) {
+        console.error('\n❌ Application cannot start without critical environment variables!');
+        criticalMissing.forEach(msg => console.error(msg));
+        process.exit(1);
+      } else {
+        console.warn('\n⚠️  Running with missing API keys. Some features may not work.');
+        console.warn('Missing variables:', missing.map(m => m.split(':')[0].replace('❌ ', '')).join(', '));
+      }
     } else {
       console.warn('\n⚠️  Running in development mode with missing variables. Some features may not work.');
     }
