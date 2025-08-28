@@ -129,7 +129,7 @@ const Cart = () => {
             items,
             totalAmount: getTotal(),
             itemCount: getItemCount(),
-            currency: 'UAH'
+            currency: 'USD'
           });
         } catch (error) {
           console.error('Ошибка сохранения корзины:', error);
@@ -170,7 +170,7 @@ const Cart = () => {
           ...item
         })),
         total: getTotal(),
-        currency: 'UAH', // Changed to UAH for testing payments
+        currency: 'USD', // Changed to USD
         // Include user information if available
         userInfo: user ? {
           email: user.email,
@@ -221,7 +221,7 @@ const Cart = () => {
             items,
             totalAmount: getTotal(),
             itemCount: getItemCount(),
-            currency: 'UAH',
+            currency: 'USD',
             status: 'checkout_started'
           });
         } catch (error) {

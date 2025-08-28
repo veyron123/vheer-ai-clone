@@ -132,7 +132,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
   // Конфигурация размеров и цен для разных соотношений сторон
   const frameSizes = {
     '1:1': [
-      { id: '10x10', name: '10"×10"', price: 1.00 },
+      { id: '10x10', name: '10"×10"', price: 70.00 },
       { id: '12x12', name: '12"×12"', price: 80 },
       { id: '14x14', name: '14"×14"', price: 90 },
       { id: '16x16', name: '16"×16"', price: 100 },
@@ -692,7 +692,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
       frameColorName: selectedColorData?.name,
       size: selectedSize, // используем выбранный размер
       sizeName: selectedSizeData?.name || selectedSize, // используем название выбранного размера
-      price: selectedSizeData?.price || 1, // используем цену выбранного размера
+      price: selectedSizeData?.price || 70, // используем цену выбранного размера
       aspectRatio: detectedAspectRatio,
       rotation: rotation,
       scale: getCurrentScale(), // используем настройки пользователя
@@ -974,7 +974,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
                       }`}
                     >
                       <div className="text-sm font-medium">{size.name}</div>
-                      <div className="text-xs text-gray-500">₴{size.price}</div>
+                      <div className="text-xs text-gray-500">${size.price}</div>
                     </button>
                   ))}
                 </div>
