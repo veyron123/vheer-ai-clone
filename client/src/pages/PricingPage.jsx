@@ -27,6 +27,7 @@ const PricingPage = () => {
       price: 0,
       currency: currentLang === 'uk' ? '₴' : '$',
       credits: 100,
+      paymentUrl: null, // FREE plan doesn't need payment
       features: []
     },
     {
@@ -35,6 +36,7 @@ const PricingPage = () => {
       price: 1,
       currency: '₴',
       credits: 800,
+      paymentUrl: 'fallback://basic-payment', // Will trigger main payment flow
       features: []
     },
     {
@@ -43,6 +45,7 @@ const PricingPage = () => {
       price: currentLang === 'uk' ? 1200 : 30,
       currency: currentLang === 'uk' ? '₴' : '$',
       credits: 3000,
+      paymentUrl: 'fallback://pro-payment', // Will trigger main payment flow
       features: []
     },
     {
@@ -51,19 +54,31 @@ const PricingPage = () => {
       price: currentLang === 'uk' ? 4000 : 99,
       currency: currentLang === 'uk' ? '₴' : '$',
       credits: 15000,
+      paymentUrl: 'fallback://enterprise-payment', // Will trigger main payment flow
       features: []
     }
   ];
 
-  const { data: plans, error, isLoading } = useQuery(
+  const { data: plans, error, isLoading, refetch, isRefetching } = useQuery(
     ['plans', currentLang], 
-    () => api.get(`/subscriptions/plans?lang=${currentLang}&v=${Date.now()}`).then(res => res.data),
+    () => {
+      console.log('🔄 Fetching plans from API for lang:', currentLang);
+      return api.get(`/subscriptions/plans?lang=${currentLang}&v=${Date.now()}`).then(res => {
+        console.log('✅ Plans API response:', res.data);
+        return res.data;
+      });
+    },
     {
       retry: 2,
       staleTime: 0, // Force fresh data
       cacheTime: 0, // Don't cache
+      refetchOnWindowFocus: false, // Don't refetch when window gains focus
       onError: (error) => {
-        console.error('Error fetching plans:', error);
+        console.error('❌ Error fetching plans:', error);
+        console.error('Error response:', error.response?.data);
+      },
+      onSuccess: (data) => {
+        console.log('🎉 Plans fetched successfully:', data);
       }
     }
   );
@@ -169,6 +184,8 @@ const PricingPage = () => {
 
       try {
         console.log('🚀 Starting payment process for plan:', plan.id, 'language:', currentLang);
+        console.log('📊 Current displayPlans:', displayPlans);
+        console.log('🔍 Plans data source:', plans ? 'API' : 'fallback');
         
         // Use new payment tracking system
         const response = await api.post('/payment-tracking/start-payment', {
@@ -182,6 +199,7 @@ const PricingPage = () => {
           console.log('🔗 Redirecting to WayForPay with tracking:', response.data.paymentUrl);
           window.location.href = response.data.paymentUrl;
         } else {
+          console.error('❌ Payment tracking API returned unsuccessful response:', response.data);
           throw new Error('Failed to start payment process');
         }
       } catch (error) {
@@ -193,15 +211,21 @@ const PricingPage = () => {
         // Fallback to direct payment URL from API response
         const paymentUrl = displayPlans.find(p => p.id === plan.id)?.paymentUrl;
         
-        if (paymentUrl) {
+        // Don't use fallback URLs - they're fake. Show error instead and ask user to refresh.
+        if (paymentUrl && !paymentUrl.startsWith('fallback://')) {
           console.log('🔗 Using direct paymentUrl:', paymentUrl);
           window.location.href = paymentUrl;
         } else {
-          console.error('❌ No payment URL available');
-          toast(currentLang === 'uk' ? 
-            'URL оплати не налаштований для цього плану' : 
-            'Payment URL not configured for this plan', 
-            { icon: '⚠️' }
+          console.error('❌ No valid payment URL available. Fallback URL detected or missing.', { paymentUrl });
+          toast.error(currentLang === 'uk' ? 
+            'Виникла помилка з ініціалізацією платежу. Оновіть сторінку та спробуйте знову.' : 
+            'Payment initialization error. Please refresh the page and try again.', 
+            { 
+              duration: 5000,
+              style: {
+                maxWidth: '400px'
+              }
+            }
           );
         }
       }
@@ -220,11 +244,27 @@ const PricingPage = () => {
         </div>
 
         {/* Debug info */}
-        {error && (
-          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-            <strong>API Error:</strong> {error.message}
-            <br />
-            <small>Using fallback data. Check network tab for details.</small>
+        {(error || !plans) && (
+          <div className={`mb-4 p-4 border rounded ${error ? 'bg-red-100 border-red-400 text-red-700' : 'bg-yellow-100 border-yellow-400 text-yellow-700'}`}>
+            {error && (
+              <>
+                <strong>API Error:</strong> {error.message}
+                <br />
+                <small>Using fallback data. Check network tab for details.</small>
+                <br />
+              </>
+            )}
+            {!plans && !error && (
+              <>
+                <strong>Info:</strong> Using fallback data (API returned null/undefined)
+                <br />
+              </>
+            )}
+            <small>
+              Status: {isLoading ? 'Loading...' : isRefetching ? 'Refreshing...' : 'Loaded'} | 
+              Data source: {plans ? 'API' : 'Fallback'} | 
+              Plans count: {displayPlans?.length || 0}
+            </small>
           </div>
         )}
 
