@@ -312,8 +312,15 @@ export const handleCallback = async (req, res) => {
       cardPan,
       clientEmail,
       clientFirstName,
-      clientLastName
+      clientLastName,
+      recToken: recToken || 'NOT PROVIDED'
     });
+    
+    if (recToken) {
+      console.log('🎫 RECURRING TOKEN RECEIVED:', recToken);
+    } else {
+      console.log('⚠️ NO RECURRING TOKEN IN CALLBACK');
+    }
     
     // Verify signature for callback
     const expectedSignature = generateCallbackSignature({
@@ -456,6 +463,16 @@ export const handleCallback = async (req, res) => {
       
       // Calculate next payment date (30 days from now)
       const nextPaymentDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      
+      // Log recurring payment setup
+      console.log('📊 Setting up subscription with recurring support:', {
+        userId: user.id,
+        plan: planType,
+        isRecurring: !!recToken,
+        hasToken: !!recToken,
+        tokenLength: recToken ? recToken.length : 0,
+        nextPaymentDate: recToken ? nextPaymentDate : null
+      });
       
       // Update user subscription with recurring payment support
       await prisma.subscription.upsert({
