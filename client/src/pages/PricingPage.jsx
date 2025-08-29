@@ -57,9 +57,11 @@ const PricingPage = () => {
 
   const { data: plans, error, isLoading } = useQuery(
     ['plans', currentLang], 
-    () => api.get(`/subscriptions/plans?lang=${currentLang}`).then(res => res.data),
+    () => api.get(`/subscriptions/plans?lang=${currentLang}&v=${Date.now()}`).then(res => res.data),
     {
       retry: 2,
+      staleTime: 0, // Force fresh data
+      cacheTime: 0, // Don't cache
       onError: (error) => {
         console.error('Error fetching plans:', error);
       }
