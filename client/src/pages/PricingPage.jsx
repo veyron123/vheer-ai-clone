@@ -127,7 +127,7 @@ const PricingPage = () => {
     }
   };
 
-  const handleSelectPlan = (plan) => {
+  const handleSelectPlan = async (plan) => {
     if (!isAuthenticated) {
       navigate('/register');
       return;
@@ -153,63 +153,70 @@ const PricingPage = () => {
       // 📊 Track subscription view
       analytics.subscriptionViewed(plan.id);
 
-      // For Ukrainian version, use WayForPay - all plans now available
-      if (currentLang === 'uk') {
-        // 📊 Track subscription attempt
-        analytics.track('begin_checkout', {
-          currency: 'UAH',
-          value: plan.price,
-          items: [{
-            item_id: plan.id,
-            item_name: `${plan.name} Subscription`,
-            price: plan.price,
-            quantity: 1
-          }]
+      // 📊 Track subscription attempt
+      analytics.track('begin_checkout', {
+        currency: 'UAH',
+        value: plan.price,
+        items: [{
+          item_id: plan.id,
+          item_name: `${plan.name} Subscription`,
+          price: plan.price,
+          quantity: 1
+        }]
+      });
+
+      try {
+        // Initialize payment through API to pass user context
+        const response = await api.post('/payments/wayforpay/init', {
+          planId: plan.id,
+          language: currentLang
         });
+
+        if (response.data.success && response.data.paymentData) {
+          // Create a form and submit it to WayForPay
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = 'https://secure.wayforpay.com/pay';
+          form.acceptCharset = 'utf-8';
+
+          // Add all payment data as hidden fields
+          Object.keys(response.data.paymentData).forEach(key => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            
+            // Handle arrays properly
+            if (Array.isArray(response.data.paymentData[key])) {
+              input.value = response.data.paymentData[key][0];
+            } else {
+              input.value = response.data.paymentData[key];
+            }
+            
+            form.appendChild(input);
+          });
+
+          document.body.appendChild(form);
+          form.submit();
+        } else if (response.data.buttonUrl) {
+          // Fallback to button URL if form data not available
+          window.location.href = response.data.buttonUrl;
+        } else {
+          throw new Error('No payment URL available');
+        }
+      } catch (error) {
+        console.error('Payment initialization error:', error);
         
-        // Get the payment URL for this plan from the API data
+        // Fallback to static button URLs if API fails
         const paymentUrl = displayPlans.find(p => p.id === plan.id)?.paymentUrl;
         
         if (paymentUrl) {
-          // Redirect to WayForPay button URL
           window.location.href = paymentUrl;
         } else {
-          // Fallback URLs if API data doesn't include paymentUrl
-          const fallbackUrls = {
+          const fallbackUrls = currentLang === 'uk' ? {
             BASIC: 'https://secure.wayforpay.com/button/bcdf0c219984e',
             PRO: 'https://secure.wayforpay.com/button/bc832264fe106',
             ENTERPRISE: 'https://secure.wayforpay.com/button/b8ad589698312'
-          };
-          
-          if (fallbackUrls[plan.id]) {
-            window.location.href = fallbackUrls[plan.id];
-          } else {
-            toast('URL оплати не налаштований для цього плану', { icon: '⚠️' });
-          }
-        }
-      } else {
-        // For English version - all plans now have working payment integration
-        // 📊 Track subscription attempt
-        analytics.track('begin_checkout', {
-          currency: 'UAH',
-          value: plan.price,
-          items: [{
-            item_id: plan.id,
-            item_name: `${plan.name} Subscription`,
-            price: plan.price,
-            quantity: 1
-          }]
-        });
-        
-        // Get the payment URL for this plan from the API data
-        const paymentUrl = displayPlans.find(p => p.id === plan.id)?.paymentUrl;
-        
-        if (paymentUrl) {
-          // Redirect to WayForPay button URL
-          window.location.href = paymentUrl;
-        } else {
-          // Fallback URLs if API data doesn't include paymentUrl
-          const fallbackUrls = {
+          } : {
             BASIC: 'https://secure.wayforpay.com/button/b22dba93721e3',
             PRO: 'https://secure.wayforpay.com/button/bcb8a5a42c05f',
             ENTERPRISE: 'https://secure.wayforpay.com/button/bd36297803462'
@@ -218,7 +225,11 @@ const PricingPage = () => {
           if (fallbackUrls[plan.id]) {
             window.location.href = fallbackUrls[plan.id];
           } else {
-            toast('Payment URL not configured for this plan', { icon: '⚠️' });
+            toast(currentLang === 'uk' ? 
+              'URL оплати не налаштований для цього плану' : 
+              'Payment URL not configured for this plan', 
+              { icon: '⚠️' }
+            );
           }
         }
       }
