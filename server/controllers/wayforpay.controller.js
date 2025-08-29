@@ -359,54 +359,91 @@ export const handleCallback = async (req, res) => {
     
     console.log('✅ Signature verified successfully');
     
-    // Try to extract userId from orderReference first
+    // Enhanced user identification with PaymentIntent tracking
     let user;
-    let extractedUserId = null;
+    let paymentIntent = null;
+
+    // First priority: Try to find payment intent by trackingId
+    const trackingId = req.query.trackingId || callbackData.trackingId;
     
-    // Check if orderReference contains userId (format: ORDER_userId_timestamp or WFP-BTN-...)
-    if (orderReference && orderReference.startsWith('ORDER_')) {
-      const parts = orderReference.split('_');
-      if (parts.length >= 3) {
-        extractedUserId = parts[1];
-        console.log('📌 Extracted userId from orderReference:', extractedUserId);
-      }
-    }
-    
-    // Try to find user by extracted userId first
-    if (extractedUserId) {
+    if (trackingId) {
+      console.log('🔍 Looking for payment intent with trackingId:', trackingId);
       try {
-        user = await prisma.user.findUnique({
-          where: { id: extractedUserId }
+        paymentIntent = await prisma.paymentIntent.findUnique({
+          where: { trackingId },
+          include: { user: true }
         });
-        if (user) {
-          console.log('✅ Found user by extracted userId:', user.id, user.email);
+        
+        if (paymentIntent) {
+          user = paymentIntent.user;
+          console.log('✅ Found payment intent for user:', user.id, 'plan:', paymentIntent.planId);
+          
+          // Update payment intent with WayForPay data
+          await prisma.paymentIntent.update({
+            where: { trackingId },
+            data: {
+              status: transactionStatus === 'Approved' ? 'COMPLETED' : 'FAILED',
+              wayforpayData: callbackData,
+              updatedAt: new Date()
+            }
+          });
+        } else {
+          console.log('⚠️ PaymentIntent not found for trackingId:', trackingId);
         }
       } catch (error) {
-        console.log('⚠️ Could not find user by extracted userId:', error.message);
+        console.error('❌ Error looking up PaymentIntent:', error);
       }
     }
-    
-    // If no user found by userId, try by email (for backward compatibility with button URLs)
+
+    // Fallback to legacy methods if no payment intent found
     if (!user) {
-      const userEmail = clientEmail || req.body.clientEmail;
-      console.log('🔍 Looking for user by email:', userEmail);
+      console.log('🔄 PaymentIntent not found, trying legacy identification methods...');
+      let extractedUserId = null;
       
-      user = await prisma.user.findUnique({
-        where: { email: userEmail }
-      });
+      // Check if orderReference contains userId (format: ORDER_userId_timestamp or WFP-BTN-...)
+      if (orderReference && orderReference.startsWith('ORDER_')) {
+        const parts = orderReference.split('_');
+        if (parts.length >= 3) {
+          extractedUserId = parts[1];
+          console.log('📌 Extracted userId from orderReference:', extractedUserId);
+        }
+      }
       
-      if (!user) {
-        // Create user if doesn't exist (for guest checkouts)
-        user = await prisma.user.create({
-          data: {
-            email: userEmail,
-            username: userEmail.split('@')[0] + '_' + Date.now(),
-            fullName: `${clientFirstName || ''} ${clientLastName || ''}`.trim() || 'WayForPay User',
-            emailVerified: true,
-            totalCredits: 100
+      // Try to find user by extracted userId first
+      if (extractedUserId) {
+        try {
+          user = await prisma.user.findUnique({
+            where: { id: extractedUserId }
+          });
+          if (user) {
+            console.log('✅ Found user by extracted userId:', user.id, user.email);
           }
+        } catch (error) {
+          console.log('⚠️ Could not find user by extracted userId:', error.message);
+        }
+      }
+      
+      // If no user found by userId, try by email (for backward compatibility with button URLs)
+      if (!user) {
+        const userEmail = clientEmail || req.body.clientEmail;
+        console.log('🔍 Looking for user by email:', userEmail);
+        
+        user = await prisma.user.findUnique({
+          where: { email: userEmail }
         });
-        console.log('✅ Created new user:', user.id, userEmail);
+        
+        if (!user) {
+          // Create user if doesn't exist (for guest checkouts)
+          user = await prisma.user.create({
+            data: {
+              email: userEmail,
+              username: userEmail.split('@')[0] + '_' + Date.now(),
+              fullName: `${clientFirstName || ''} ${clientLastName || ''}`.trim() || 'WayForPay User',
+              emailVerified: true,
+              totalCredits: 100
+            }
+          });
+          console.log('✅ Created new user:', user.id, userEmail);
       } else {
         console.log('✅ Found existing user by email:', user.id, userEmail);
       }
