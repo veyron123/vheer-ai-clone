@@ -153,49 +153,73 @@ const PricingPage = () => {
       // 📊 Track subscription view
       analytics.subscriptionViewed(plan.id);
 
-      // For Ukrainian version, use WayForPay
+      // For Ukrainian version, use WayForPay - all plans now available
       if (currentLang === 'uk') {
-        if (plan.id === 'BASIC') {
-          // 📊 Track subscription attempt
-          analytics.track('begin_checkout', {
-            currency: 'UAH',
-            value: plan.price,
-            items: [{
-              item_id: plan.id,
-              item_name: `${plan.name} Subscription`,
-              price: plan.price,
-              quantity: 1
-            }]
-          });
+        // 📊 Track subscription attempt
+        analytics.track('begin_checkout', {
+          currency: 'UAH',
+          value: plan.price,
+          items: [{
+            item_id: plan.id,
+            item_name: `${plan.name} Subscription`,
+            price: plan.price,
+            quantity: 1
+          }]
+        });
+        
+        // Get the payment URL for this plan from the API data
+        const paymentUrl = displayPlans.find(p => p.id === plan.id)?.paymentUrl;
+        
+        if (paymentUrl) {
+          // Redirect to WayForPay button URL
+          window.location.href = paymentUrl;
+        } else {
+          // Fallback URLs if API data doesn't include paymentUrl
+          const fallbackUrls = {
+            BASIC: 'https://secure.wayforpay.com/button/bcdf0c219984e',
+            PRO: 'https://secure.wayforpay.com/button/bc832264fe106',
+            ENTERPRISE: 'https://secure.wayforpay.com/button/b8ad589698312'
+          };
           
-          // Redirect to WayForPay button URL for Basic plan
-          window.location.href = 'https://secure.wayforpay.com/button/b85dd73ba8317';
-        } else if (plan.id === 'PRO') {
-          // For Pro and Enterprise, show coming soon
-          toast('Цей план буде доступний незабаром!', { icon: 'ℹ️' });
-        } else if (plan.id === 'ENTERPRISE') {
-          toast('Цей план буде доступний незабаром!', { icon: 'ℹ️' });
+          if (fallbackUrls[plan.id]) {
+            window.location.href = fallbackUrls[plan.id];
+          } else {
+            toast('URL оплати не налаштований для цього плану', { icon: '⚠️' });
+          }
         }
       } else {
-        // For English version
-        if (plan.id === 'BASIC') {
-          // 📊 Track subscription attempt for Basic plan
-          analytics.track('begin_checkout', {
-            currency: 'UAH',
-            value: plan.price,
-            items: [{
-              item_id: plan.id,
-              item_name: `${plan.name} Subscription`,
-              price: plan.price,
-              quantity: 1
-            }]
-          });
-          
-          // Redirect to WayForPay button URL for Basic plan (1₴ for testing)
-          window.location.href = 'https://secure.wayforpay.com/button/b85dd73ba8317';
+        // For English version - all plans now have working payment integration
+        // 📊 Track subscription attempt
+        analytics.track('begin_checkout', {
+          currency: 'UAH',
+          value: plan.price,
+          items: [{
+            item_id: plan.id,
+            item_name: `${plan.name} Subscription`,
+            price: plan.price,
+            quantity: 1
+          }]
+        });
+        
+        // Get the payment URL for this plan from the API data
+        const paymentUrl = displayPlans.find(p => p.id === plan.id)?.paymentUrl;
+        
+        if (paymentUrl) {
+          // Redirect to WayForPay button URL
+          window.location.href = paymentUrl;
         } else {
-          // For Pro and Enterprise, show coming soon
-          toast('Payment integration coming soon!', { icon: 'ℹ️' });
+          // Fallback URLs if API data doesn't include paymentUrl
+          const fallbackUrls = {
+            BASIC: 'https://secure.wayforpay.com/button/b22dba93721e3',
+            PRO: 'https://secure.wayforpay.com/button/bcb8a5a42c05f',
+            ENTERPRISE: 'https://secure.wayforpay.com/button/bd36297803462'
+          };
+          
+          if (fallbackUrls[plan.id]) {
+            window.location.href = fallbackUrls[plan.id];
+          } else {
+            toast('Payment URL not configured for this plan', { icon: '⚠️' });
+          }
         }
       }
     }
