@@ -620,7 +620,6 @@ export const handleCallback = async (req, res) => {
     
     console.log('📤 Sending callback response:', responseData);
     res.json(responseData);
-  } 
   } catch (error) {
     console.error('❌ Callback processing error:', error);
     res.status(500).json({ 
