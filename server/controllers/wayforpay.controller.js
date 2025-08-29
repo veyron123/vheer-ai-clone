@@ -175,6 +175,9 @@ export const initializePayment = async (req, res) => {
       }
     });
     
+    // Get language from request (default to 'en')
+    const lang = req.body.language || 'en';
+    
     // Generate payment data
     const paymentData = {
       merchantAccount: MERCHANT_LOGIN,
@@ -189,7 +192,7 @@ export const initializePayment = async (req, res) => {
       clientLastName: req.user.fullName?.split(' ')[1] || '',
       clientEmail: req.user.email,
       language: 'UA',
-      returnUrl: `${process.env.FRONTEND_URL}/payment/success`,
+      returnUrl: `${process.env.FRONTEND_URL}/${lang}/payment/success`,
       serviceUrl: `${process.env.BASE_URL}/api/payments/wayforpay/callback`
     };
     

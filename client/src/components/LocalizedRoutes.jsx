@@ -68,6 +68,11 @@ const LocalizedRoutes = () => {
       {/* Language-prefixed routes */}
       <Route path="/:lang/*" element={<LanguageRoutes />} />
       
+      {/* Payment redirect handlers - redirect to language-prefixed routes */}
+      <Route path="/payment/success" element={<Navigate to={`/${i18n.language || 'en'}/payment/success${location.search}`} replace />} />
+      <Route path="/payment/failure" element={<Navigate to={`/${i18n.language || 'en'}/payment/failure${location.search}`} replace />} />
+      <Route path="/payment/fail" element={<Navigate to={`/${i18n.language || 'en'}/payment/failure${location.search}`} replace />} />
+      
       {/* Fallback redirects */}
       <Route path="*" element={<Navigate to="/en/" replace />} />
     </Routes>

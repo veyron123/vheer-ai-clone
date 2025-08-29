@@ -28,11 +28,11 @@ const PaymentSuccess = () => {
     
     // Redirect to profile after 5 seconds
     const timer = setTimeout(() => {
-      navigate('/profile');
+      navigate(`/${i18n.language}/profile`);
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, [navigate, isUkrainian]);
+  }, [navigate, isUkrainian, i18n.language, searchParams]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -52,7 +52,7 @@ const PaymentSuccess = () => {
             : 'You will be redirected to your profile in 5 seconds...'}
         </p>
         <button
-          onClick={() => navigate('/profile')}
+          onClick={() => navigate(`/${i18n.language}/profile`)}
           className="btn btn-primary"
         >
           {isUkrainian ? 'Перейти до профілю' : 'Go to Profile'}

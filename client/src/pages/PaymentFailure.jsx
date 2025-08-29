@@ -22,13 +22,13 @@ const PaymentFailure = () => {
         </p>
         <div className="space-x-4">
           <button
-            onClick={() => navigate('/pricing')}
+            onClick={() => navigate(`/${i18n.language}/pricing`)}
             className="btn btn-primary"
           >
             {isUkrainian ? 'Спробувати знову' : 'Try Again'}
           </button>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate(`/${i18n.language}/`)}
             className="btn btn-outline"
           >
             {isUkrainian ? 'На головну' : 'Go Home'}
