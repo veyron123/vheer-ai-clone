@@ -192,7 +192,7 @@ export const initializePayment = async (req, res) => {
       clientLastName: req.user.fullName?.split(' ')[1] || '',
       clientEmail: req.user.email,
       language: 'UA',
-      returnUrl: `${process.env.BASE_URL}/api/payments/success?lang=${lang}`,
+      returnUrl: `${process.env.BASE_URL}/api/payments/wayforpay/success`,
       serviceUrl: `${process.env.BASE_URL}/api/payments/wayforpay/callback`
     };
     

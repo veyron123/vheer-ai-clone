@@ -151,18 +151,20 @@ const handleSuccess = (req, res) => {
   const checkStatus = finalStatus || status || transactionStatus || paymentStatus || orderStatus;
   const checkCode = reasonCode;
   
-  // Логика: если статус успешный, то считаем платеж успешным
-  // Если статуса нет, но URL success и нет кода ошибки - тоже успешный
+  // БЕЗОПАСНАЯ ЛОГИКА: платеж успешен ТОЛЬКО при наличии ЯВНЫХ подтверждений от WayForPay
+  // Нельзя считать платеж успешным только потому, что пользователь попал на success URL!
   const statusOk = successStatuses.includes(checkStatus);
   const codeOk = !checkCode || successCodes.includes(checkCode);
-  const urlSuccess = req.path.includes('success'); // Если пришли на success URL
   
-  // Платеж успешен если:
-  // 1. Статус успешный И (код успешный ИЛИ нет кода)
-  // 2. ИЛИ пришли на success URL и нет явного кода ошибки
-  // 3. ИЛИ пришли на success URL и вообще нет параметров (WayForPay может не передавать параметры при успехе)
-  const noParams = Object.keys(params).length === 0;
-  const isSuccessful = (statusOk && codeOk) || (urlSuccess && codeOk) || (urlSuccess && noParams);
+  // Платеж успешен ТОЛЬКО если:
+  // 1. Есть явный успешный статус от WayForPay И код подтверждения правильный
+  // 2. ИЛИ есть orderReference (значит WayForPay передал данные) И статус не ошибочный
+  const hasOrderReference = orderReference && orderReference.trim().length > 0;
+  const hasValidStatus = checkStatus && successStatuses.includes(checkStatus);
+  const hasValidCode = checkCode && successCodes.includes(checkCode);
+  
+  // КРИТИЧНО: НЕ считаем успешным просто потому что попали на success URL!
+  const isSuccessful = (hasValidStatus && codeOk) || (hasOrderReference && statusOk && codeOk);
   
   console.log('🔍 SUCCESS PAGE - Detailed status check:', {
     method: req.method,
@@ -172,7 +174,9 @@ const handleSuccess = (req, res) => {
     reasonCode: checkCode,
     statusOk,
     codeOk,
-    urlSuccess,
+    hasOrderReference,
+    hasValidStatus, 
+    hasValidCode,
     isSuccessful,
     allReceivedParams: params
   });
@@ -218,8 +222,13 @@ const handleSuccess = (req, res) => {
         </style>
       </head>
       <body>
-        <div class="error">❌ Payment Error</div>
-        <div class="info">Status: ${finalStatus || 'Unknown'}</div>
+        <div class="error">❌ Payment Not Confirmed</div>
+        <div class="info">
+          Status: ${finalStatus || 'Unknown'}<br>
+          ${!hasOrderReference ? 'No order reference from payment gateway<br>' : ''}
+          ${!hasValidStatus ? 'Invalid or missing payment status<br>' : ''}
+          Please try again or contact support if this error persists.
+        </div>
         <div class="redirect">Redirecting to the main page...</div>
         <script>
           setTimeout(() => {
