@@ -359,104 +359,105 @@ export const handleCallback = async (req, res) => {
     
     console.log('✅ Signature verified successfully');
     
-    // Enhanced user identification with PaymentIntent tracking
+    // VARIANT 3: MANDATORY AUTHENTICATION - Use orderReference to find user
     let user;
     let paymentIntent = null;
 
-    // First priority: Try to find payment intent by trackingId
-    const trackingId = req.query.trackingId || callbackData.trackingId;
+    // Primary method: Extract userId directly from orderReference
+    console.log('🎯 VARIANT 3: Starting user identification from orderReference:', orderReference);
     
-    if (trackingId) {
-      console.log('🔍 Looking for payment intent with trackingId:', trackingId);
-      try {
-        paymentIntent = await prisma.paymentIntent.findUnique({
-          where: { trackingId },
-          include: { user: true }
-        });
-        
-        if (paymentIntent) {
-          user = paymentIntent.user;
-          console.log('✅ Found payment intent for user:', user.id, 'plan:', paymentIntent.planId);
-          
-          // Update payment intent with WayForPay data
-          await prisma.paymentIntent.update({
-            where: { trackingId },
-            data: {
-              status: transactionStatus === 'Approved' ? 'COMPLETED' : 'FAILED',
-              wayforpayData: callbackData,
-              updatedAt: new Date()
-            }
-          });
-        } else {
-          console.log('⚠️ PaymentIntent not found for trackingId:', trackingId);
-        }
-      } catch (error) {
-        console.error('❌ Error looking up PaymentIntent:', error);
-      }
+    if (!orderReference) {
+      console.error('❌ CRITICAL: No orderReference provided by WayForPay');
+      return res.status(400).json({ 
+        success: false, 
+        message: 'No orderReference provided' 
+      });
     }
 
-    // Fallback to legacy methods if no payment intent found
-    if (!user) {
-      console.log('🔄 PaymentIntent not found, trying legacy identification methods...');
-      let extractedUserId = null;
-      
-      // Check if orderReference contains userId (format: ORDER_userId_timestamp or WFP-BTN-...)
-      if (orderReference && orderReference.startsWith('ORDER_')) {
-        const parts = orderReference.split('_');
-        if (parts.length >= 3) {
-          extractedUserId = parts[1];
-          console.log('📌 Extracted userId from orderReference:', extractedUserId);
-        }
+    // Extract userId from orderReference (format: ORDER_userId_timestamp)
+    let extractedUserId = null;
+    if (orderReference.startsWith('ORDER_')) {
+      const parts = orderReference.split('_');
+      if (parts.length >= 3) {
+        extractedUserId = parts[1];
+        console.log('✅ Extracted userId from orderReference:', extractedUserId);
+      } else {
+        console.error('❌ INVALID orderReference format:', orderReference);
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Invalid orderReference format - missing userId' 
+        });
       }
+    } else {
+      console.error('❌ UNSUPPORTED orderReference format (not ORDER_xxx):', orderReference);
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Unsupported orderReference format - authentication required' 
+      });
+    }
+
+    // Find user by extracted userId
+    try {
+      user = await prisma.user.findUnique({
+        where: { id: extractedUserId },
+        include: { subscription: true }
+      });
       
-      // Try to find user by extracted userId first
-      if (extractedUserId) {
-        try {
-          user = await prisma.user.findUnique({
-            where: { id: extractedUserId }
-          });
-          if (user) {
-            console.log('✅ Found user by extracted userId:', user.id, user.email);
-          }
-        } catch (error) {
-          console.log('⚠️ Could not find user by extracted userId:', error.message);
-        }
-      }
-      
-      // If no user found by userId, try by email (for backward compatibility with button URLs)
       if (!user) {
-        const userEmail = clientEmail || req.body.clientEmail;
-        console.log('🔍 Looking for user by email:', userEmail);
-        
-        // IMPORTANT: Check if email exists before querying Prisma
-        if (userEmail && userEmail.trim()) {
-          user = await prisma.user.findUnique({
-            where: { email: userEmail }
-          });
-          
-          if (!user) {
-            // Create user if doesn't exist (for guest checkouts)
-            user = await prisma.user.create({
-              data: {
-                email: userEmail,
-                username: userEmail.split('@')[0] + '_' + Date.now(),
-                fullName: `${clientFirstName || ''} ${clientLastName || ''}`.trim() || 'WayForPay User',
-                emailVerified: true,
-                totalCredits: 100
-              }
-            });
-            console.log('✅ Created new user:', user.id, userEmail);
-          } else {
-            console.log('✅ Found existing user by email:', user.id, userEmail);
-          }
-        } else {
-          console.log('⚠️ No email provided in callback data, cannot find or create user');
-          throw new Error('Cannot process payment: No email provided in callback data');
-        }
+        console.error('❌ USER NOT FOUND for userId:', extractedUserId);
+        return res.status(404).json({ 
+          success: false, 
+          message: 'User not found - authentication required' 
+        });
       }
-    
-    // Check if this orderReference has already been processed to prevent duplicates
-    console.log('🔍 Checking for duplicate orderReference:', orderReference);
+      
+      console.log('✅ VARIANT 3: User authenticated via orderReference:', {
+        userId: user.id,
+        email: user.email,
+        currentPlan: user.subscription?.plan || 'FREE'
+      });
+      
+    } catch (error) {
+      console.error('❌ Database error finding user:', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error during authentication' 
+      });
+    }
+
+    // Try to find corresponding PaymentIntent
+    try {
+      paymentIntent = await prisma.paymentIntent.findFirst({
+        where: { 
+          userId: user.id,
+          orderReference: orderReference
+        }
+      });
+      
+      if (paymentIntent) {
+        console.log('✅ Found matching PaymentIntent:', paymentIntent.trackingId);
+        
+        // Update payment intent with WayForPay data
+        await prisma.paymentIntent.update({
+          where: { id: paymentIntent.id },
+          data: {
+            status: transactionStatus === 'Approved' ? 'COMPLETED' : 'FAILED',
+            wayforpayData: callbackData,
+            updatedAt: new Date()
+          }
+        });
+      } else {
+        console.log('⚠️ No matching PaymentIntent found for orderReference:', orderReference);
+      }
+    } catch (error) {
+      console.error('⚠️ Error looking up PaymentIntent (non-critical):', error);
+    }
+
+    // VARIANT 3: No fallback methods - user MUST be authenticated via orderReference
+    // All legacy identification methods removed to enforce mandatory authentication
+
+    // VARIANT 3: Enhanced duplicate detection with user context
+    console.log('🔍 Checking for duplicate orderReference:', orderReference, 'for user:', user.id);
     const existingPayment = await prisma.payment.findFirst({
       where: { 
         wayforpayOrderReference: orderReference,

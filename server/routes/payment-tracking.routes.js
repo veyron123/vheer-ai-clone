@@ -13,13 +13,16 @@ router.post('/start-payment', authenticate, async (req, res) => {
   try {
     console.log('🚀 Starting payment process for user:', userId, 'plan:', planId);
 
-    // Generate unique tracking ID
+    // Generate unique orderReference with embedded userId for WayForPay
+    // Format: ORDER_<userId>_<timestamp> - this will be returned in callback
+    const orderReference = `ORDER_${userId}_${Date.now()}`;
     const trackingId = `TRACK_${userId}_${Date.now()}`;
 
-    // Save payment intention to database
+    // Save payment intention to database with orderReference
     await prisma.paymentIntent.create({
       data: {
         trackingId: trackingId,
+        orderReference: orderReference, // NEW: Store orderReference for callback matching
         userId: userId,
         planId: planId,
         language: language,
@@ -28,7 +31,7 @@ router.post('/start-payment', authenticate, async (req, res) => {
       }
     });
 
-    console.log('💾 Payment intent saved:', trackingId);
+    console.log('💾 Payment intent saved:', { trackingId, orderReference, userId, planId });
 
     // Get payment URL based on plan and language
     const paymentUrls = getPaymentUrls(language);
@@ -41,13 +44,15 @@ router.post('/start-payment', authenticate, async (req, res) => {
       });
     }
 
-    // Add tracking ID to payment URL
-    const urlWithTracking = `${paymentUrl}?trackingId=${trackingId}`;
+    // Add orderReference to payment URL (WayForPay will return this in callback)
+    // Note: WayForPay may not preserve custom query params, but orderReference is standard
+    const urlWithOrderRef = `${paymentUrl}?orderReference=${orderReference}`;
 
     res.json({
       success: true,
-      paymentUrl: urlWithTracking,
-      trackingId: trackingId
+      paymentUrl: urlWithOrderRef,
+      trackingId: trackingId,
+      orderReference: orderReference // Frontend can use this for debugging
     });
 
   } catch (error) {

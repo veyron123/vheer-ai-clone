@@ -79,17 +79,18 @@ model Credit {
 }
 
 model PaymentIntent {
-  id          String    @id @default(cuid())
-  trackingId  String    @unique
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planId      String
-  language    String    @default("en")
-  status      String    @default("INITIATED") // INITIATED, COMPLETED, FAILED, EXPIRED
-  wayforpayData Json?   // Store WayForPay response data
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  expiresAt   DateTime? // Auto-expire after 1 hour
+  id            String    @id @default(cuid())
+  trackingId    String    @unique
+  orderReference String?  @unique // NEW: Store orderReference for callback matching
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId        String
+  language      String    @default("en")
+  status        String    @default("INITIATED") // INITIATED, COMPLETED, FAILED, EXPIRED
+  wayforpayData Json?     // Store WayForPay response data
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  expiresAt     DateTime? // Auto-expire after 1 hour
 
   @@map("colibrrri_payment_intents")
 }
