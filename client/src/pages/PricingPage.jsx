@@ -25,7 +25,7 @@ const PricingPage = () => {
       id: 'FREE',
       name: 'Free',
       price: 0,
-      currency: currentLang === 'uk' ? '₴' : '$',
+      currency: '$',
       credits: 100,
       paymentUrl: null, // FREE plan doesn't need payment
       features: []
@@ -33,8 +33,8 @@ const PricingPage = () => {
     {
       id: 'BASIC',
       name: 'Basic',
-      price: 1,
-      currency: '₴',
+      price: 10,
+      currency: '$',
       credits: 800,
       paymentUrl: 'fallback://basic-payment', // Will trigger main payment flow
       features: []
@@ -42,8 +42,8 @@ const PricingPage = () => {
     {
       id: 'PRO',
       name: 'Pro',
-      price: currentLang === 'uk' ? 1200 : 30,
-      currency: currentLang === 'uk' ? '₴' : '$',
+      price: 30,
+      currency: '$',
       credits: 3000,
       paymentUrl: 'fallback://pro-payment', // Will trigger main payment flow
       features: []
@@ -51,8 +51,8 @@ const PricingPage = () => {
     {
       id: 'ENTERPRISE',
       name: 'Maximum',
-      price: currentLang === 'uk' ? 4000 : 99,
-      currency: currentLang === 'uk' ? '₴' : '$',
+      price: 99,
+      currency: '$',
       credits: 15000,
       paymentUrl: 'fallback://enterprise-payment', // Will trigger main payment flow
       features: []
@@ -172,7 +172,7 @@ const PricingPage = () => {
 
       // 📊 Track subscription attempt
       analytics.track('begin_checkout', {
-        currency: 'UAH',
+        currency: 'USD',
         value: plan.price,
         items: [{
           item_id: plan.id,
