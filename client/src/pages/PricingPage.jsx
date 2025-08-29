@@ -166,13 +166,18 @@ const PricingPage = () => {
       });
 
       try {
+        console.log('🔄 Initializing payment via API for plan:', plan.id, 'language:', currentLang);
+        
         // Initialize payment through API to pass user context
         const response = await api.post('/payments/wayforpay/init', {
           planId: plan.id,
           language: currentLang
         });
 
+        console.log('✅ API response received:', response.data);
+
         if (response.data.success && response.data.paymentData) {
+          console.log('📝 Creating payment form with data:', response.data.paymentData);
           // Create a form and submit it to WayForPay
           const form = document.createElement('form');
           form.method = 'POST';
@@ -198,18 +203,24 @@ const PricingPage = () => {
           document.body.appendChild(form);
           form.submit();
         } else if (response.data.buttonUrl) {
+          console.log('🔄 Using buttonUrl fallback:', response.data.buttonUrl);
           // Fallback to button URL if form data not available
           window.location.href = response.data.buttonUrl;
         } else {
+          console.log('❌ No payment data or buttonUrl in response');
           throw new Error('No payment URL available');
         }
       } catch (error) {
-        console.error('Payment initialization error:', error);
+        console.error('❌ Payment initialization error:', error);
+        console.error('Error details:', error.response?.data || error.message);
+        
+        console.log('🔄 API failed, falling back to static URLs');
         
         // Fallback to static button URLs if API fails
         const paymentUrl = displayPlans.find(p => p.id === plan.id)?.paymentUrl;
         
         if (paymentUrl) {
+          console.log('🔗 Using paymentUrl from displayPlans:', paymentUrl);
           window.location.href = paymentUrl;
         } else {
           const fallbackUrls = currentLang === 'uk' ? {
@@ -222,9 +233,12 @@ const PricingPage = () => {
             ENTERPRISE: 'https://secure.wayforpay.com/button/bd36297803462'
           };
           
+          console.log('🔗 Using hardcoded fallback URL for plan:', plan.id, '→', fallbackUrls[plan.id]);
+          
           if (fallbackUrls[plan.id]) {
             window.location.href = fallbackUrls[plan.id];
           } else {
+            console.error('❌ No fallback URL found for plan:', plan.id);
             toast(currentLang === 'uk' ? 
               'URL оплати не налаштований для цього плану' : 
               'Payment URL not configured for this plan', 
