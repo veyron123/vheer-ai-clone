@@ -17,6 +17,7 @@ import imagesRoutes from './routes/images.routes.js';
 import generationRoutes from './routes/generation.routes.js';
 import subscriptionRoutes from './routes/subscription.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
+import paymentTrackingRoutes from './routes/payment-tracking.routes.js';
 import creditRoutes from './routes/credit.routes.js';
 import fluxRoutes from './routes/flux.routes.js';
 import gptimageRoutes from './routes/gptimage.routes.js';
@@ -143,6 +144,7 @@ app.use('/api/image', imageRoutes); // Keep existing image route
 app.use('/api/generate', generationRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/payment-tracking', paymentTrackingRoutes);
 app.use('/api/credits', creditRoutes);
 app.use('/api/flux', fluxRoutes);
 app.use('/api/gptimage', gptimageRoutes);
