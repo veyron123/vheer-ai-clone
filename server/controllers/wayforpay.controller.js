@@ -474,37 +474,59 @@ export const handleCallback = async (req, res) => {
         nextPaymentDate: recToken ? nextPaymentDate : null
       });
       
-      // Update user subscription with recurring payment support
-      await prisma.subscription.upsert({
-        where: { userId: user.id },
-        update: {
-          plan: planType,
-          status: 'ACTIVE',
-          currentPeriodEnd: nextPaymentDate,
-          wayforpayOrderReference: orderReference,
-          // Recurring payment fields
-          isRecurring: !!recToken, // Enable recurring if we have a token
-          recurringToken: recToken || null,
-          recurringMode: 'MONTHLY', // Default to monthly billing
-          nextPaymentDate: recToken ? nextPaymentDate : null,
-          lastPaymentDate: new Date(),
-          failedPaymentAttempts: 0
-        },
-        create: {
-          userId: user.id,
-          plan: planType,
-          status: 'ACTIVE',
-          currentPeriodEnd: nextPaymentDate,
-          wayforpayOrderReference: orderReference,
-          // Recurring payment fields
-          isRecurring: !!recToken,
-          recurringToken: recToken || null,
-          recurringMode: 'MONTHLY',
-          nextPaymentDate: recToken ? nextPaymentDate : null,
-          lastPaymentDate: new Date(),
-          failedPaymentAttempts: 0
+      // Update user subscription - temporarily disable recurring fields until migration is applied
+      const subscriptionData = {
+        plan: planType,
+        status: 'ACTIVE',
+        currentPeriodEnd: nextPaymentDate,
+        wayforpayOrderReference: orderReference
+      };
+      
+      // Only add recurring fields if they exist in database (check for production)
+      try {
+        // Try with recurring fields first
+        await prisma.subscription.upsert({
+          where: { userId: user.id },
+          update: {
+            ...subscriptionData,
+            // Recurring payment fields
+            isRecurring: !!recToken,
+            recurringToken: recToken || null,
+            recurringMode: 'MONTHLY',
+            nextPaymentDate: recToken ? nextPaymentDate : null,
+            lastPaymentDate: new Date(),
+            failedPaymentAttempts: 0
+          },
+          create: {
+            userId: user.id,
+            ...subscriptionData,
+            // Recurring payment fields
+            isRecurring: !!recToken,
+            recurringToken: recToken || null,
+            recurringMode: 'MONTHLY',
+            nextPaymentDate: recToken ? nextPaymentDate : null,
+            lastPaymentDate: new Date(),
+            failedPaymentAttempts: 0
+          }
+        });
+        console.log('✅ Subscription updated with recurring support');
+      } catch (error) {
+        // If recurring fields don't exist, update without them
+        if (error.message?.includes('does not exist')) {
+          console.log('⚠️ Recurring fields not available, updating without them');
+          await prisma.subscription.upsert({
+            where: { userId: user.id },
+            update: subscriptionData,
+            create: {
+              userId: user.id,
+              ...subscriptionData
+            }
+          });
+          console.log('✅ Subscription updated without recurring fields');
+        } else {
+          throw error; // Re-throw if it's a different error
         }
-      });
+      }
       
       console.log('✅ Subscription updated');
       
