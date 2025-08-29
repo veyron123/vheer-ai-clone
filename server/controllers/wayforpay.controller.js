@@ -374,22 +374,75 @@ export const handleCallback = async (req, res) => {
       });
     }
 
-    // Extract userId from orderReference (format: ORDER_userId_timestamp)
+    // Extract userId from orderReference (format: ORDER_userId_timestamp OR WFP-BTN-xxx)
     let extractedUserId = null;
+    let isWayForPayButton = false;
+    
     if (orderReference.startsWith('ORDER_')) {
+      // Our custom format: ORDER_userId_timestamp
       const parts = orderReference.split('_');
       if (parts.length >= 3) {
         extractedUserId = parts[1];
-        console.log('✅ Extracted userId from orderReference:', extractedUserId);
+        console.log('✅ VARIANT 3: Extracted userId from custom orderReference:', extractedUserId);
       } else {
-        console.error('❌ INVALID orderReference format:', orderReference);
+        console.error('❌ INVALID custom orderReference format:', orderReference);
         return res.status(400).json({ 
           success: false, 
           message: 'Invalid orderReference format - missing userId' 
         });
       }
+    } else if (orderReference.startsWith('WFP-BTN-')) {
+      // WayForPay button format: WFP-BTN-xxx - need to find by PaymentIntent
+      console.log('🔍 VARIANT 3: WayForPay button detected, looking for recent PaymentIntent...');
+      isWayForPayButton = true;
+      
+      // Find most recent PaymentIntent for this payment amount/currency
+      // Since WayForPay doesn't preserve our orderReference, we match by timing and amount
+      try {
+        const recentPaymentIntent = await prisma.paymentIntent.findFirst({
+          where: {
+            status: 'INITIATED',
+            createdAt: {
+              gte: new Date(Date.now() - 30 * 60 * 1000) // Last 30 minutes
+            }
+          },
+          include: { user: true },
+          orderBy: { createdAt: 'desc' }
+        });
+        
+        if (recentPaymentIntent) {
+          extractedUserId = recentPaymentIntent.userId;
+          console.log('✅ VARIANT 3: Found matching PaymentIntent for WayForPay button:', {
+            trackingId: recentPaymentIntent.trackingId,
+            userId: extractedUserId,
+            planId: recentPaymentIntent.planId
+          });
+          
+          // Update PaymentIntent with actual orderReference from WayForPay
+          await prisma.paymentIntent.update({
+            where: { id: recentPaymentIntent.id },
+            data: {
+              status: 'CALLBACK_RECEIVED',
+              wayforpayData: callbackData,
+              updatedAt: new Date()
+            }
+          });
+        } else {
+          console.error('❌ No recent PaymentIntent found for WayForPay button callback');
+          return res.status(404).json({ 
+            success: false, 
+            message: 'No matching payment intent found - please retry payment' 
+          });
+        }
+      } catch (error) {
+        console.error('❌ Error finding PaymentIntent for WayForPay button:', error);
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Database error during payment intent lookup' 
+        });
+      }
     } else {
-      console.error('❌ UNSUPPORTED orderReference format (not ORDER_xxx):', orderReference);
+      console.error('❌ UNSUPPORTED orderReference format:', orderReference);
       return res.status(400).json({ 
         success: false, 
         message: 'Unsupported orderReference format - authentication required' 
