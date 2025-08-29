@@ -428,26 +428,32 @@ export const handleCallback = async (req, res) => {
         const userEmail = clientEmail || req.body.clientEmail;
         console.log('🔍 Looking for user by email:', userEmail);
         
-        user = await prisma.user.findUnique({
-          where: { email: userEmail }
-        });
-        
-        if (!user) {
-          // Create user if doesn't exist (for guest checkouts)
-          user = await prisma.user.create({
-            data: {
-              email: userEmail,
-              username: userEmail.split('@')[0] + '_' + Date.now(),
-              fullName: `${clientFirstName || ''} ${clientLastName || ''}`.trim() || 'WayForPay User',
-              emailVerified: true,
-              totalCredits: 100
-            }
+        // IMPORTANT: Check if email exists before querying Prisma
+        if (userEmail && userEmail.trim()) {
+          user = await prisma.user.findUnique({
+            where: { email: userEmail }
           });
-          console.log('✅ Created new user:', user.id, userEmail);
-      } else {
-        console.log('✅ Found existing user by email:', user.id, userEmail);
+          
+          if (!user) {
+            // Create user if doesn't exist (for guest checkouts)
+            user = await prisma.user.create({
+              data: {
+                email: userEmail,
+                username: userEmail.split('@')[0] + '_' + Date.now(),
+                fullName: `${clientFirstName || ''} ${clientLastName || ''}`.trim() || 'WayForPay User',
+                emailVerified: true,
+                totalCredits: 100
+              }
+            });
+            console.log('✅ Created new user:', user.id, userEmail);
+          } else {
+            console.log('✅ Found existing user by email:', user.id, userEmail);
+          }
+        } else {
+          console.log('⚠️ No email provided in callback data, cannot find or create user');
+          throw new Error('Cannot process payment: No email provided in callback data');
+        }
       }
-    }
     
     // Check if this orderReference has already been processed to prevent duplicates
     console.log('🔍 Checking for duplicate orderReference:', orderReference);
