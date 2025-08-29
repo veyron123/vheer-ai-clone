@@ -46,6 +46,16 @@ model Subscription {
   stripeCustomerId String?  @unique
   stripeSubscriptionId String? @unique
   wayforpayOrderReference String? // WayForPay orderReference for cancellation
+  
+  // Recurring payment fields
+  isRecurring     Boolean   @default(false)
+  recurringToken  String?   // WayForPay recurring token
+  recurringMode   String?   // MONTHLY, YEARLY
+  nextPaymentDate DateTime? // Next auto-charge date
+  lastPaymentDate DateTime? // Last successful payment date
+  failedPaymentAttempts Int @default(0) // Count of failed payment attempts
+  maxFailedAttempts Int @default(3) // Max attempts before cancellation
+  
   cancelledAt     DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

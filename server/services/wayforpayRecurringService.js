@@ -4,8 +4,9 @@ import logger from '../utils/logger.js';
 
 class WayForPayRecurringService {
   constructor() {
-    this.merchantAccount = process.env.WAYFORPAY_MERCHANT_ACCOUNT;
+    this.merchantAccount = process.env.WAYFORPAY_MERCHANT_LOGIN;
     this.merchantPassword = process.env.WAYFORPAY_MERCHANT_PASSWORD;
+    this.merchantSecret = process.env.WAYFORPAY_MERCHANT_SECRET;
     this.apiUrl = 'https://api.wayforpay.com/regularApi';
   }
 
@@ -24,7 +25,10 @@ class WayForPayRecurringService {
     ];
     
     const signatureString = signatureFields.join(';');
-    return crypto.createHash('md5').update(signatureString).digest('hex');
+    // Use HMAC with secret for signature generation
+    return crypto.createHmac('md5', this.merchantSecret)
+      .update(signatureString)
+      .digest('hex');
   }
 
   /**
