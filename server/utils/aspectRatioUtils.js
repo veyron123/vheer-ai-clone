@@ -13,19 +13,34 @@ export function getStandardizedAspectRatio(aspectRatio) {
   console.log(`🔍 Converting aspect ratio: "${aspectRatio}"`);
   
   const sizeMap = {
+    // Standard ratios
     '1:1': '1:1',     // Square
     '3:2': '3:2',     // Landscape 
     '2:3': '2:3',     // Portrait
-    '16:9': '3:2',    // Map 16:9 to closest supported (3:2)
-    '9:16': '2:3',    // Map 9:16 to closest supported (2:3)
-    '4:3': '3:2',     // Map 4:3 to closest supported (3:2)
-    '3:4': '2:3',     // Map 3:4 to closest supported (2:3)
+    '16:9': '16:9',   // Wide landscape - keep original for Flux
+    '9:16': '9:16',   // Tall portrait - keep original for Flux
+    '4:3': '4:3',     // Classic landscape - keep original for Flux
+    '3:4': '3:4',     // Portrait format - keep original for Flux
+    
+    // Extended ratios for Flux (3:7 to 7:3 range) - keep as-is
+    '7:3': '7:3',     // Ultra wide landscape
+    '6:3': '6:3',     // Very wide landscape
+    '5:3': '5:3',     // Wide landscape
+    '5:2': '5:2',     // Cinematic landscape
+    '7:4': '7:4',     // Wide landscape format
+    '4:7': '4:7',     // Tall portrait format
+    '3:5': '3:5',     // Tall portrait format
+    '2:5': '2:5',     // Banner portrait
+    '3:6': '3:6',     // Very tall portrait
+    '3:7': '3:7',     // Ultra tall portrait
+    
+    // Alias formats
     'square': '1:1',
     'landscape': '3:2',
     'portrait': '2:3'
   };
 
-  const result = sizeMap[aspectRatio] || '1:1';
+  const result = sizeMap[aspectRatio] || aspectRatio; // Use original if not mapped
   console.log(`🔍 Mapped to standardized format: "${result}"`);
   
   return result;
@@ -58,19 +73,58 @@ export function convertToServiceFormat(standardizedRatio, service) {
 }
 
 /**
- * Convert standardized aspect ratio to Flux dimensions
- * @param {string} standardizedRatio - Standardized aspect ratio
- * @returns {Object} Flux dimensions with width and height
+ * Convert aspect ratio to Flux format (string-based aspect_ratio parameter)
+ * Flux Kontext supports ratios from 3:7 (portrait) to 7:3 (landscape)
+ * @param {string} aspectRatio - Aspect ratio
+ * @returns {string} Flux aspect ratio string
  */
-function convertToFluxDimensions(standardizedRatio) {
-  const fluxDimensions = {
-    '1:1': { width: 1024, height: 1024 },  // Square
-    '3:2': { width: 1216, height: 832 },   // Landscape (closest to 3:2)
-    '2:3': { width: 832, height: 1216 }    // Portrait (closest to 2:3)
+function convertToFluxDimensions(aspectRatio) {
+  // Map all supported ratios to Flux format
+  const fluxRatioMap = {
+    // Standard ratios (all services)
+    '1:1': '1:1',     // Square
+    '3:2': '3:2',     // Standard landscape
+    '2:3': '2:3',     // Standard portrait
+    '16:9': '16:9',   // Wide landscape
+    '9:16': '9:16',   // Tall portrait
+    '4:3': '4:3',     // Classic landscape
+    '3:4': '3:4',     // Classic portrait
+    
+    // Extended ratios for Flux (3:7 to 7:3 range)
+    '7:3': '7:3',     // Ultra wide landscape (Flux max)
+    '6:3': '6:3',     // Very wide landscape
+    '5:3': '5:3',     // Wide landscape
+    '5:2': '5:2',     // Cinematic landscape
+    '7:4': '7:4',     // Wide landscape format
+    '3:5': '3:5',     // Tall portrait format
+    '2:5': '2:5',     // Banner portrait
+    '3:6': '3:6',     // Very tall portrait
+    '3:7': '3:7',     // Ultra tall portrait (Flux max)
+    '4:7': '4:7',     // Tall portrait format
+    
+    // Alias formats
+    'square': '1:1',
+    'landscape': '3:2',
+    'portrait': '2:3'
   };
-
-  const result = fluxDimensions[standardizedRatio] || fluxDimensions['1:1'];
-  console.log(`🔍 Flux dimensions for ${standardizedRatio}:`, result);
+  
+  const result = fluxRatioMap[aspectRatio] || aspectRatio;
+  console.log(`🔍 Flux aspect ratio for ${aspectRatio}: ${result}`);
+  
+  // Validate that the ratio is within Flux's supported range (3:7 to 7:3)
+  if (!fluxRatioMap[aspectRatio]) {
+    const [w, h] = aspectRatio.split(':').map(Number);
+    if (w && h) {
+      const ratio = w / h;
+      const minRatio = 3 / 7; // 0.428
+      const maxRatio = 7 / 3; // 2.333
+      if (ratio < minRatio || ratio > maxRatio) {
+        console.warn(`⚠️ Aspect ratio ${aspectRatio} is outside Flux range 3:7 to 7:3. Using default 1:1`);
+        return '1:1';
+      }
+    }
+  }
+  
   return result;
 }
 
@@ -82,8 +136,12 @@ function convertToFluxDimensions(standardizedRatio) {
 function convertToQwenFormat(standardizedRatio) {
   const qwenFormatMap = {
     '1:1': 'square_hd',      // Square HD
-    '3:2': 'landscape_4_3',  // Closest landscape format to 3:2
-    '2:3': 'portrait_4_3'    // Closest portrait format to 2:3
+    '3:4': 'portrait_4_3',   // Portrait format
+    '4:3': 'landscape_4_3',  // Landscape format
+    '16:9': 'landscape_16_9', // Wide landscape
+    '9:16': 'portrait_9_16', // Tall portrait
+    '3:2': 'landscape_4_3',  // Map to closest landscape format
+    '2:3': 'portrait_4_3'    // Map to closest portrait format
   };
 
   const result = qwenFormatMap[standardizedRatio] || 'square_hd';
@@ -132,13 +190,28 @@ function convertToRunwayFormat(standardizedRatio) {
  */
 export function getSupportedAspectRatios() {
   return [
-    { value: '1:1', label: 'Square (1:1)', description: 'Perfect square format' },
-    { value: '3:2', label: 'Landscape (3:2)', description: 'Standard landscape format' },
-    { value: '2:3', label: 'Portrait (2:3)', description: 'Standard portrait format' },
-    { value: '16:9', label: 'Widescreen (16:9)', description: 'Maps to 3:2 landscape' },
-    { value: '9:16', label: 'Mobile (9:16)', description: 'Maps to 2:3 portrait' },
-    { value: '4:3', label: 'Classic (4:3)', description: 'Maps to 3:2 landscape' },
-    { value: '3:4', label: 'Portrait (3:4)', description: 'Maps to 2:3 portrait' },
+    // Standard ratios (all services)
+    { value: '1:1', label: 'Square (1:1)', description: 'Perfect square format', allModels: true },
+    { value: '16:9', label: 'Widescreen (16:9)', description: 'Wide landscape format', allModels: true },
+    { value: '9:16', label: 'Mobile (9:16)', description: 'Tall portrait format', allModels: true },
+    { value: '4:3', label: 'Classic (4:3)', description: 'Classic photo format', allModels: true },
+    { value: '3:4', label: 'Portrait (3:4)', description: 'Portrait photo format', allModels: true },
+    { value: '3:2', label: 'Landscape (3:2)', description: 'Standard landscape format', allModels: true },
+    { value: '2:3', label: 'Portrait (2:3)', description: 'Standard portrait format', allModels: true },
+    
+    // Extended ratios for Flux (3:7 to 7:3 range)
+    { value: '7:3', label: 'Ultra Wide (7:3)', description: 'Ultra wide landscape', fluxOnly: true },
+    { value: '6:3', label: 'Wide (6:3)', description: 'Very wide landscape', fluxOnly: true },
+    { value: '5:3', label: 'Wide (5:3)', description: 'Wide landscape', fluxOnly: true },
+    { value: '5:2', label: 'Cinematic (5:2)', description: 'Cinematic landscape', fluxOnly: true },
+    { value: '7:4', label: 'Wide (7:4)', description: 'Wide landscape format', fluxOnly: true },
+    { value: '3:5', label: 'Tall (3:5)', description: 'Tall portrait format', fluxOnly: true },
+    { value: '2:5', label: 'Banner (2:5)', description: 'Tall banner format', fluxOnly: true },
+    { value: '3:6', label: 'Tall (3:6)', description: 'Very tall portrait', fluxOnly: true },
+    { value: '3:7', label: 'Ultra Tall (3:7)', description: 'Ultra tall portrait', fluxOnly: true },
+    { value: '4:7', label: 'Tall (4:7)', description: 'Tall portrait format', fluxOnly: true },
+    
+    // Alias formats
     { value: 'square', label: 'Square', description: 'Square format alias' },
     { value: 'landscape', label: 'Landscape', description: 'Landscape format alias' },
     { value: 'portrait', label: 'Portrait', description: 'Portrait format alias' }
