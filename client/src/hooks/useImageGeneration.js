@@ -66,15 +66,13 @@ export const useImageGeneration = () => {
       // Determine aspect ratio
       let finalAspectRatio = '1:1';
       
-      if (aiModel === 'gpt-image' || aiModel === 'qwen-image' || aiModel === 'nano-banana') {
-        // For GPT Image, Qwen Image, and Nano-Banana - use selected aspect ratio
+      if (aiModel === 'nano-banana') {
+        // Nano-Banana always generates 1024x1024 regardless of aspect ratio
+        finalAspectRatio = '1:1';
+      } else {
+        // All other models (GPT Image, Qwen Image, Flux) support aspect ratio selection
         finalAspectRatio = aspectRatio || '1:1';
         if (aspectRatio === 'match' && uploadedImage) {
-          finalAspectRatio = await detectAspectRatio(uploadedImage);
-        }
-      } else {
-        // For Flux models - always auto-detect from uploaded image
-        if (uploadedImage) {
           finalAspectRatio = await detectAspectRatio(uploadedImage);
         }
       }

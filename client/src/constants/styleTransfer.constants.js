@@ -5,11 +5,6 @@ export const STYLE_TRANSFER_AI_MODELS = {
     name: 'Flux Pro',
     badge: { text: 'Fast', color: 'bg-yellow-400 text-black' }
   },
-  FLUX_MAX: {
-    id: 'flux-max',
-    name: 'Flux Max',
-    badge: { text: 'Quality', color: 'bg-primary-400 text-white' }
-  },
   GPT_IMAGE: {
     id: 'gpt-image',
     name: 'GPT Image',
@@ -19,6 +14,11 @@ export const STYLE_TRANSFER_AI_MODELS = {
     id: 'qwen-image',
     name: 'Qwen Image',
     badge: { text: 'NEW', color: 'bg-green-500 text-white' }
+  },
+  NANO_BANANA: {
+    id: 'nano-banana',
+    name: 'Nano-Banana',
+    badge: { text: '🍌', color: 'bg-orange-600 text-white' }
   }
 };
 

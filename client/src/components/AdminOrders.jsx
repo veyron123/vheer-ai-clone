@@ -257,19 +257,23 @@ const AdminOrders = () => {
                 Customer Information
               </h3>
               <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-600">Name:</span>
-                  <span className="font-medium">
-                    {order.customerFirstName || order.user?.fullName || 'Guest'} {order.customerLastName || ''}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Mail className="w-3 h-3 text-gray-500" />
-                  <span>{order.customerEmail || order.user?.email || 'No email'}</span>
-                  <button onClick={() => copyToClipboard(order.customerEmail || order.user?.email)}>
-                    <Copy className="w-3 h-3 text-gray-400 hover:text-gray-600" />
-                  </button>
-                </div>
+                {(order.customerFirstName || order.user?.fullName) && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-600">Name:</span>
+                    <span className="font-medium">
+                      {order.customerFirstName || order.user?.fullName} {order.customerLastName || ''}
+                    </span>
+                  </div>
+                )}
+                {(order.customerEmail || order.user?.email) && (
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-3 h-3 text-gray-500" />
+                    <span>{order.customerEmail || order.user?.email}</span>
+                    <button onClick={() => copyToClipboard(order.customerEmail || order.user?.email)}>
+                      <Copy className="w-3 h-3 text-gray-400 hover:text-gray-600" />
+                    </button>
+                  </div>
+                )}
                 {order.customerPhone && (
                   <div className="flex items-center gap-2">
                     <Phone className="w-3 h-3 text-gray-500" />
@@ -786,12 +790,16 @@ const AdminOrders = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {order.customerFirstName || order.user?.fullName || 'Guest'} {order.customerLastName || ''}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {order.customerEmail || order.user?.email || 'No email'}
-                          </div>
+                          {(order.customerFirstName || order.user?.fullName) && (
+                            <div className="text-sm font-medium text-gray-900">
+                              {order.customerFirstName || order.user?.fullName} {order.customerLastName || ''}
+                            </div>
+                          )}
+                          {(order.customerEmail || order.user?.email) && (
+                            <div className="text-sm text-gray-500">
+                              {order.customerEmail || order.user?.email}
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

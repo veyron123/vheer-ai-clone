@@ -147,7 +147,7 @@ NANO_BANANA: {
 - **Timeout**: 5 minutes for generation requests
 - **Caching**: Results cached for 1 hour
 - **Queue Priority**: Authenticated users get higher priority
-- **Image Size**: Generated images are 1024x1024px
+- **Image Size**: Generated images are ALWAYS 1024x1024px (aspect ratio is not supported by Gemini API)
 
 ## Security
 

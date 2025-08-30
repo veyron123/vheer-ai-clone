@@ -243,30 +243,6 @@ const PricingPage = () => {
           </p>
         </div>
 
-        {/* Debug info */}
-        {(error || !plans) && (
-          <div className={`mb-4 p-4 border rounded ${error ? 'bg-red-100 border-red-400 text-red-700' : 'bg-yellow-100 border-yellow-400 text-yellow-700'}`}>
-            {error && (
-              <>
-                <strong>API Error:</strong> {error.message}
-                <br />
-                <small>Using fallback data. Check network tab for details.</small>
-                <br />
-              </>
-            )}
-            {!plans && !error && (
-              <>
-                <strong>Info:</strong> Using fallback data (API returned null/undefined)
-                <br />
-              </>
-            )}
-            <small>
-              Status: {isLoading ? 'Loading...' : isRefetching ? 'Refreshing...' : 'Loaded'} | 
-              Data source: {plans ? 'API' : 'Fallback'} | 
-              Plans count: {displayPlans?.length || 0}
-            </small>
-          </div>
-        )}
 
         {/* Pricing Cards */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
@@ -336,58 +312,42 @@ const PricingPage = () => {
                     ))}
                   </ul>
 
-                  {/* CTA Button */}
-                  {(() => {
-                    const buttonConfig = getButtonConfig(plan);
-                    return (
-                      <button
-                        onClick={buttonConfig.onClick}
-                        disabled={buttonConfig.disabled}
-                        className={`w-full py-3 rounded-lg font-medium transition mt-auto ${buttonConfig.className}`}
-                        title={buttonConfig.disabled ? (plan.id === currentUserPlan ? t('currentPlan') : t('downgradeLocked')) : ''}
-                      >
-                        {buttonConfig.text}
-                      </button>
-                    );
-                  })()}
-                  
-                  {/* Helpful message based on plan comparison */}
-                  {(() => {
-                    const planIndex = planHierarchy.indexOf(plan.id);
-                    const isActiveSubscription = user?.subscription?.status === 'ACTIVE' && currentUserPlan !== 'FREE';
-                    
-                    if (plan.id === 'FREE') {
-                      return null; // No message for FREE plan
-                    }
-                    
-                    if (plan.id === currentUserPlan) {
+                  {/* CTA Button Area with fixed height */}
+                  <div className="mt-auto">
+                    {(() => {
+                      const buttonConfig = getButtonConfig(plan);
+                      const planIndex = planHierarchy.indexOf(plan.id);
+                      const isActiveSubscription = user?.subscription?.status === 'ACTIVE' && currentUserPlan !== 'FREE';
+                      
+                      // Determine helper message
+                      let helperMessage = '';
+                      if (plan.id === currentUserPlan && plan.id !== 'FREE') {
+                        helperMessage = `✓ ${t('currentPlan')}`;
+                      }
+                      
                       return (
-                        <p className="text-xs text-blue-600 text-center mt-2 font-medium">
-                          ✓ {t('currentPlan')}
-                        </p>
+                        <>
+                          <button
+                            onClick={buttonConfig.onClick}
+                            disabled={buttonConfig.disabled}
+                            className={`w-full py-3 rounded-lg font-medium transition ${buttonConfig.className}`}
+                            title={buttonConfig.disabled ? (plan.id === currentUserPlan ? t('currentPlan') : t('downgradeLocked')) : ''}
+                          >
+                            {buttonConfig.text}
+                          </button>
+                          
+                          {/* Fixed height area for helper message */}
+                          <div className="h-6 flex items-center justify-center mt-2">
+                            {helperMessage && (
+                              <p className="text-xs text-blue-600 font-medium">
+                                {helperMessage}
+                              </p>
+                            )}
+                          </div>
+                        </>
                       );
-                    }
-                    
-                    if (planIndex > currentUserPlanIndex) {
-                      return isActiveSubscription ? (
-                        <p className="text-xs text-orange-600 text-center mt-2">
-                          {t('cancelToUpgrade')}
-                        </p>
-                      ) : null;
-                    } else if (isActiveSubscription) {
-                      return (
-                        <p className="text-xs text-gray-500 text-center mt-2">
-                          {t('canDowngradeAfterExpiry')}
-                        </p>
-                      );
-                    } else {
-                      return (
-                        <p className="text-xs text-gray-500 text-center mt-2">
-                          Auto-Renew. Cancel Anytime
-                        </p>
-                      );
-                    }
-                  })()}
+                    })()}
+                  </div>
                 </div>
               </motion.div>
             );

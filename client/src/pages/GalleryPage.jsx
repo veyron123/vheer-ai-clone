@@ -12,7 +12,7 @@ import {
   Loader2
 } from 'lucide-react';
 import api from '../services/api';
-import { downloadImageWithProxy, viewImage } from '../utils/downloadUtils';
+import { downloadImageWithProxy, viewImage } from '../utils/imageUtils';
 
 const GalleryPage = () => {
   const [selectedStyle, setSelectedStyle] = useState('');

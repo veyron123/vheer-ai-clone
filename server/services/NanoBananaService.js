@@ -133,24 +133,12 @@ class NanoBananaService extends BaseAIService {
         fullPrompt = `${fullPrompt}, ${style} style`;
       }
       
-      // Add aspect ratio guidance using standardized conversion like GPT Image and Qwen
+      // Note: Gemini 2.5 Flash Image always generates 1024x1024 images
+      // AspectRatio parameter is ignored by the model, so we don't add it to prompt
       if (aspectRatio && aspectRatio !== 'match') {
-        const standardizedRatio = getStandardizedAspectRatio(aspectRatio);
-        const dimensions = convertToServiceFormat(standardizedRatio, 'nano-banana');
-        
-        const aspectRatioText = {
-          '1:1': 'square format, 1024x1024 pixels',
-          '3:2': 'landscape format, 1216x832 pixels',
-          '2:3': 'portrait format, 832x1216 pixels'
-        }[standardizedRatio] || 'standard format';
-        
-        fullPrompt = `${fullPrompt}, ${aspectRatioText}`;
-        
-        logger.info('Nano-Banana aspect ratio conversion', {
+        logger.info('Nano-Banana aspect ratio requested (but model generates 1024x1024)', {
           original: aspectRatio,
-          standardized: standardizedRatio,
-          dimensions: dimensions,
-          prompt: aspectRatioText
+          note: 'Gemini 2.5 Flash always generates square 1024x1024 images'
         });
       }
 
@@ -177,7 +165,7 @@ class NanoBananaService extends BaseAIService {
 
         contentPrompt = [
           { 
-            text: `Create a picture based on this image: ${fullPrompt}` 
+            text: `I want you to completely recreate this image with the following modifications: ${fullPrompt}. Do NOT just copy the original image. You must make significant visual changes, alterations, and creative transformations. Change colors, lighting, style, mood, or artistic approach as specified. Generate a distinctly different version that clearly shows the requested transformation.` 
           },
           {
             inlineData: {
@@ -235,11 +223,8 @@ class NanoBananaService extends BaseAIService {
       if (userId) {
         await this.deductCredits(userId, requiredCredits, `Nano-Banana generation`);
 
-        // Calculate dimensions based on aspect ratio like other services
-        const standardizedRatio = getStandardizedAspectRatio(aspectRatio || '1:1');
-        const dimensions = convertToServiceFormat(standardizedRatio, 'nano-banana');
-        
-        // Save image with proper dimensions
+        // Gemini 2.5 Flash always generates 1024x1024 images regardless of requested aspect ratio
+        // Save image with actual dimensions
         const image = await this.saveImage({
           userId,
           generationId: generation?.id,
@@ -247,8 +232,8 @@ class NanoBananaService extends BaseAIService {
           prompt,
           model: modelId,
           style,
-          width: dimensions?.width || 1024,
-          height: dimensions?.height || 1024
+          width: 1024,  // Gemini always generates 1024x1024
+          height: 1024  // Gemini always generates 1024x1024
         });
 
         // Update generation status

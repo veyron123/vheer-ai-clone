@@ -365,7 +365,7 @@ const animeStylePrompts = {
  * Generate anime-style image using Flux.1 Kontext
  * @param {string} imageBase64 - Base64 encoded image
  * @param {string} style - Selected anime style
- * @param {string} model - Flux model to use ('flux-pro' or 'flux-max')
+ * @param {string} model - Flux model to use ('flux-pro')
  * @param {string} aspectRatio - Aspect ratio for generation
  * @param {AbortSignal} abortSignal - Signal to abort the request
  * @returns {Promise} Generated image data
@@ -512,14 +512,14 @@ export async function generateWithFlux(imageBase64, style = 'disney', model = 'f
  * Generate anime-style image from uploaded photo
  * @param {string} imageUrl - URL or base64 of the uploaded image
  * @param {string} style - Selected anime style
- * @param {string} aiModel - AI model to use ('flux-pro', 'flux-max', or 'gpt-image')
+ * @param {string} aiModel - AI model to use ('flux-pro', 'gpt-image', 'qwen-image', or 'nano-banana')
  * @param {string} aspectRatio - Aspect ratio for generation ('1:1', '16:9', etc.)
  * @param {AbortSignal} abortSignal - Signal to abort the request
  * @returns {Promise} Generated image data
  */
 export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = 'flux-pro', aspectRatio = '1:1', abortSignal = null, customPrompt = null) {
   // Use Flux for image-to-image generation
-  if (aiModel === 'flux-pro' || aiModel === 'flux-max') {
+  if (aiModel === 'flux-pro') {
     return await generateWithFlux(imageUrl, style, aiModel, aspectRatio, abortSignal, customPrompt);
   }
   

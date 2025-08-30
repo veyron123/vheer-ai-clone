@@ -65,10 +65,6 @@
         "question": "What are credits?",
         "answer": "Credits are used to generate images. Each image generation consumes credits based on the model and settings used. Higher quality models and larger images require more credits."
       },
-      "changePlan": {
-        "question": "Can I change my plan anytime?",
-        "answer": "Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll prorate any payments."
-      },
       "rollOver": {
         "question": "Do unused credits roll over?",
         "answer": "Credits reset each month and don't roll over. However, you can purchase additional credit packs that never expire."

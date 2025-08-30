@@ -5,10 +5,11 @@ const MockupSection = ({
   imageUrl, 
   aspectRatio, 
   aiModel,
+  scale,
   autoShow = true 
 }) => {
   // DEBUG: Логируем что получает MockupSection
-  console.log('📋 MockupSection received:', { imageUrl, aspectRatio, aiModel, autoShow });
+  console.log('📋 MockupSection received:', { imageUrl, aspectRatio, aiModel, scale, autoShow });
   // Определяем, можно ли показать мокап
   const canShowMockup = () => {
     if (!imageUrl) {
@@ -55,6 +56,7 @@ const MockupSection = ({
     <InlineMockupGenerator
       imageUrl={imageUrl}
       aspectRatio={aspectRatio || '1:1'}
+      scale={scale}
       autoShow={autoShow}
     />
   );

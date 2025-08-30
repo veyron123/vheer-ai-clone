@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Upload, Link2, X, Download, Loader2, ZoomIn, Clock } from 'lucide-react';
-import { downloadImageWithProxy, viewImage } from '../../utils/downloadUtils';
+import { downloadImageWithProxy, viewImage } from '../../utils/imageUtils';
 
 /**
  * Unified Image Uploader Component following KISS principle

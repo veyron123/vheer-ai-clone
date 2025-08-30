@@ -147,7 +147,7 @@ const ImageToImageGeneratorPage = () => {
                 <ImageAspectRatioSelector
                   selectedRatio={aspectRatio}
                   onRatioChange={setAspectRatio}
-                  disabled={aiModel !== 'gpt-image' && aiModel !== 'midjourney' && aiModel !== 'qwen-image'}
+                  disabled={aiModel === 'nano-banana'}
                 />
                 
                 <ImageGenerateButton

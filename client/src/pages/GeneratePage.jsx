@@ -27,7 +27,6 @@ const GeneratePage = () => {
     width: 1024,
     height: 1024,
     numOutputs: 1,
-    guidanceScale: 7.5,
     numInferenceSteps: 50
   });
   const [generatedImages, setGeneratedImages] = useState([]);
@@ -104,13 +103,41 @@ const GeneratePage = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Download failed:', error);
-      // Fallback to opening in new tab
-      window.open(imageUrl, '_blank');
+      // Fallback: use viewImage function which handles data URLs properly
+      await viewImage(imageUrl);
     }
   };
 
-  const viewImage = (imageUrl) => {
-    window.open(imageUrl, '_blank', 'noopener,noreferrer');
+  const viewImage = async (imageUrl) => {
+    try {
+      let viewUrl = imageUrl;
+      
+      // For data URLs, convert to blob URL to avoid browser restrictions
+      if (imageUrl.startsWith('data:')) {
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        viewUrl = URL.createObjectURL(blob);
+      }
+      
+      // Open in new tab
+      const newWindow = window.open(viewUrl, '_blank', 'noopener,noreferrer');
+      
+      // Clean up blob URL after a short delay
+      if (viewUrl !== imageUrl) {
+        setTimeout(() => {
+          URL.revokeObjectURL(viewUrl);
+        }, 1000);
+      }
+      
+      // If window.open failed (popup blocked), show alert
+      if (!newWindow) {
+        alert('Please allow popups for this site to view images in new tab');
+      }
+    } catch (error) {
+      console.error('Error viewing image:', error);
+      // Fallback: try direct open anyway
+      window.open(imageUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const promptSuggestions = [
@@ -285,18 +312,6 @@ const GeneratePage = () => {
                       </select>
                     </div>
 
-                    <div>
-                      <label className="label">Guidance Scale ({settings.guidanceScale})</label>
-                      <input
-                        type="range"
-                        min="1"
-                        max="20"
-                        step="0.5"
-                        value={settings.guidanceScale}
-                        onChange={(e) => setSettings({...settings, guidanceScale: parseFloat(e.target.value)})}
-                        className="w-full"
-                      />
-                    </div>
                   </div>
                 )}
               </div>

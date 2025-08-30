@@ -23,7 +23,7 @@ const AnimeGeneratorPage = () => {
   const [selectedStyle, setSelectedStyle] = useState('disney');
   const [customStyle, setCustomStyle] = useState('');
   const [aiModel, setAiModel] = useState('flux-pro');
-  const [aspectRatio, setAspectRatio] = useState('1:1');
+  const [aspectRatio, setAspectRatio] = useState('match');
   
   const {
     uploadedImage,
@@ -116,7 +116,7 @@ const AnimeGeneratorPage = () => {
             <AspectRatioSelector
               selectedRatio={aspectRatio}
               onRatioChange={setAspectRatio}
-              disabled={aiModel !== 'gpt-image' && aiModel !== 'qwen-image'}
+              disabled={aiModel === 'nano-banana'}
               aiModel={aiModel}
             />
             

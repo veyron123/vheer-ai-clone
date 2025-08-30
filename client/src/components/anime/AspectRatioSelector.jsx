@@ -23,17 +23,17 @@ const AspectRatioSelector = ({ selectedRatio, onRatioChange, disabled = false, a
     if (disabled) setShowDropdown(false);
   }, [disabled]);
   
-  // Filter options based on selected AI model
-  const availableOptions = aiModel === 'gpt-image' 
-    ? ASPECT_RATIOS 
-    : ASPECT_RATIOS.filter(opt => opt.id !== 'match');
+  // All models (except nano-banana) use the same basic aspect ratios
+  // Nano-Banana is disabled via the disabled prop from parent components
+  const availableOptions = ASPECT_RATIOS;
   
   // If current selection is not available, switch to first available option
   useEffect(() => {
-    if (selectedRatio === 'match' && aiModel !== 'gpt-image') {
-      onRatioChange('1:1');
+    const isCurrentAvailable = availableOptions.some(opt => opt.id === selectedRatio);
+    if (!isCurrentAvailable && availableOptions.length > 0) {
+      onRatioChange(availableOptions[0].id);
     }
-  }, [aiModel, selectedRatio, onRatioChange]);
+  }, [aiModel, selectedRatio, onRatioChange, availableOptions]);
   
   const currentOption = availableOptions.find(opt => opt.id === selectedRatio) || availableOptions[0];
   

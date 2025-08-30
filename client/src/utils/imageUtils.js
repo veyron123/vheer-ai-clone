@@ -98,8 +98,8 @@ export const downloadImageWithProxy = async (imageUrl, filename = 'image.png') =
     }
   } catch (error) {
     console.error('Error downloading image:', error);
-    // Fallback: open in new tab
-    window.open(imageUrl, '_blank');
+    // Fallback: use viewImage function which handles data URLs properly
+    await viewImage(imageUrl);
   }
 };
 
@@ -107,6 +107,101 @@ export const downloadImageWithProxy = async (imageUrl, filename = 'image.png') =
  * Open image in new tab/window
  * @param {string} imageUrl - URL of the image to view
  */
-export const viewImage = (imageUrl) => {
-  window.open(imageUrl, '_blank');
+export const viewImage = async (imageUrl) => {
+  try {
+    let viewUrl = imageUrl;
+    
+    // For data URLs, convert to blob URL to avoid browser restrictions
+    if (imageUrl.startsWith('data:')) {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      viewUrl = URL.createObjectURL(blob);
+    }
+    
+    // Open in new tab
+    const newWindow = window.open(viewUrl, '_blank');
+    
+    // Clean up blob URL after a short delay to allow the window to load
+    if (viewUrl !== imageUrl) {
+      setTimeout(() => {
+        URL.revokeObjectURL(viewUrl);
+      }, 1000);
+    }
+    
+    // If window.open failed (popup blocked), fall back to creating a modal or alert
+    if (!newWindow) {
+      console.warn('Popup blocked, creating temporary viewing solution');
+      // Create a temporary modal for viewing the image
+      createImageViewModal(imageUrl);
+    }
+  } catch (error) {
+    console.error('Error viewing image:', error);
+    // Last fallback: try direct open anyway
+    window.open(imageUrl, '_blank');
+  }
+};
+
+/**
+ * Create a modal for viewing images when popup is blocked
+ * @param {string} imageUrl - URL of the image to view in modal
+ */
+const createImageViewModal = (imageUrl) => {
+  // Create modal overlay
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  `;
+  
+  // Create image element
+  const img = document.createElement('img');
+  img.src = imageUrl;
+  img.style.cssText = `
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  `;
+  
+  // Create close text
+  const closeText = document.createElement('div');
+  closeText.textContent = 'Click anywhere to close';
+  closeText.style.cssText = `
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: white;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 8px 12px;
+    border-radius: 4px;
+  `;
+  
+  // Add elements to overlay
+  overlay.appendChild(img);
+  overlay.appendChild(closeText);
+  
+  // Add close functionality
+  overlay.addEventListener('click', () => {
+    document.body.removeChild(overlay);
+  });
+  
+  // Prevent closing when clicking on image
+  img.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+  
+  // Add to page
+  document.body.appendChild(overlay);
 };

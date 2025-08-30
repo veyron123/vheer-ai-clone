@@ -17,14 +17,14 @@ export const ANIME_STYLES = [
   { id: 'chinese-paper-cutting', name: 'Chinese Paper Cutting', image: '/Anime Portraite images/Chinese Paper Cutting.png' }
 ];
 
-// Aspect Ratio Options
+// Aspect Ratio Options - Базовые соотношения для всех моделей (кроме Nano-Banana)
 export const ASPECT_RATIOS = [
   { id: 'match', name: 'Match input image', description: 'Auto-detect from input' },
-  { id: '1:1', name: '1:1 (Square)', description: 'Perfect for social media', gptSupported: true },
-  { id: '16:9', name: '16:9 (Landscape)', description: 'Wide format', gptMappedTo: '3:2' },
-  { id: '9:16', name: '9:16 (Portrait)', description: 'Vertical format', gptMappedTo: '2:3' },
-  { id: '4:3', name: '4:3 (Album)', description: 'Classic photo format', gptMappedTo: '3:2' },
-  { id: '3:4', name: '3:4 (Portrait)', description: 'Portrait format', gptMappedTo: '2:3' }
+  { id: '1:1', name: '1:1 (Square)', description: 'Perfect for social media' },
+  { id: '3:4', name: '3:4 (Portrait)', description: 'Portrait format' },
+  { id: '4:3', name: '4:3 (Album)', description: 'Classic photo format' },
+  { id: '16:9', name: '16:9 (Landscape)', description: 'Wide format' },
+  { id: '9:16', name: '9:16 (Portrait)', description: 'Vertical format' }
 ];
 
 // AI Models Configuration
@@ -34,12 +34,6 @@ export const AI_MODELS = {
     name: 'Flux Pro',
     badge: { text: 'Fast', color: 'bg-yellow-400 text-black' },
     credits: 10
-  },
-  FLUX_MAX: {
-    id: 'flux-max',
-    name: 'Flux Max',
-    badge: { text: 'Quality', color: 'bg-primary-400 text-white' },
-    credits: 20
   },
   GPT_IMAGE: {
     id: 'gpt-image',

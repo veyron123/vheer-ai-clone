@@ -6,12 +6,6 @@ export const IMAGE_AI_MODELS = {
     badge: { text: 'Fast', color: 'bg-yellow-400 text-black' },
     credits: 10
   },
-  FLUX_MAX: {
-    id: 'flux-max',
-    name: 'Flux1.Kontext Max',
-    badge: { text: 'Quality', color: 'bg-primary-400 text-white' },
-    credits: 20
-  },
   GPT_IMAGE: {
     id: 'gpt-image',
     name: 'GPT Image',
@@ -38,14 +32,14 @@ export const IMAGE_AI_MODELS = {
   // }
 };
 
-// Aspect Ratio Options
+// Aspect Ratio Options - Базовые соотношения для всех моделей (кроме Nano-Banana)
 export const IMAGE_ASPECT_RATIOS = [
   { id: 'match', name: 'Match input image', description: 'Auto-detect from input' },
-  { id: '1:1', name: 'Square (1:1)', description: '1024×1024', gptSupported: true },
-  { id: '16:9', name: 'Landscape (16:9)', description: '1344×768', gptMappedTo: '3:2' },
-  { id: '9:16', name: 'Portrait (9:16)', description: '768×1344', gptMappedTo: '2:3' },
-  { id: '4:3', name: 'Album (4:3)', description: '1152×896', gptMappedTo: '3:2' },
-  { id: '3:4', name: 'Portrait (3:4)', description: '896×1152', gptMappedTo: '2:3' }
+  { id: '1:1', name: '1:1 (Square)', description: 'Perfect for social media' },
+  { id: '3:4', name: '3:4 (Portrait)', description: 'Portrait format' },
+  { id: '4:3', name: '4:3 (Album)', description: 'Classic photo format' },
+  { id: '16:9', name: '16:9 (Landscape)', description: 'Wide format' },
+  { id: '9:16', name: '9:16 (Portrait)', description: 'Vertical format' }
 ];
 
 // Example Images for Image to Image

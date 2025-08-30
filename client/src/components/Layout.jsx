@@ -72,10 +72,6 @@ const Layout = ({ children }) => {
                 <Sparkles className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
                 <span>{t('navigation.generate')}</span>
               </Link>
-              <Link to={createLocalizedLink('/mockup-generator')} className="flex items-center space-x-1 text-gray-700 hover:text-purple-500 transition group">
-                <Frame className="w-4 h-4 text-purple-500 group-hover:text-purple-600" />
-                <span>Mockup</span>
-              </Link>
 {/* Временно отключено
               <Link to="/gallery" className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition group">
                 <Grid3x3 className="w-4 h-4 text-orange-500 group-hover:text-orange-600" />
@@ -189,7 +185,7 @@ const Layout = ({ children }) => {
       {/* Footer */}
       <footer className="bg-white border-t mt-20">
         <div className="container-custom py-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Logo and Description */}
             <div>
               <div className="flex items-center space-x-2 mb-4">
@@ -240,16 +236,22 @@ const Layout = ({ children }) => {
               </ul>
             </div>
             
-            {/* Popular Tools */}
+            {/* Image Generators */}
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4 uppercase text-sm">{t('footer.tools.title')}</h3>
+              <h3 className="font-semibold text-gray-900 mb-4 uppercase text-sm">Image Generators</h3>
               <ul className="space-y-2 text-gray-600 text-sm">
                 <li><Link to={createLocalizedLink('/anime-generator')} className="hover:text-gray-900 transition">{t('footer.tools.anime_portrait')}</Link></li>
                 <li><Link to={createLocalizedLink('/image-to-image-generator')} className="hover:text-gray-900 transition">{t('footer.tools.image_to_image')}</Link></li>
                 <li><Link to={createLocalizedLink('/image-style-transfer')} className="hover:text-gray-900 transition">{t('footer.tools.style_transfer')}</Link></li>
-                <li><Link to={createLocalizedLink('/mockup-generator')} className="hover:text-gray-900 transition">AI Mockup Generator</Link></li>
                 <li><Link to={createLocalizedLink('/pet-portrait-generator')} className="hover:text-gray-900 transition">AI Pet Portrait Generator</Link></li>
                 <li><Link to={createLocalizedLink('/text-to-image-generator')} className="hover:text-gray-900 transition">AI Text To Image Generator</Link></li>
+              </ul>
+            </div>
+
+            {/* Video Generators */}
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-4 uppercase text-sm">Video Generators</h3>
+              <ul className="space-y-2 text-gray-600 text-sm">
                 <li><Link to={createLocalizedLink('/ai-video-generator')} className="hover:text-gray-900 transition">AI Video Generator</Link></li>
                 <li><Link to={createLocalizedLink('/video-modification-generator')} className="hover:text-gray-900 transition">AI Video Modification Generator</Link></li>
               </ul>

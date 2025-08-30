@@ -6,11 +6,6 @@ export const MODEL_PRICING = {
     credits: 10,
     description: 'Fast & reliable'
   },
-  'flux-max': {
-    name: 'Flux Max', 
-    credits: 20,
-    description: 'Maximum quality'
-  },
   
   // GPT Image Models
   'gpt-image': {
@@ -24,6 +19,13 @@ export const MODEL_PRICING = {
     name: 'Qwen Image',
     credits: 20,
     description: 'High-quality AI'
+  },
+
+  // Nano-Banana Models
+  'nano-banana': {
+    name: 'Nano-Banana',
+    credits: 20,
+    description: 'Fast & creative AI'
   },
   
   // Midjourney Models (future)

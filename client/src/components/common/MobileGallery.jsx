@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, X, Download, ZoomIn } from 'lucide-react';
-import { downloadImageWithProxy, viewImage } from '../../utils/downloadUtils';
+import { downloadImageWithProxy, viewImage } from '../../utils/imageUtils';
 
 /**
  * Mobile-optimized image gallery with swipe support

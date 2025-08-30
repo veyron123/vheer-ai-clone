@@ -85,7 +85,8 @@ export const useImageToImageGeneration = () => {
         controlStrength,
         aiModel,
         aspectRatio,
-        abortControllerRef.current.signal
+        abortControllerRef.current.signal,
+        3.5 // scale parameter
       );
       
       // Calculate generation time

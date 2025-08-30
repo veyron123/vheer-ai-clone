@@ -3,6 +3,7 @@ import { Sparkles, Loader2, X, Lock } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import PricingDisplay from '../ui/PricingDisplay';
 import AuthRequiredModal from '../ui/AuthRequiredModal';
+import { getModelPricing } from '../../config/pricing.config';
 
 /**
  * Unified Generate Button Component following KISS principle
@@ -21,8 +22,14 @@ const UniversalGenerateButton = ({
   className = '',
   fullWidth = true
 }) => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // Check if user can afford generation (only for authenticated users)
+  const pricing = getModelPricing(aiModel);
+  const userCredits = user?.totalCredits || 0;
+  const totalCost = pricing.credits * numImages;
+  const canAfford = !isAuthenticated || userCredits >= totalCost;
 
   const handleGenerateClick = () => {
     // Check authentication
@@ -31,13 +38,18 @@ const UniversalGenerateButton = ({
       return;
     }
 
+    // Check credits (only for authenticated users)
+    if (isAuthenticated && !canAfford) {
+      return; // Don't generate if insufficient credits
+    }
+
     // Proceed with generation
     onGenerate();
   };
 
   // Button state calculations
-  const isButtonDisabled = isAuthenticated ? (disabled || isGenerating) : false;
-  const isButtonActive = (!disabled && !isGenerating) || !isAuthenticated;
+  const isButtonDisabled = isAuthenticated ? (disabled || isGenerating || !canAfford) : false;
+  const isButtonActive = isAuthenticated ? (canAfford && !disabled && !isGenerating) : true;
   const baseClassName = fullWidth ? 'w-full' : '';
 
   return (

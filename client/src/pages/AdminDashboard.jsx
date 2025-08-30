@@ -222,10 +222,12 @@ const AdminDashboard = () => {
                   <p className="text-gray-600">Username</p>
                   <p className="font-medium">{user.username}</p>
                 </div>
-                <div>
-                  <p className="text-gray-600">Full Name</p>
-                  <p className="font-medium">{user.fullName || 'Not set'}</p>
-                </div>
+                {user.fullName && (
+                  <div>
+                    <p className="text-gray-600">Full Name</p>
+                    <p className="font-medium">{user.fullName}</p>
+                  </div>
+                )}
                 <div>
                   <p className="text-gray-600">Joined</p>
                   <p className="font-medium">{format(new Date(user.createdAt), 'MMM dd, yyyy')}</p>

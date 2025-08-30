@@ -203,12 +203,15 @@ class FluxService extends BaseAIService {
       guidance: 3.5
     };
 
-    // Handle aspect ratio using standardized logic
+    // Handle aspect ratio - Flux supports string format directly
     if (aspectRatio) {
-      const standardizedRatio = getStandardizedAspectRatio(aspectRatio);
-      const { width, height } = convertToServiceFormat(standardizedRatio, 'flux');
-      payload.width = width;
-      payload.height = height;
+      // Flux Kontext supports aspect ratios from 3:7 to 7:3 in string format
+      payload.aspect_ratio = aspectRatio;
+      // Remove default width/height as aspect_ratio overrides them
+      delete payload.width;
+      delete payload.height;
+      
+      logger.info('Flux aspect ratio set', { aspectRatio });
     }
 
     // Add input image for image-to-image

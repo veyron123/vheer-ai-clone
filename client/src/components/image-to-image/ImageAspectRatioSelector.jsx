@@ -19,7 +19,7 @@ const ImageAspectRatioSelector = ({ selectedRatio, onRatioChange, disabled }) =>
       </select>
       {disabled && (
         <p className="text-xs text-gray-500">
-          Aspect ratio selection is available for GPT Image and Midjourney models
+          Aspect ratio selection is available for all models except Nano-Banana (which always generates 1024x1024)
         </p>
       )}
     </div>

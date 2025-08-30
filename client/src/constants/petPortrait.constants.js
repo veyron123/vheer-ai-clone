@@ -27,13 +27,6 @@ export const PET_PORTRAIT_MODELS = [
     premium: false
   },
   {
-    id: 'flux-max',
-    name: 'Flux Max',
-    description: 'Maximum quality pet portraits',
-    credits: 4,
-    premium: true
-  },
-  {
     id: 'gpt-image',
     name: 'GPT Image',
     description: 'AI-powered pet portrait generation',
@@ -45,6 +38,13 @@ export const PET_PORTRAIT_MODELS = [
     name: 'Qwen Image',
     description: 'Advanced pet portrait creation',
     credits: 30,
+    premium: false
+  },
+  {
+    id: 'nano-banana',
+    name: 'Nano-Banana',
+    description: 'Fast & creative pet portraits',
+    credits: 20,
     premium: false
   }
 ];

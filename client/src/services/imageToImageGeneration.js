@@ -18,10 +18,10 @@ fal.config({
  * @param {string} negativePrompt - Negative prompt for generation
  * @param {number} creativeStrength - Creative strength (1-10)
  * @param {number} controlStrength - Control strength (0-5)
- * @param {string} model - Flux model to use ('flux-pro' or 'flux-max')
+ * @param {string} model - Flux model to use ('flux-pro')
  * @returns {Promise} Generated image data
  */
-export async function generateWithFluxImageToImage(imageBase64, positivePrompt, negativePrompt, creativeStrength, controlStrength, model = 'flux-pro', abortSignal = null) {
+export async function generateWithFluxImageToImage(imageBase64, positivePrompt, negativePrompt, creativeStrength, controlStrength, model = 'flux-pro', abortSignal = null, scale = 3.5) {
   try {
     // Ensure image is in base64 format
     let base64Data = imageBase64;
@@ -76,7 +76,8 @@ export async function generateWithFluxImageToImage(imageBase64, positivePrompt, 
         input_image: base64Only,
         creative_strength: creativeStrength / 10, // Normalize to 0-1
         control_strength: controlStrength / 5,   // Normalize to 0-1
-        model: model
+        model: model,
+        scale: scale
       }),
       signal: finalSignal
     }).finally(() => {
@@ -225,7 +226,7 @@ export async function generateWithMidjourneyImageToImage(imageBase64, positivePr
  * @param {string} aspectRatio - Aspect ratio for generation
  * @returns {Promise} Generated image data
  */
-export async function generateWithQwenImageToImage(imageBase64, positivePrompt, negativePrompt, creativeStrength, controlStrength, aspectRatio = '1:1', abortSignal = null) {
+export async function generateWithQwenImageToImage(imageBase64, positivePrompt, negativePrompt, creativeStrength, controlStrength, aspectRatio = '1:1', abortSignal = null, scale = 3.5) {
   try {
     // Upload image to FAL storage first
     let uploadedImageUrl;
@@ -306,7 +307,8 @@ export async function generateWithQwenImageToImage(imageBase64, positivePrompt, 
         prompt: fullPrompt,
         negative_prompt: negativePrompt,
         input_image: uploadedImageUrl,
-        aspectRatio: aspectRatio
+        aspectRatio: aspectRatio,
+        scale: scale
       }),
       signal: finalSignal
     }).finally(() => {
@@ -363,7 +365,7 @@ export async function generateWithQwenImageToImage(imageBase64, positivePrompt, 
  * @param {string} aspectRatio - Aspect ratio for generation
  * @returns {Promise} Generated image data
  */
-export async function generateWithGPTImageToImage(imageBase64, positivePrompt, negativePrompt, creativeStrength, controlStrength, aspectRatio = '1:1', abortSignal = null) {
+export async function generateWithGPTImageToImage(imageBase64, positivePrompt, negativePrompt, creativeStrength, controlStrength, aspectRatio = '1:1', abortSignal = null, scale = 3.5) {
   try {
     // Ensure image is in base64 format
     let base64Data = imageBase64;
@@ -417,7 +419,8 @@ export async function generateWithGPTImageToImage(imageBase64, positivePrompt, n
         input_image: base64Only,
         creative_strength: creativeStrength / 10, // Normalize to 0-1
         control_strength: controlStrength / 5,   // Normalize to 0-1
-        aspectRatio: aspectRatio
+        aspectRatio: aspectRatio,
+        scale: scale
       }),
       signal: finalSignal
     }).finally(() => {
@@ -471,30 +474,37 @@ export async function generateWithGPTImageToImage(imageBase64, positivePrompt, n
  * @param {string} negativePrompt - Negative prompt for generation
  * @param {number} creativeStrength - Creative strength (1-10)
  * @param {number} controlStrength - Control strength (0-5)
- * @param {string} aiModel - AI model to use ('flux-pro', 'flux-max', 'gpt-image', or 'qwen-image')
+ * @param {string} aiModel - AI model to use ('flux-pro', 'gpt-image', 'qwen-image', or 'nano-banana')
  * @param {string} aspectRatio - Aspect ratio for generation ('1:1', '16:9', etc.)
+ * @param {AbortSignal|null} abortSignal - AbortController signal to cancel requests
+ * @param {number} scale - Guidance scale for generation quality (default: 3.5)
  * @returns {Promise} Generated image data
  */
-export async function generateImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aiModel = 'flux-pro', aspectRatio = '1:1', abortSignal = null) {
+export async function generateImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aiModel = 'flux-pro', aspectRatio = '1:1', abortSignal = null, scale = 3.5) {
   // Use Flux for image-to-image generation
-  if (aiModel === 'flux-pro' || aiModel === 'flux-max') {
-    return await generateWithFluxImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aiModel, abortSignal);
+  if (aiModel === 'flux-pro') {
+    return await generateWithFluxImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aiModel, abortSignal, scale);
   }
   
   // Use GPT IMAGE for image-to-image generation
   if (aiModel === 'gpt-image') {
-    return await generateWithGPTImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aspectRatio, abortSignal);
+    return await generateWithGPTImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aspectRatio, abortSignal, scale);
   }
   
   // Use Qwen Image for image-to-image generation
   if (aiModel === 'qwen-image') {
-    return await generateWithQwenImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aspectRatio, abortSignal);
+    return await generateWithQwenImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aspectRatio, abortSignal, scale);
   }
   
   // Use Nano-Banana for image-to-image generation
   if (aiModel === 'nano-banana') {
     try {
-      const result = await generateWithNanoBananaImageToImage(imageUrl, positivePrompt, 'none', aspectRatio, abortSignal);
+      // Format prompt for Nano-Banana to ensure transformation
+      const transformPrompt = positivePrompt ? 
+        `Transform this photo: ${positivePrompt}` : 
+        'Transform this photo with creative style and artistic enhancement';
+      
+      const result = await generateWithNanoBananaImageToImage(imageUrl, transformPrompt, 'none', aspectRatio, abortSignal);
       return {
         images: [{
           url: result.url,

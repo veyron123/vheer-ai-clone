@@ -2,9 +2,9 @@ import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react'
 import { Frame, ShoppingCart, Maximize, X, ChevronUp, ChevronDown, Palette, Ruler, ZoomIn } from 'lucide-react';
 import useCartStore from '../../stores/cartStore';
 import toast from 'react-hot-toast';
-import { viewImage } from '../../utils/downloadUtils';
+import { viewImage } from '../../utils/imageUtils';
 
-const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
+const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false }) => {
   
   // Функция автоматического определения соотношения сторон
   const detectAspectRatio = (width, height) => {
@@ -739,34 +739,128 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
 
   // Показать модальное окно с Frame Preview
   const showFramePreviewModal = () => {
-    if (!frameCanvasRef.current) return;
+    if (!imageUrl) return;
     
     try {
-      // Создаем data URL из canvas
-      const dataURL = frameCanvasRef.current.toDataURL('image/png');
-      setPreviewImageData(dataURL);
-      setPreviewTitle(`Frame Preview - ${currentFrameSizes.find(s => s.id === selectedSize)?.name}`);
-      setPreviewType('frame');
-      setShowPreviewModal(true);
+      // Создаем высококачественный canvas для модального окна
+      const highResCanvas = document.createElement('canvas');
+      const highResSize = 1200; // Высокое разрешение для четкого отображения
+      highResCanvas.width = highResSize;
+      highResCanvas.height = highResSize;
+      const ctx = highResCanvas.getContext('2d');
+      
+      ctx.clearRect(0, 0, highResCanvas.width, highResCanvas.height);
+      
+      const userImg = new Image();
+      userImg.crossOrigin = 'anonymous';
+      
+      userImg.onload = () => {
+        const autoDetectedRatio = detectAspectRatio(userImg.width, userImg.height);
+        
+        // Функция для отрисовки высококачественного изображения
+        const drawHighResPreview = (img, ctx, canvas, aspectRatio) => {
+          ctx.save();
+          
+          // Отступы рамки (пропорционально для высокого разрешения)
+          const frameMargin = Math.round(highResSize * 0.1); // 10% отступ
+          const innerWidth = canvas.width - (frameMargin * 2);
+          const innerHeight = canvas.height - (frameMargin * 2);
+          const innerX = frameMargin;
+          const innerY = frameMargin;
+          
+          // Используем те же настройки масштаба, но пересчитанные для высокого разрешения
+          const defaultScales = {
+            '8x6': 0.22,   '24x18': 0.42, '32x24': 0.44,
+            '6x8': 0.22,   '12x16': 0.41, '18x24': 0.38, '24x32': 0.44,
+          };
+          const defaultPositions = {
+            '8x6': { x: -11, y: -58 },     '24x18': { x: -5, y: -122 },   '32x24': { x: -7, y: -177 },
+            '6x8': { x: -11, y: -64 },     '12x16': { x: -13, y: -112 },  '18x24': { x: -4, y: -122 }, '24x32': { x: -11, y: -186 },
+          };
+          
+          const previewScale = defaultScales[selectedSize] || 0.85;
+          const previewPosition = defaultPositions[selectedSize] || { x: 0, y: 0 };
+          
+          let drawWidth, drawHeight;
+          
+          if (aspectRatio === '3:4' || aspectRatio === '4:3') {
+            const imgAspect = img.width / img.height;
+            const innerAspect = innerWidth / innerHeight;
+            
+            if (imgAspect > innerAspect) {
+              drawWidth = innerWidth * previewScale;
+              drawHeight = (innerWidth / imgAspect) * previewScale;
+            } else {
+              drawHeight = innerHeight * previewScale;
+              drawWidth = (innerHeight * imgAspect) * previewScale;
+            }
+          } else {
+            const size = Math.min(innerWidth, innerHeight) * previewScale;
+            drawWidth = size;
+            drawHeight = size;
+          }
+          
+          // Позиционирование с учетом высокого разрешения
+          const scaleFactor = highResSize / 365; // Коэффициент масштабирования от маленького превью
+          const drawX = innerX + (innerWidth - drawWidth) / 2 + (previewPosition.x * 0.3 * scaleFactor);
+          const drawY = innerY + (innerHeight - drawHeight) / 2 + (previewPosition.y * 0.3 * scaleFactor);
+          
+          // Рисуем изображение
+          ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+          ctx.restore();
+        };
+        
+        // Загружаем рамку высокого разрешения
+        const frameImg = new Image();
+        frameImg.onload = () => {
+          drawHighResPreview(userImg, ctx, highResCanvas, autoDetectedRatio);
+          ctx.drawImage(frameImg, 0, 0, highResCanvas.width, highResCanvas.height);
+          
+          // Создаем data URL из высококачественного canvas
+          const dataURL = highResCanvas.toDataURL('image/png');
+          setPreviewImageData(dataURL);
+          setPreviewTitle(`Frame Preview - ${currentFrameSizes.find(s => s.id === selectedSize)?.name}`);
+          setPreviewType('frame');
+          setShowPreviewModal(true);
+        };
+        
+        frameImg.onerror = () => {
+          // Fallback с простой рамкой
+          drawHighResPreview(userImg, ctx, highResCanvas, autoDetectedRatio);
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = Math.round(highResSize * 0.02); // Пропорциональная толщина
+          ctx.strokeRect(Math.round(highResSize * 0.01), Math.round(highResSize * 0.01), 
+                        highResCanvas.width - Math.round(highResSize * 0.02), 
+                        highResCanvas.height - Math.round(highResSize * 0.02));
+          
+          const dataURL = highResCanvas.toDataURL('image/png');
+          setPreviewImageData(dataURL);
+          setPreviewTitle(`Frame Preview - ${currentFrameSizes.find(s => s.id === selectedSize)?.name}`);
+          setPreviewType('frame');
+          setShowPreviewModal(true);
+        };
+        
+        // Загружаем рамку
+        const contextFramePath = getMockupFramePathWithRatio(selectedSize, selectedColor, 'context', autoDetectedRatio);
+        frameImg.src = contextFramePath;
+      };
+      
+      // Проксируем изображение
+      const proxiedImageUrl = imageUrl.startsWith('http') 
+        ? `/api/image-proxy/proxy?url=${encodeURIComponent(imageUrl)}`
+        : imageUrl;
+        
+      userImg.src = proxiedImageUrl;
+      
     } catch (error) {
-      // Ошибка создания превью
+      console.error('Error creating high-res preview:', error);
     }
   };
 
-  // Показать модальное окно с Frame Preview (то же что и маленькая кнопка)
+  // Показать модальное окно с Frame Preview (используем ту же высококачественную функцию)
   const showOriginalImageModal = () => {
-    if (!frameCanvasRef.current) return;
-    
-    try {
-      // Создаем data URL из Frame Preview canvas (тот же что в маленьком окне)
-      const dataURL = frameCanvasRef.current.toDataURL('image/png');
-      setPreviewImageData(dataURL);
-      setPreviewTitle(`${currentFrameSizes.find(s => s.id === selectedSize)?.name} Frame Preview`);
-      setPreviewType('frame');
-      setShowPreviewModal(true);
-    } catch (error) {
-      // Ошибка создания превью
-    }
+    // Используем ту же функцию высококачественного превью
+    showFramePreviewModal();
   };
 
   // Закрыть модальное окно
@@ -980,42 +1074,16 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
                 </div>
               </div>
               
-              {/* Position and Scale Controls - скрыто для 3:4 */}
-              {detectedAspectRatio === '3:4' && false && (
+              {/* Scale Control - открыто для всех соотношений сторон */}
+              {(
                 <div className="space-y-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Ruler className="w-4 h-4 inline mr-1" />
-                    Position & Scale
+                    Scale
                   </label>
                   
                   <div className="flex items-center space-x-3">
-                    <label className="text-xs text-gray-600 w-8">X:</label>
-                    <input
-                      type="number"
-                      value={getCurrentPosition().x}
-                      onChange={(e) => setCurrentPosition({ ...getCurrentPosition(), x: parseInt(e.target.value) || 0 })}
-                      className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      step="1"
-                      placeholder="0"
-                    />
-                    <span className="text-xs text-gray-500">px</span>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <label className="text-xs text-gray-600 w-8">Y:</label>
-                    <input
-                      type="number"
-                      value={getCurrentPosition().y}
-                      onChange={(e) => setCurrentPosition({ ...getCurrentPosition(), y: parseInt(e.target.value) || 0 })}
-                      className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      step="1"
-                      placeholder="0"
-                    />
-                    <span className="text-xs text-gray-500">px</span>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <label className="text-xs text-gray-600 w-8">Scale:</label>
+                    <label className="text-xs text-gray-600 w-12">Scale:</label>
                     <input
                       type="number"
                       value={Math.round(getCurrentScale() * 100)}
@@ -1031,20 +1099,6 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
                   
                   <button
                     onClick={() => {
-                      const defaultPos = {
-                        '6x8': { x: 0, y: 0 },      // X=0px, Y=0px - для основного мокапа 3:4
-                        '12x16': { x: 0, y: 0 },    // X=0px, Y=0px - для основного мокапа 3:4
-                        '18x24': { x: 0, y: 0 },    // X=0px, Y=0px - для основного мокапа 3:4
-                        '24x32': { x: 0, y: 0 },    // X=0px, Y=0px - для основного мокапа 3:4
-                        '8x6': { x: 0, y: 0 },      // Для 4:3
-                        '24x18': { x: 0, y: 0 },    // Для 4:3
-                        '32x24': { x: 0, y: 0 },    // Для 4:3
-                        '10x10': { x: -1, y: 54 },  // Для 1:1
-                        '12x12': { x: 0, y: 42 },   // Для 1:1
-                        '14x14': { x: 0, y: 51 },   // Для 1:1
-                        '16x16': { x: 0, y: 61 },   // Для 1:1
-                        '18x18': { x: -2, y: 65 }   // Для 1:1
-                      };
                       const defaultScales = {
                         '6x8': 0.71,   // 71% для основного мокапа 3:4
                         '12x16': 0.71, // 71% для основного мокапа 3:4
@@ -1059,12 +1113,11 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, autoShow = false }) => {
                         '16x16': 0.77, // Для 1:1
                         '18x18': 0.88  // Для 1:1
                       };
-                      setCurrentPosition(defaultPos[selectedSize] || { x: 0, y: 0 });
                       setCurrentScale(defaultScales[selectedSize] || 0.71);
                     }}
                     className="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-colors"
                   >
-                    Reset
+                    Reset Scale
                   </button>
                 </div>
               )}
