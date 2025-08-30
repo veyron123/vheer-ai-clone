@@ -121,7 +121,7 @@ class FluxService extends BaseAIService {
       // Call Flux API
       const response = await axios.post(this.apiUrl, payload, {
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
+          'x-key': this.apiKey,
           'Content-Type': 'application/json'
         },
         timeout: 60000 // 60 seconds timeout
@@ -200,7 +200,7 @@ class FluxService extends BaseAIService {
       width: 1024,
       height: 1024,
       steps: 25,
-      guidance: 7.5
+      guidance: 3.5
     };
 
     // Handle aspect ratio using standardized logic
@@ -244,7 +244,7 @@ class FluxService extends BaseAIService {
       try {
         const response = await axios.get(`${this.statusUrl}?id=${taskId}`, {
           headers: {
-            'Authorization': `Bearer ${this.apiKey}`
+            'x-key': this.apiKey
           }
         });
 

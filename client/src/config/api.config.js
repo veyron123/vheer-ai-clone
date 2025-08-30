@@ -16,7 +16,7 @@ const useLocalAPI = import.meta.env.VITE_USE_LOCAL_API === 'true' || isDevelopme
 
 export const API_CONFIG = {
   baseURL: import.meta.env.VITE_API_URL || (useLocalAPI 
-    ? 'http://localhost:5000/api' 
+    ? 'http://localhost:5001/api' 
     : 'https://colibrrri.com/api'),
   
   timeout: 30000,
@@ -29,10 +29,10 @@ export const API_CONFIG = {
 // OAuth URLs configuration  
 export const OAUTH_CONFIG = {
   googleURL: useLocalAPI 
-    ? 'http://localhost:5000/auth/google'
+    ? 'http://localhost:5001/auth/google'
     : 'https://colibrrri-fullstack.onrender.com/auth/google',
   facebookURL: useLocalAPI 
-    ? 'http://localhost:5000/auth/facebook' 
+    ? 'http://localhost:5001/auth/facebook' 
     : 'https://colibrrri-fullstack.onrender.com/auth/facebook'
 };
 
