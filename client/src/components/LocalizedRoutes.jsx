@@ -24,10 +24,7 @@ import TextToImageGeneratorPage from '../pages/TextToImageGeneratorPage';
 // import VideoModificationGeneratorPage from '../pages/VideoModificationGeneratorPage';
 import RunwayVideoGeneratorPage from '../pages/RunwayVideoGeneratorPage';
 import MockupGeneratorPage from '../pages/MockupGeneratorPage';
-import MockupCanvasPage from '../pages/MockupCanvasPage';
-import MockupCSSPage from '../pages/MockupCSSPage';
 import MockupLibraryPage from '../pages/MockupLibraryPage';
-import MockupTestPage from '../pages/MockupTestPage';
 import PaymentSuccess from '../pages/PaymentSuccess';
 import PaymentFailure from '../pages/PaymentFailure';
 import AdminDashboard from '../pages/AdminDashboard';
@@ -113,10 +110,7 @@ const LanguageRoutes = () => {
       <Route path="/ai-video-generator" element={<RunwayVideoGeneratorPage />} />
       <Route path="/mockup-generator" element={<MockupGeneratorPage />} />
       
-      {/* Mockup test pages */}
-      <Route path="/mockup-test" element={<MockupTestPage />} />
-      <Route path="/mockup-canvas" element={<MockupCanvasPage />} />
-      <Route path="/mockup-css" element={<MockupCSSPage />} />
+      {/* Mockup pages */}
       <Route path="/mockup-library" element={<MockupLibraryPage />} />
       
       {/* Auth routes */}
