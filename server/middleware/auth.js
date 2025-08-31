@@ -52,6 +52,7 @@ export const authenticate = async (req, res, next) => {
         email: true,
         username: true,
         fullName: true,
+        role: true,
         totalCredits: true,
         emailVerified: true,
         subscription: {
@@ -188,8 +189,7 @@ export const adminAuth = async (req, res, next) => {
   // First run regular authentication
   await authenticate(req, res, () => {
     // Check if user has admin privileges
-    // Note: You'll need to add an 'isAdmin' or 'role' field to your User model
-    if (!req.user || req.user.subscription?.plan !== 'ADMIN') {
+    if (!req.user || req.user.role !== 'ADMIN') {
       return res.status(403).json({
         success: false,
         error: 'Access denied',
