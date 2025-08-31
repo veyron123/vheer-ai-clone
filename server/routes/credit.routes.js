@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticate } from '../middleware/auth.middleware.js';
+import { authenticate } from '../middleware/auth.js';
 import CreditService from '../services/creditService.js';
 import CreditCronJob from '../jobs/creditCronJob.js';
 

@@ -10,7 +10,7 @@ import {
   oauthFailure,
   deleteAccount
 } from '../controllers/auth.controller.js';
-import { authenticate } from '../middleware/auth.middleware.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = Router();
 

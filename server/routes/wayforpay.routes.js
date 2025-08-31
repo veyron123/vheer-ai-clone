@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { authenticate } from '../middleware/auth.middleware.js';
+import { authenticate } from '../middleware/auth.js';
 import {
   initializePayment,
   handleCallback,
@@ -45,7 +45,7 @@ router.post('/cart-checkout', async (req, res, next) => {
     // If token exists, try to authenticate but don't fail if invalid
     const token = authHeader.slice(7);
     try {
-      const { authenticate } = await import('../middleware/auth.middleware.js');
+      const { authenticate } = await import('../middleware/auth.js');
       // Create a modified authenticate that doesn't fail
       authenticate(req, res, (err) => {
         if (err) {

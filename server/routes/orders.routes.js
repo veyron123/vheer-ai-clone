@@ -8,14 +8,13 @@ import {
   getOrderNotifications,
   markNotificationsRead
 } from '../controllers/orders.controller.js';
-import { authenticate } from '../middleware/auth.middleware.js';
-import { isAdmin } from '../middleware/admin.middleware.js';
+import { authenticate, adminAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // All order routes require authentication and admin privileges
 router.use(authenticate);
-router.use(isAdmin);
+router.use(adminAuth);
 
 // Order management
 router.get('/', getAllOrders);

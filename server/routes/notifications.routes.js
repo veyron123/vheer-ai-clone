@@ -9,8 +9,7 @@ import {
   getEmailSettings,
   updateEmailSettings
 } from '../controllers/notifications.controller.js';
-import { authenticate } from '../middleware/auth.middleware.js';
-import { isAdmin } from '../middleware/admin.middleware.js';
+import { authenticate, adminAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -20,7 +19,7 @@ router.post('/unsubscribe', unsubscribeFromNotifications);
 
 // Admin routes
 router.use(authenticate);
-router.use(isAdmin);
+router.use(adminAuth);
 
 // Push notification management
 router.get('/settings', getNotificationSettings);

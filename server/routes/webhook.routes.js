@@ -1,13 +1,12 @@
 import express from 'express';
 import { WebSocketServer } from 'ws';
 import notificationService from '../services/NotificationService.js';
-import { authenticate as authenticateUser } from '../middleware/auth.middleware.js';
-import { isAdmin } from '../middleware/admin.middleware.js';
+import { authenticate as authenticateUser, adminAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // Test notification endpoint
-router.post('/test', authenticateUser, isAdmin, async (req, res) => {
+router.post('/test', authenticateUser, adminAuth, async (req, res) => {
   try {
     const results = await notificationService.sendTestNotification();
     

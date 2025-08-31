@@ -1,6 +1,6 @@
 import express from 'express';
 import { generateImage, generateImageToImage } from '../controllers/nanobanana.controller.js';
-import { authenticate } from '../middleware/auth.middleware.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 

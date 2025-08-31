@@ -1,6 +1,6 @@
 import express from 'express';
 import { generateImageToImage, generateTextToImage } from '../controllers/midjourney.controller.js';
-import { authenticate } from '../middleware/auth.middleware.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 

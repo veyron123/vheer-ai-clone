@@ -6,7 +6,7 @@ import {
   getPublicImages,
   downloadImageProxy
 } from '../controllers/images.controller.js';
-import { authenticate } from '../middleware/auth.middleware.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 

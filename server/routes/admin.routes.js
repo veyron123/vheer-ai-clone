@@ -1,13 +1,12 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
-import { authenticate as authenticateUser } from '../middleware/auth.middleware.js';
-import { isAdmin } from '../middleware/admin.middleware.js';
+import { authenticate as authenticateUser, adminAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
 // Get all users with pagination and filters
-router.get('/users', authenticateUser, isAdmin, async (req, res) => {
+router.get('/users', authenticateUser, adminAuth, async (req, res) => {
   try {
     const { 
       page = 1, 
@@ -94,7 +93,7 @@ router.get('/users', authenticateUser, isAdmin, async (req, res) => {
 });
 
 // Delete user (admin action)
-router.delete('/users/:id', authenticateUser, isAdmin, async (req, res) => {
+router.delete('/users/:id', authenticateUser, adminAuth, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -124,7 +123,7 @@ router.delete('/users/:id', authenticateUser, isAdmin, async (req, res) => {
 });
 
 // Get single user details
-router.get('/users/:id', authenticateUser, isAdmin, async (req, res) => {
+router.get('/users/:id', authenticateUser, adminAuth, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -163,7 +162,7 @@ router.get('/users/:id', authenticateUser, isAdmin, async (req, res) => {
 });
 
 // Update user (admin actions)
-router.patch('/users/:id', authenticateUser, isAdmin, async (req, res) => {
+router.patch('/users/:id', authenticateUser, adminAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const { totalCredits, emailVerified, subscription } = req.body;
@@ -205,7 +204,7 @@ router.patch('/users/:id', authenticateUser, isAdmin, async (req, res) => {
 });
 
 // Get dashboard statistics
-router.get('/stats', authenticateUser, isAdmin, async (req, res) => {
+router.get('/stats', authenticateUser, adminAuth, async (req, res) => {
   try {
     // User stats
     const userStats = await prisma.user.aggregate({

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { authenticate } from '../middleware/auth.middleware.js';
+import { authenticate } from '../middleware/auth.js';
 import { checkExpiredSubscriptions } from '../jobs/subscriptionExpiryJob.js';
 import logger from '../utils/logger.js';
 

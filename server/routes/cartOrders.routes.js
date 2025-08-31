@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticate, isAdmin } from '../middleware/auth.middleware.js';
+import { authenticate, adminAuth } from '../middleware/auth.js';
 import {
   getCartOrders,
   getCartOrder,
@@ -12,7 +12,7 @@ import {
 const router = Router();
 
 // Cart order routes (temporarily without admin check for testing)
-// TODO: Re-enable isAdmin after confirming admin access works
+// TODO: Re-enable adminAuth after confirming admin access works
 router.get('/', authenticate, getCartOrders);
 router.get('/stats', authenticate, getOrderStats);
 router.get('/notifications', authenticate, getOrderNotifications);

@@ -6,8 +6,7 @@ import {
   getCartDetails,
   getCartStats
 } from '../controllers/cart-tracking.controller.js';
-import { authenticate } from '../middleware/auth.middleware.js';
-import { isAdmin } from '../middleware/admin.middleware.js';
+import { authenticate, adminAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -17,7 +16,7 @@ router.post('/convert', markCartAsConverted);
 
 // Админские маршруты
 router.use(authenticate);
-router.use(isAdmin);
+router.use(adminAuth);
 
 router.get('/', getActiveCarts);
 router.get('/stats', getCartStats);
