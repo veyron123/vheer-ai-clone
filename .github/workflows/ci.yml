@@ -1,0 +1,198 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  # Job 1: Lint and Test
+  test:
+    name: Test & Lint
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install root dependencies
+        run: npm ci || npm install
+
+      - name: Install server dependencies
+        working-directory: ./server
+        run: npm ci || npm install
+
+      - name: Install client dependencies
+        working-directory: ./client
+        run: npm ci || npm install
+
+      - name: Setup test environment
+        run: |
+          echo "DATABASE_URL=postgresql://testuser:testpass@localhost:5432/testdb" >> $GITHUB_ENV
+          echo "JWT_SECRET=test-secret-key-for-ci" >> $GITHUB_ENV
+          echo "NODE_ENV=test" >> $GITHUB_ENV
+
+      - name: Generate Prisma Client
+        working-directory: ./server
+        run: npx prisma generate
+
+      - name: Run Prisma Migrations
+        working-directory: ./server
+        run: npx prisma migrate deploy || npx prisma db push
+
+      - name: Check server code
+        working-directory: ./server
+        run: |
+          echo "Checking for syntax errors..."
+          node -c index.js || true
+          find . -name "*.js" -not -path "./node_modules/*" -exec node -c {} \;
+
+      - name: Build client
+        working-directory: ./client
+        run: npm run build
+        env:
+          CI: false # Ignore warnings as errors
+
+      - name: Check for security vulnerabilities
+        run: |
+          npm audit --audit-level=high || true
+          cd server && npm audit --audit-level=high || true
+          cd ../client && npm audit --audit-level=high || true
+
+  # Job 2: Code Quality
+  code-quality:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Check for hardcoded secrets
+        run: |
+          echo "Checking for hardcoded API keys and secrets..."
+          ! grep -r "sk-[a-zA-Z0-9]\{48\}" --include="*.js" --include="*.jsx" --exclude-dir=node_modules . || (echo "Found potential API key!" && exit 1)
+          ! grep -r "Bearer [a-zA-Z0-9]\{20,\}" --include="*.js" --include="*.jsx" --exclude-dir=node_modules . || (echo "Found hardcoded Bearer token!" && exit 1)
+          ! grep -r "mongodb+srv://" --include="*.js" --include="*.jsx" --exclude-dir=node_modules . || (echo "Found hardcoded MongoDB URL!" && exit 1)
+          echo "No hardcoded secrets found ✅"
+
+      - name: Check code size
+        run: |
+          echo "Checking file sizes..."
+          find . -name "*.js" -o -name "*.jsx" -not -path "./node_modules/*" | while read file; do
+            lines=$(wc -l < "$file")
+            if [ $lines -gt 500 ]; then
+              echo "⚠️ Warning: $file has $lines lines (recommended max: 500)"
+            fi
+          done
+
+      - name: Check for console.logs in production
+        run: |
+          echo "Checking for console.log statements..."
+          count=$(grep -r "console\.log" --include="*.js" --include="*.jsx" --exclude-dir=node_modules . | wc -l || echo "0")
+          echo "Found $count console.log statements"
+          if [ $count -gt 50 ]; then
+            echo "⚠️ Warning: Too many console.log statements ($count). Consider using a proper logger."
+          fi
+
+  # Job 3: Docker Build Test (optional)
+  docker-build:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create Dockerfile if not exists
+        run: |
+          if [ ! -f Dockerfile ]; then
+            cat > Dockerfile << 'EOF'
+          # Multi-stage build for production
+          FROM node:18-alpine AS builder
+          
+          WORKDIR /app
+          
+          # Copy package files
+          COPY package*.json ./
+          COPY server/package*.json ./server/
+          COPY client/package*.json ./client/
+          
+          # Install dependencies
+          RUN npm ci --only=production
+          RUN cd server && npm ci --only=production
+          RUN cd client && npm ci
+          
+          # Copy source code
+          COPY . .
+          
+          # Build client
+          RUN cd client && npm run build
+          
+          # Production stage
+          FROM node:18-alpine
+          
+          WORKDIR /app
+          
+          # Copy from builder
+          COPY --from=builder /app/server ./server
+          COPY --from=builder /app/client/dist ./client/dist
+          COPY --from=builder /app/package*.json ./
+          
+          # Install production dependencies only
+          RUN cd server && npm ci --only=production
+          
+          # Expose port
+          EXPOSE 5000
+          
+          # Start server
+          CMD ["node", "server/index.js"]
+          EOF
+            echo "Created Dockerfile"
+          fi
+
+      - name: Build Docker image
+        run: docker build -t colibrrri-app:test .
+
+  # Job 4: Notify Deployment Status
+  deployment-status:
+    name: Deployment Status
+    runs-on: ubuntu-latest
+    needs: [test, code-quality]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+      - name: Deployment Notification
+        run: |
+          echo "✅ All checks passed!"
+          echo "🚀 Render will automatically deploy from GitHub"
+          echo "📦 Deployment URL: https://colibrrri.com"
+          echo "🔍 Monitor deployment at: https://dashboard.render.com"

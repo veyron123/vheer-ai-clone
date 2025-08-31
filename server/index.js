@@ -38,6 +38,7 @@ import cartStatsRoutes from './routes/cart-stats.routes.js';
 import notificationsRoutes from './routes/notifications.routes.js';
 import imageProxyRoutes from './routes/image-proxy.routes.js';
 import webhookRoutes, { setupWebSocket } from './routes/webhook.routes.js';
+import healthRoutes from './routes/health.routes.js';
 
 // Middleware
 import { errorHandler } from './middleware/error.middleware.js';
@@ -134,6 +135,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // OAuth Routes (without /api prefix for simpler callback URLs)
 app.use('/auth', authRoutes);
+
+// Health check route (before authentication middleware)
+app.use('/api/health', healthRoutes);
 
 // Apply daily credit check middleware to all authenticated routes
 app.use('/api', checkDailyCredits);
