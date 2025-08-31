@@ -1,79 +1,52 @@
 import axios from 'axios';
-import { PrismaClient } from '@prisma/client';
-import { getModelCredits } from '../config/pricing.config.js';
+import { checkAndDeductCredits, refundCredits } from '../services/creditService.js';
+import { createGeneration, completeGeneration, failGeneration } from '../services/generationService.js';
+import { sendSuccess, sendBadRequest, sendUnauthorized, sendServerError, asyncHandler } from '../utils/responses.js';
 import { saveGeneratedImage } from './images.controller.js';
 import { getUserFriendlyAIError, logAIServiceError } from '../utils/aiServiceErrors.js';
-
-const prisma = new PrismaClient();
 
 const GPT_IMAGE_API_KEY = process.env.GPT_IMAGE_API_KEY;
 const GPT_IMAGE_API_URL = process.env.GPT_IMAGE_API_URL || 'https://api.kie.ai/api/v1/gpt4o-image/generate';
 const IMGBB_API_KEY = process.env.IMGBB_API_KEY;
 
-// GPT Image API configured
+/**
+ * Generate image with GPT IMAGE
+ * Refactored to use unified services
+ */
+export const generateImage = asyncHandler(async (req, res) => {
+  const { prompt, input_image, style, aspectRatio = '1:1' } = req.body;
+  const userId = req.user?.id;
 
-// Generate image with GPT IMAGE 1
-export const generateImage = async (req, res) => {
+  // Require authentication
+  if (!userId) {
+    return sendUnauthorized(res, 'Please sign in to generate images');
+  }
+
+  // Validate required fields
+  if (!prompt || !input_image) {
+    return sendBadRequest(res, 'Prompt and input_image are required');
+  }
+
+  const modelId = 'gpt-image';
+  let generation = null;
+  let creditsUsed = 0;
+
   try {
-    const { prompt, input_image, style, aspectRatio = '1:1' } = req.body;
-    const userId = req.user?.id;
+    // Check and deduct credits using unified service
+    const { user, creditsUsed: credits } = await checkAndDeductCredits(userId, modelId);
+    creditsUsed = credits;
 
-    // Skip credit checks for testing if user not authenticated
-    if (userId) {
-      // Check credits before processing (only if authenticated)
-      const modelId = 'gpt-image';
-      const requiredCredits = getModelCredits(modelId);
-      
-      try {
-        // Make API call to check user credits
-        const creditCheckResponse = await axios.post('http://localhost:5000/api/users/check-credits', {
-          modelId
-        }, {
-          headers: {
-            'Authorization': req.headers.authorization
-          }
-        });
+    // Create generation record
+    generation = await createGeneration(userId, {
+      prompt,
+      model: modelId,
+      style,
+      status: 'PENDING'
+    });
 
-        if (!creditCheckResponse.data.canAfford) {
-          return res.status(400).json({ 
-            error: 'Insufficient credits',
-            required: requiredCredits,
-            available: creditCheckResponse.data.available,
-            modelId
-          });
-        }
-      } catch (creditError) {
-        console.log('Credit check failed, proceeding with generation for testing:', creditError.message);
-      }
-    } else {
-      console.log('User not authenticated, skipping credit checks for testing');
-    }
-
-    // Map our aspect ratios to GPT Image supported formats
-    // GPT Image only supports: "1:1", "3:2", "2:3"
-    let gptImageSize = '1:1'; // default
+    // Map aspect ratios to GPT Image supported formats
+    let gptImageSize = mapAspectRatio(aspectRatio);
     
-    switch(aspectRatio) {
-      case '1:1':
-        gptImageSize = '1:1';
-        break;
-      case '16:9':
-      case '4:3':
-        gptImageSize = '3:2'; // landscape formats map to 3:2
-        break;
-      case '9:16':
-      case '3:4':
-        gptImageSize = '2:3'; // portrait formats map to 2:3
-        break;
-      case 'match':
-        // For match, we'll default to 1:1
-        // This could be improved by analyzing the input image aspect ratio
-        gptImageSize = '1:1';
-        break;
-      default:
-        gptImageSize = '1:1';
-    }
-
     console.log('GPT IMAGE generation request:', { 
       style, 
       originalAspectRatio: aspectRatio,
@@ -82,583 +55,256 @@ export const generateImage = async (req, res) => {
       hasImage: !!input_image 
     });
 
-    if (!prompt || !input_image) {
-      return res.status(400).json({ 
-        error: 'Prompt and input_image are required' 
-      });
-    }
+    // Process image URL
+    const imageUrl = await processImageUrl(input_image);
 
-    // Try different approaches for image handling
-    let imageUrl = input_image;
-    
-    // If it's base64, try to upload it to a hosting service
-    if (!input_image.startsWith('http')) {
-      // Check if we have valid Cloudinary credentials first
-      const hasValidCloudinary = process.env.CLOUDINARY_CLOUD_NAME && 
-                                  process.env.CLOUDINARY_CLOUD_NAME !== 'demo' &&
-                                  process.env.CLOUDINARY_API_KEY &&
-                                  process.env.CLOUDINARY_API_KEY !== '123456789';
-      
-      if (hasValidCloudinary) {
-        // Try uploading to Cloudinary first (more reliable than ImgBB)
-        try {
-          console.log('🔄 Attempting to upload image to Cloudinary...');
-          console.log('🔍 Input image type:', typeof input_image);
-          console.log('🔍 Input image starts with data:', input_image.startsWith('data:'));
-          console.log('🔍 Input image length:', input_image.length);
-          
-          const { getStorageProvider } = await import('../utils/storageProvider.js');
-          const storageProvider = getStorageProvider();
-          
-          // Upload image using our universal storage provider
-          const uploadResult = await storageProvider.uploadImage(input_image, 'gpt-input');
-          imageUrl = uploadResult.url;
-          console.log('✅ Image successfully uploaded to Cloudinary:', imageUrl);
-          
-        } catch (cloudinaryError) {
-          console.error('❌ Cloudinary upload failed:', cloudinaryError.message);
-          // Continue to try other approaches
-        }
-      } else {
-        console.log('⚠️ Cloudinary not configured properly, skipping...');
-      }
-      
-      // If Cloudinary didn't work (or wasn't configured), try direct base64 approach
-      if (imageUrl === input_image) {
-        console.log('🔄 Trying direct base64 approach for GPT Image API...');
-        
-        // GPT Image API might accept direct base64
-        if (input_image.startsWith('data:image')) {
-          imageUrl = input_image;
-        } else {
-          // Add data URL prefix if missing
-          imageUrl = `data:image/jpeg;base64,${input_image}`;
-        }
-        console.log('✅ Using direct base64 approach for GPT Image API');
-      }
-    }
+    // Prepare request body
+    const requestBody = {
+      prompt,
+      inputImage: imageUrl,
+      style: style || 'default',
+      aspectRatio: gptImageSize,
+      enableTranslation: true,
+      outputFormat: 'jpeg'
+    };
 
-    // Make request to GPT IMAGE API
-    const response = await axios.post(GPT_IMAGE_API_URL, {
-      filesUrl: [imageUrl],
-      prompt: prompt,
-      size: gptImageSize,  // Use the mapped size that GPT Image supports
-      isEnhance: true,
-      uploadCn: false,
-      nVariants: 1,
-      enableFallback: false
-    }, {
+    // Make API request
+    const response = await axios.post(GPT_IMAGE_API_URL, requestBody, {
       headers: {
         'Authorization': `Bearer ${GPT_IMAGE_API_KEY}`,
         'Content-Type': 'application/json'
       }
     });
 
-    console.log('GPT IMAGE response:', response.data);
+    console.log('GPT IMAGE API response:', JSON.stringify(response.data, null, 2));
 
-    if (response.data && response.data.data && response.data.data.taskId) {
-      // Start polling for result using the taskId with the correct endpoint
-      const result = await pollForResult(response.data.data.taskId);
+    if (response.data?.success && response.data?.data?.url) {
+      const imageUrl = response.data.data.url;
       
-      // If generation was successful and user is authenticated, deduct credits and save image
-      if (result.success && userId) {
-        const modelId = 'gpt-image';
-        const requiredCredits = getModelCredits(modelId);
-        
-        try {
-          // Deduct credits first
-          await axios.post('http://localhost:5000/api/users/deduct-credits', {
-            modelId
-          }, {
-            headers: {
-              'Authorization': req.headers.authorization
-            }
-          });
-          console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
-          
-          // Get user data with subscription info for image saving
-          const user = await prisma.user.findUnique({
-            where: { id: userId },
-            include: { subscription: true }
-          });
-          
-          if (user) {
-            // Create generation record
-            const generation = await prisma.generation.create({
-              data: {
-                userId: userId,
-                prompt: prompt,
-                negativePrompt: '',
-                model: modelId,
-                style: style || '',
-                status: 'COMPLETED',
-                creditsUsed: requiredCredits,
-                completedAt: new Date()
-              }
-            });
-            
-            // Try to save the generated image for eligible users
-            try {
-              await saveGeneratedImage(
-                { url: result.image, width: 1024, height: 1024 },
-                user,
-                generation
-              );
-              console.log('GPT Image saved to user gallery');
-            } catch (saveError) {
-              console.log('GPT Image not saved (user not eligible or error):', saveError.message);
-            }
-          }
-          
-        } catch (creditError) {
-          console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
-          // Still return the image but log the credit error
-        }
+      // Update generation status
+      await completeGeneration(generation.id);
+      
+      // Try to save the generated image
+      try {
+        await saveGeneratedImage(
+          { url: imageUrl, width: 1024, height: 1024 },
+          user,
+          generation
+        );
+        console.log('Image saved to user gallery');
+      } catch (saveError) {
+        console.log('Image not saved:', saveError.message);
       }
       
-      res.json(result);
-    } else if (response.data && response.data.data && response.data.data.images) {
-      // Direct response with images (unlikely with GPT IMAGE)
-      
-      // Deduct credits for successful generation if user is authenticated
-      if (userId) {
-        const modelId = 'gpt-image';
-        const requiredCredits = getModelCredits(modelId);
-        try {
-          // Deduct credits first
-          await axios.post('http://localhost:5000/api/users/deduct-credits', {
-            modelId
-          }, {
-            headers: {
-              'Authorization': req.headers.authorization
-            }
-          });
-          console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
-          
-          // Get user data with subscription info for image saving
-          const user = await prisma.user.findUnique({
-            where: { id: userId },
-            include: { subscription: true }
-          });
-          
-          if (user) {
-            // Create generation record
-            const generation = await prisma.generation.create({
-              data: {
-                userId: userId,
-                prompt: prompt,
-                negativePrompt: '',
-                model: modelId,
-                style: style || '',
-                status: 'COMPLETED',
-                creditsUsed: requiredCredits,
-                completedAt: new Date()
-              }
-            });
-            
-            // Try to save the generated image for eligible users
-            try {
-              await saveGeneratedImage(
-                { url: response.data.data.images[0], width: 1024, height: 1024 },
-                user,
-                generation
-              );
-              console.log('GPT Image (direct response) saved to user gallery');
-            } catch (saveError) {
-              console.log('GPT Image (direct response) not saved (user not eligible or error):', saveError.message);
-            }
-          }
-          
-        } catch (creditError) {
-          console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
-          // Still return the image but log the credit error
-        }
-      }
-      
-      res.json({
+      // Send success response
+      return sendSuccess(res, {
         success: true,
-        image: response.data.data.images[0]
+        image: imageUrl,
+        thumbnailUrl: imageUrl,
+        credits: {
+          used: creditsUsed,
+          remaining: user.totalCredits - creditsUsed
+        },
+        model: modelId
       });
     } else {
-      throw new Error('Unexpected response from GPT IMAGE API: ' + JSON.stringify(response.data));
+      throw new Error('Unexpected response structure from GPT IMAGE API');
     }
+
   } catch (error) {
-    logAIServiceError(error, 'GPT Image', 'Image generation');
-    const userFriendlyMessage = getUserFriendlyAIError(error, 'GPT Image');
+    // Log the error
+    logAIServiceError(error, 'GPT IMAGE', 'generateImage');
     
-    res.status(500).json({ 
-      error: userFriendlyMessage,
-      details: error.response?.data || error.message 
+    // If generation was created but failed, update its status
+    if (generation) {
+      await failGeneration(generation.id, error.message);
+    }
+    
+    // If credits were deducted but generation failed, refund them
+    if (creditsUsed > 0 && userId) {
+      try {
+        await refundCredits(userId, creditsUsed, 'GPT IMAGE generation failed');
+      } catch (refundError) {
+        console.error('Failed to refund credits:', refundError);
+      }
+    }
+    
+    // Send user-friendly error
+    const userFriendlyMessage = getUserFriendlyAIError(error, 'GPT IMAGE');
+    return sendServerError(res, userFriendlyMessage, {
+      details: error.response?.data || error.message
     });
   }
-};
+});
 
-// Poll for generation result
-async function pollForResult(taskId) {
-  const maxAttempts = 120; // 12 minutes timeout (GPT IMAGE очень медленный)
-  const pollInterval = 6000; // 6 seconds between polls (более редкие запросы)
-  
-  console.log(`Starting to poll for task: ${taskId}`);
-  
-  for (let i = 0; i < maxAttempts; i++) {
-    try {
-      // Use the correct endpoint from documentation: /record-info
-      const response = await axios.get(`https://api.kie.ai/api/v1/gpt4o-image/record-info`, {
-        params: { taskId: taskId },
-        headers: {
-          'Authorization': `Bearer ${GPT_IMAGE_API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      });
+/**
+ * Generate image without input image (text-to-image)
+ */
+export const generateImageWithoutInput = asyncHandler(async (req, res) => {
+  const { prompt, style } = req.body;
+  const userId = req.user?.id;
+
+  // Require authentication
+  if (!userId) {
+    return sendUnauthorized(res, 'Please sign in to generate images');
+  }
+
+  // Validate required fields
+  if (!prompt) {
+    return sendBadRequest(res, 'Prompt is required');
+  }
+
+  const modelId = 'gpt-image';
+  let generation = null;
+  let creditsUsed = 0;
+
+  try {
+    // Check and deduct credits using unified service
+    const { user, creditsUsed: credits } = await checkAndDeductCredits(userId, modelId);
+    creditsUsed = credits;
+
+    // Create generation record
+    generation = await createGeneration(userId, {
+      prompt,
+      model: modelId,
+      style,
+      status: 'PENDING'
+    });
+
+    // Prepare request for text-to-image
+    const requestBody = {
+      prompt,
+      style: style || 'default',
+      aspectRatio: '1:1',
+      enableTranslation: true,
+      outputFormat: 'jpeg'
+    };
+
+    // Make API request
+    const response = await axios.post(GPT_IMAGE_API_URL, requestBody, {
+      headers: {
+        'Authorization': `Bearer ${GPT_IMAGE_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.data?.success && response.data?.data?.url) {
+      const imageUrl = response.data.data.url;
       
-      console.log(`Poll attempt ${i + 1}, response:`, response.data);
+      // Update generation status
+      await completeGeneration(generation.id);
       
-      // Check response according to documentation
-      if (response.data && response.data.code === 200 && response.data.data) {
-        const taskData = response.data.data;
-        
-        // Check task status
-        if (taskData.status === 'SUCCESS' && taskData.response && taskData.response.resultUrls) {
-          // Task completed successfully
-          console.log('Task completed successfully!');
-          console.log('Full response data:', JSON.stringify(taskData.response, null, 2));
-          
-          // Try to get the correct image URL
-          let imageUrl = taskData.response.resultUrls[0];
-          
-          // If it's a relative URL, prepend the base URL
-          if (!imageUrl.startsWith('http')) {
-            imageUrl = `https://images.kie.ai${imageUrl}`;
-          }
-          
-          console.log('Final image URL:', imageUrl);
-          
-          return {
-            success: true,
-            image: imageUrl
-          };
-        } else if (taskData.status === 'GENERATING') {
-          // Still generating
-          console.log(`Task still generating... Progress: ${taskData.progress || '0.00'}`);
-        } else if (taskData.status === 'CREATE_TASK_FAILED' || taskData.status === 'GENERATE_FAILED') {
-          // Task failed
-          throw new Error(`Generation failed: ${taskData.errorMessage || taskData.status}`);
-        }
-      } else if (response.data && response.data.code !== 200) {
-        // API error
-        throw new Error(`API error: ${response.data.msg || 'Unknown error'}`);
+      // Try to save the generated image
+      try {
+        await saveGeneratedImage(
+          { url: imageUrl, width: 1024, height: 1024 },
+          user,
+          generation
+        );
+        console.log('Image saved to user gallery');
+      } catch (saveError) {
+        console.log('Image not saved:', saveError.message);
       }
       
-      // Wait before next poll
-      await new Promise(resolve => setTimeout(resolve, pollInterval));
-    } catch (error) {
-      console.error('Polling error:', error.message);
-      // If it's 404, the task might not be ready yet
-      if (error.response && error.response.status === 404) {
-        console.log('Task not found yet, waiting...');
-      } else if (i === maxAttempts - 1) {
-        throw error;
+      // Send success response
+      return sendSuccess(res, {
+        success: true,
+        image: imageUrl,
+        thumbnailUrl: imageUrl,
+        credits: {
+          used: creditsUsed,
+          remaining: user.totalCredits - creditsUsed
+        },
+        model: modelId
+      });
+    } else {
+      throw new Error('Unexpected response structure from GPT IMAGE API');
+    }
+
+  } catch (error) {
+    // Log the error
+    logAIServiceError(error, 'GPT IMAGE', 'generateImageWithoutInput');
+    
+    // If generation was created but failed, update its status
+    if (generation) {
+      await failGeneration(generation.id, error.message);
+    }
+    
+    // If credits were deducted but generation failed, refund them
+    if (creditsUsed > 0 && userId) {
+      try {
+        await refundCredits(userId, creditsUsed, 'GPT IMAGE generation failed');
+      } catch (refundError) {
+        console.error('Failed to refund credits:', refundError);
       }
     }
+    
+    // Send user-friendly error
+    const userFriendlyMessage = getUserFriendlyAIError(error, 'GPT IMAGE');
+    return sendServerError(res, userFriendlyMessage, {
+      details: error.response?.data || error.message
+    });
   }
-  
-  throw new Error('Generation timeout after 3 minutes. GPT IMAGE is very slow, please try again.');
+});
+
+/**
+ * Helper function to map aspect ratios to GPT Image supported formats
+ */
+function mapAspectRatio(aspectRatio) {
+  // GPT Image only supports: "1:1", "3:2", "2:3"
+  switch(aspectRatio) {
+    case '1:1':
+      return '1:1';
+    case '16:9':
+    case '4:3':
+      return '3:2'; // landscape formats map to 3:2
+    case '9:16':
+    case '3:4':
+      return '2:3'; // portrait formats map to 2:3
+    case 'match':
+      return '1:1'; // default for match
+    default:
+      return '1:1';
+  }
 }
 
-// Generate image-to-image with GPT IMAGE
-export const generateImageToImage = async (req, res) => {
-  try {
-    const { 
-      prompt, 
-      negative_prompt, 
-      input_image, 
-      creative_strength = 0.5,
-      control_strength = 0.4,
-      aspectRatio = '1:1' 
-    } = req.body;
-    const userId = req.user?.id;
-
-    // Skip credit checks for testing if user not authenticated
-    if (userId) {
-      // Check credits before processing (only if authenticated)
-      const modelId = 'gpt-image';
-      const requiredCredits = getModelCredits(modelId);
-      
-      try {
-        // Make API call to check user credits
-        const creditCheckResponse = await axios.post('http://localhost:5000/api/users/check-credits', {
-          modelId
-        }, {
-          headers: {
-            'Authorization': req.headers.authorization
-          }
-        });
-
-        if (!creditCheckResponse.data.canAfford) {
-          return res.status(400).json({ 
-            error: 'Insufficient credits',
-            required: requiredCredits,
-            available: creditCheckResponse.data.available,
-            modelId
-          });
-        }
-      } catch (creditError) {
-        console.log('Credit check failed, proceeding with generation for testing:', creditError.message);
-      }
-    } else {
-      console.log('User not authenticated, skipping credit checks for testing');
-    }
-
-    // Map our aspect ratios to GPT Image supported formats
-    let gptImageSize = '1:1';
-    
-    switch(aspectRatio) {
-      case '1:1':
-        gptImageSize = '1:1';
-        break;
-      case '16:9':
-      case '4:3':
-        gptImageSize = '3:2';
-        break;
-      case '9:16':
-      case '3:4':
-        gptImageSize = '2:3';
-        break;
-      case 'match':
-        gptImageSize = '1:1';
-        break;
-      default:
-        gptImageSize = '1:1';
-    }
-
-    console.log('GPT IMAGE image-to-image request:', { 
-      originalAspectRatio: aspectRatio,
-      mappedSize: gptImageSize, 
-      hasPrompt: !!prompt,
-      hasNegative: !!negative_prompt,
-      hasImage: !!input_image 
-    });
-
-    if (!prompt || !input_image) {
-      return res.status(400).json({ 
-        error: 'Prompt and input_image are required' 
-      });
-    }
-
-    // Combine prompts for better results
-    const fullPrompt = `${prompt}. ${negative_prompt ? `Avoid: ${negative_prompt}` : ''}`;
-
-    // Try different approaches for image handling
-    let imageUrl = input_image;
-    
-    // If it's base64, try to upload it to a hosting service
-    if (!input_image.startsWith('http')) {
-      // Check if we have valid Cloudinary credentials first
-      const hasValidCloudinary = process.env.CLOUDINARY_CLOUD_NAME && 
-                                  process.env.CLOUDINARY_CLOUD_NAME !== 'demo' &&
-                                  process.env.CLOUDINARY_API_KEY &&
-                                  process.env.CLOUDINARY_API_KEY !== '123456789';
-      
-      if (hasValidCloudinary) {
-        // Try uploading to Cloudinary first (more reliable than ImgBB)
-        try {
-          console.log('🔄 Attempting to upload image to Cloudinary for image-to-image...');
-          
-          const { getStorageProvider } = await import('../utils/storageProvider.js');
-          const storageProvider = getStorageProvider();
-          
-          // Upload image using our universal storage provider
-          const uploadResult = await storageProvider.uploadImage(input_image, 'gpt-input');
-          imageUrl = uploadResult.url;
-          console.log('✅ Image successfully uploaded to Cloudinary for image-to-image:', imageUrl);
-          
-        } catch (cloudinaryError) {
-          console.error('❌ Cloudinary upload failed for image-to-image:', cloudinaryError.message);
-          // Continue to try other approaches
-        }
-      } else {
-        console.log('⚠️ Cloudinary not configured properly for image-to-image, skipping...');
-      }
-      
-      // If Cloudinary didn't work (or wasn't configured), try direct base64 approach
-      if (imageUrl === input_image) {
-        console.log('🔄 Trying direct base64 approach for image-to-image...');
-        
-        if (input_image.startsWith('data:image')) {
-          imageUrl = input_image;
-        } else {
-          imageUrl = `data:image/jpeg;base64,${input_image}`;
-        }
-        console.log('✅ Using direct base64 approach for GPT Image API (image-to-image)');
-      }
-    }
-
-    // Calculate guidance_scale based on control_strength (range: 1-10)
-    // Higher control = higher guidance_scale (more adherence to prompt)
-    const guidanceScale = 3 + (control_strength * 7); // Range: 3-10
-    
-    // Calculate num_inference_steps based on creative_strength (range: 20-50)
-    // Higher creative = more inference steps (more creative variations)
-    const inferenceSteps = 20 + Math.round(creative_strength * 30); // Range: 20-50
-
-    console.log('GPT Image parameters:', {
-      guidanceScale,
-      inferenceSteps,
-      creative_strength,
-      control_strength
-    });
-
-    // Make request to GPT IMAGE API - same format as anime generator
-    const response = await axios.post(GPT_IMAGE_API_URL, {
-      filesUrl: [imageUrl],
-      prompt: fullPrompt,
-      size: gptImageSize,
-      isEnhance: true,
-      uploadCn: false,
-      nVariants: 1,
-      enableFallback: false
-    }, {
-      headers: {
-        'Authorization': `Bearer ${GPT_IMAGE_API_KEY}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    console.log('GPT IMAGE API response:', response.data);
-
-    if (response.data && response.data.data && response.data.data.taskId) {
-      // Start polling for result using the taskId with the correct endpoint
-      const result = await pollForResult(response.data.data.taskId);
-      
-      // If generation was successful and user is authenticated, deduct credits and save image
-      if (result.success && userId) {
-        const modelId = 'gpt-image';
-        const requiredCredits = getModelCredits(modelId);
-        
-        try {
-          // Deduct credits first
-          await axios.post('http://localhost:5000/api/users/deduct-credits', {
-            modelId
-          }, {
-            headers: {
-              'Authorization': req.headers.authorization
-            }
-          });
-          console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
-          
-          // Get user data with subscription info for image saving
-          const user = await prisma.user.findUnique({
-            where: { id: userId },
-            include: { subscription: true }
-          });
-          
-          if (user) {
-            // Create generation record
-            const generation = await prisma.generation.create({
-              data: {
-                userId: userId,
-                prompt: prompt,
-                negativePrompt: negative_prompt || '',
-                model: modelId,
-                style: '',
-                status: 'COMPLETED',
-                creditsUsed: requiredCredits,
-                completedAt: new Date()
-              }
-            });
-            
-            // Try to save the generated image for eligible users
-            try {
-              await saveGeneratedImage(
-                { url: result.image, width: 1024, height: 1024 },
-                user,
-                generation
-              );
-              console.log('GPT Image (image-to-image) saved to user gallery');
-            } catch (saveError) {
-              console.log('GPT Image (image-to-image) not saved (user not eligible or error):', saveError.message);
-            }
-          }
-          
-        } catch (creditError) {
-          console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
-          // Still return the image but log the credit error
-        }
-      }
-      
-      res.json(result);
-    } else if (response.data && response.data.data && response.data.data.images) {
-      // Direct response with images (unlikely with GPT IMAGE)
-      
-      // Deduct credits for successful generation if user is authenticated
-      if (userId) {
-        const modelId = 'gpt-image';
-        const requiredCredits = getModelCredits(modelId);
-        try {
-          // Deduct credits first
-          await axios.post('http://localhost:5000/api/users/deduct-credits', {
-            modelId
-          }, {
-            headers: {
-              'Authorization': req.headers.authorization
-            }
-          });
-          console.log(`Successfully deducted ${requiredCredits} credits for ${modelId}`);
-          
-          // Get user data with subscription info for image saving
-          const user = await prisma.user.findUnique({
-            where: { id: userId },
-            include: { subscription: true }
-          });
-          
-          if (user) {
-            // Create generation record
-            const generation = await prisma.generation.create({
-              data: {
-                userId: userId,
-                prompt: prompt,
-                negativePrompt: '',
-                model: modelId,
-                style: style || '',
-                status: 'COMPLETED',
-                creditsUsed: requiredCredits,
-                completedAt: new Date()
-              }
-            });
-            
-            // Try to save the generated image for eligible users
-            try {
-              await saveGeneratedImage(
-                { url: response.data.data.images[0], width: 1024, height: 1024 },
-                user,
-                generation
-              );
-              console.log('GPT Image (direct response) saved to user gallery');
-            } catch (saveError) {
-              console.log('GPT Image (direct response) not saved (user not eligible or error):', saveError.message);
-            }
-          }
-          
-        } catch (creditError) {
-          console.error('Failed to deduct credits:', creditError.response?.data || creditError.message);
-          // Still return the image but log the credit error
-        }
-      }
-      
-      res.json({
-        success: true,
-        image: response.data.data.images[0]
-      });
-    } else {
-      throw new Error('Unexpected response from GPT IMAGE API: ' + JSON.stringify(response.data));
-    }
-  } catch (error) {
-    logAIServiceError(error, 'GPT Image', 'Image-to-image generation');
-    const userFriendlyMessage = getUserFriendlyAIError(error, 'GPT Image');
-    
-    res.status(500).json({ 
-      error: userFriendlyMessage,
-      details: error.response?.data || error.message 
-    });
+/**
+ * Helper function to process image URL
+ */
+async function processImageUrl(input_image) {
+  // If it's already a URL, return it
+  if (input_image.startsWith('http')) {
+    return input_image;
   }
-};
+
+  // If it's base64, try to upload it to ImgBB
+  if (!IMGBB_API_KEY) {
+    console.warn('ImgBB API key not configured, using base64 directly');
+    return input_image;
+  }
+
+  try {
+    // Remove data:image prefix if present
+    const cleanBase64 = input_image.replace(/^data:image\/[a-z]+;base64,/, '');
+    
+    const formData = new URLSearchParams();
+    formData.append('key', IMGBB_API_KEY);
+    formData.append('image', cleanBase64);
+    
+    const imgbbResponse = await axios.post('https://api.imgbb.com/1/upload', formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+    
+    if (imgbbResponse.data?.success && imgbbResponse.data?.data?.url) {
+      console.log('Image uploaded to ImgBB successfully');
+      return imgbbResponse.data.data.url;
+    }
+  } catch (uploadError) {
+    console.error('Failed to upload to ImgBB:', uploadError.message);
+  }
+
+  // Fallback to base64
+  return input_image;
+}

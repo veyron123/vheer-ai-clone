@@ -1,368 +1,301 @@
-import { PrismaClient } from '@prisma/client';
-import { QwenImageService } from '../services/QwenImageService.js';
-import { getModelCredits } from '../config/pricing.config.js';
+import axios from 'axios';
+import { checkAndDeductCredits, refundCredits } from '../services/creditService.js';
+import { createGeneration, completeGeneration, failGeneration } from '../services/generationService.js';
+import { sendSuccess, sendBadRequest, sendUnauthorized, sendServerError, asyncHandler } from '../utils/responses.js';
 import { saveGeneratedImage } from './images.controller.js';
 import { getUserFriendlyAIError, logAIServiceError } from '../utils/aiServiceErrors.js';
-import axios from 'axios';
 
-const prisma = new PrismaClient();
-const qwenService = new QwenImageService();
-
-console.log('Qwen Image controller initialized');
+const QWEN_API_KEY = process.env.QWEN_API_KEY;
+const QWEN_TURBO_URL = 'https://api.kie.ai/api/v1/qwen2vl-flux/generate';
+const QWEN_ULTRA_URL = 'https://api.kie.ai/api/v1/qwen2vl-flux-ultra/generate';
 
 /**
- * Generate image with Qwen Image model (text-to-image)
+ * Generate image with Qwen Turbo
+ * Refactored to use unified services
  */
-export const generateImage = async (req, res) => {
+export const generateImageTurbo = asyncHandler(async (req, res) => {
+  const { prompt, input_image, style, aspectRatio = '1:1' } = req.body;
+  const userId = req.user?.id;
+
+  // Require authentication
+  if (!userId) {
+    return sendUnauthorized(res, 'Please sign in to generate images');
+  }
+
+  // Validate required fields
+  if (!prompt || !input_image) {
+    return sendBadRequest(res, 'Prompt and input_image are required');
+  }
+
+  const modelId = 'qwen-turbo';
   let generation = null;
-  
+  let creditsUsed = 0;
+
   try {
-    const { 
-      prompt, 
-      style, 
-      aspectRatio = '1:1', 
-      negativePrompt, 
-      seed, 
-      baseImage, 
-      mode = 'text-to-image',
-      numInferenceSteps = 30,
-      guidanceScale = 4,
-      numImages = 1,
-      outputFormat = 'png',
-      acceleration = 'regular',
-      enableSafetyChecker = true,
-      syncMode = true
-    } = req.body;
-    const userId = req.user?.id;
+    // Check and deduct credits using unified service
+    const { user, creditsUsed: credits } = await checkAndDeductCredits(userId, modelId);
+    creditsUsed = credits;
 
-    console.log('🎨 Starting Qwen Image generation:', { prompt, style, aspectRatio, mode });
+    // Create generation record
+    generation = await createGeneration(userId, {
+      prompt,
+      model: modelId,
+      style,
+      status: 'PENDING'
+    });
 
-    // Check credits if user is authenticated
-    if (userId) {
-      const modelId = 'qwen-image';
-      const creditsPerImage = 20; // 20 кредитов за изображение
-      const requiredCredits = creditsPerImage * (numImages || 1); // Умножаем на количество изображений
-      
-      try {
-        const creditCheckResponse = await axios.post('http://localhost:5000/api/users/check-credits', {
-          modelId
-        }, {
-          headers: {
-            'Authorization': req.headers.authorization
-          }
-        });
+    console.log('Qwen Turbo generation request:', {
+      hasPrompt: !!prompt,
+      hasImage: !!input_image,
+      style,
+      aspectRatio
+    });
 
-        if (!creditCheckResponse.data.canAfford) {
-          return res.status(400).json({ 
-            error: 'Insufficient credits',
-            required: requiredCredits,
-            available: creditCheckResponse.data.available,
-            modelId
-          });
-        }
-      } catch (creditError) {
-        console.log('Credit check failed, proceeding for testing:', creditError.message);
+    // Process image URL
+    const imageUrl = await processImageUrl(input_image);
+
+    // Prepare request body
+    const requestBody = {
+      prompt,
+      inputImage: imageUrl,
+      style: style || 'default',
+      aspectRatio: aspectRatio || '1:1',
+      enableTranslation: true,
+      outputFormat: 'jpeg'
+    };
+
+    // Make API request
+    const response = await axios.post(QWEN_TURBO_URL, requestBody, {
+      headers: {
+        'Authorization': `Bearer ${QWEN_API_KEY}`,
+        'Content-Type': 'application/json'
       }
-    }
+    });
 
-    // Create generation record only for authenticated users
-    if (userId) {
-      generation = await prisma.generation.create({
-        data: {
-          userId: userId,
-          prompt,
-          negativePrompt: negativePrompt || 'blurry, ugly, low quality',
-          model: 'qwen-image',
-          style: style || 'none',
-          creditsUsed: requiredCredits,
-          status: 'processing'
-        }
-      });
-    }
+    console.log('Qwen Turbo API response:', JSON.stringify(response.data, null, 2));
 
-    // Build final prompt based on style
-    let finalPrompt = prompt;
-    if (style && style !== 'custom' && style !== 'none') {
-      finalPrompt = `${prompt} in ${style} style`;
-    }
-
-    // Generate image based on mode
-    let result;
-    if (mode === 'image-to-image' && baseImage) {
-      console.log('🖼️ Using image-to-image mode');
-      result = await qwenService.editImage(baseImage, finalPrompt, {
-        aspectRatio,
-        negativePrompt: negativePrompt || 'blurry, ugly, low quality',
-        seed: seed ? parseInt(seed) : undefined,
-        numInferenceSteps,
-        guidanceScale,
-        numImages,
-        outputFormat,
-        acceleration,
-        enableSafetyChecker,
-        syncMode
+    if (response.data?.success && response.data?.data?.url) {
+      const imageUrl = response.data.data.url;
+      
+      // Update generation status
+      await completeGeneration(generation.id);
+      
+      // Try to save the generated image
+      try {
+        await saveGeneratedImage(
+          { url: imageUrl, width: 1024, height: 1024 },
+          user,
+          generation
+        );
+        console.log('Image saved to user gallery');
+      } catch (saveError) {
+        console.log('Image not saved:', saveError.message);
+      }
+      
+      // Send success response
+      return sendSuccess(res, {
+        success: true,
+        image: imageUrl,
+        thumbnailUrl: imageUrl,
+        credits: {
+          used: creditsUsed,
+          remaining: user.totalCredits - creditsUsed
+        },
+        model: modelId
       });
     } else {
-      console.log('📝 Using text-to-image mode');
-      result = await qwenService.generateImage(finalPrompt, {
-        aspectRatio,
-        negativePrompt: negativePrompt || 'blurry, ugly, low quality',
-        seed: seed ? parseInt(seed) : undefined,
-        numInferenceSteps,
-        guidanceScale,
-        numImages,
-        outputFormat,
-        acceleration,
-        enableSafetyChecker,
-        syncMode
-      });
+      throw new Error('Unexpected response structure from Qwen API');
     }
-
-    // Update generation with results
-    if (generation?.id) {
-      await prisma.generation.update({
-        where: { id: generation.id },
-        data: {
-          status: 'completed',
-          completedAt: new Date()
-        }
-      });
-    }
-
-    // Deduct credits if user is authenticated
-    if (userId) {
-      try {
-        await axios.post('http://localhost:5000/api/users/deduct-credits', {
-          modelId: 'qwen-image'
-        }, {
-          headers: {
-            'Authorization': req.headers.authorization
-          }
-        });
-        console.log('✅ Credits deducted for qwen-image generation');
-      } catch (creditError) {
-        console.log('Credit deduction failed (but generation succeeded):', creditError.message);
-      }
-    }
-
-    // Save image if user is authenticated and eligible
-    let savedImage = null;
-    if (userId && req.user) {
-      try {
-        savedImage = await saveGeneratedImage(result.images[0], req.user, generation);
-      } catch (saveError) {
-        console.log('Image save failed (but generation succeeded):', saveError.message);
-      }
-    }
-
-    console.log('✅ Qwen Image generation completed successfully');
-
-    res.json({
-      success: true,
-      images: result.images,
-      prompt: result.prompt,
-      model: 'qwen-image',
-      generation_id: generation?.id || null,
-      saved_image: savedImage,
-      seed: result.seed,
-      timings: result.timings
-    });
 
   } catch (error) {
-    logAIServiceError(error, 'Qwen Image', 'Image generation');
-    const userFriendlyMessage = getUserFriendlyAIError(error, 'Qwen Image');
+    // Log the error
+    logAIServiceError(error, 'Qwen', 'generateImageTurbo');
     
-    // Update generation status to failed if it exists
-    try {
-      if (typeof generation !== 'undefined' && generation?.id) {
-        await prisma.generation.update({
-          where: { id: generation.id },
-          data: {
-            status: 'failed',
-            error: error.message
-          }
-        });
-      }
-    } catch (updateError) {
-      console.error('Failed to update generation status:', updateError);
+    // If generation was created but failed, update its status
+    if (generation) {
+      await failGeneration(generation.id, error.message);
     }
-
-    res.status(500).json({
-      error: userFriendlyMessage,
-      message: error.message,
-      model: 'qwen-image'
+    
+    // If credits were deducted but generation failed, refund them
+    if (creditsUsed > 0 && userId) {
+      try {
+        await refundCredits(userId, creditsUsed, 'Qwen generation failed');
+      } catch (refundError) {
+        console.error('Failed to refund credits:', refundError);
+      }
+    }
+    
+    // Send user-friendly error
+    const userFriendlyMessage = getUserFriendlyAIError(error, 'Qwen');
+    return sendServerError(res, userFriendlyMessage, {
+      details: error.response?.data || error.message
     });
   }
-};
+});
 
 /**
- * Edit image with Qwen Image model (image-to-image)
+ * Generate image with Qwen Ultra
+ * Refactored to use unified services
  */
-export const editImage = async (req, res) => {
+export const generateImageUltra = asyncHandler(async (req, res) => {
+  const { prompt, input_image, style, aspectRatio = '1:1' } = req.body;
+  const userId = req.user?.id;
+
+  // Require authentication
+  if (!userId) {
+    return sendUnauthorized(res, 'Please sign in to generate images');
+  }
+
+  // Validate required fields
+  if (!prompt || !input_image) {
+    return sendBadRequest(res, 'Prompt and input_image are required');
+  }
+
+  const modelId = 'qwen-ultra';
   let generation = null;
-  
+  let creditsUsed = 0;
+
   try {
-    const { 
-      prompt, 
-      input_image, 
-      style, 
-      aspectRatio = 'match', 
-      negativePrompt, 
-      seed,
-      numInferenceSteps = 30,
-      guidanceScale = 4,
-      numImages = 1,
-      outputFormat = 'png',
-      acceleration = 'regular',
-      enableSafetyChecker = true,
-      syncMode = true
-    } = req.body;
-    const userId = req.user?.id;
+    // Check and deduct credits using unified service
+    const { user, creditsUsed: credits } = await checkAndDeductCredits(userId, modelId);
+    creditsUsed = credits;
 
-    console.log('🎨 Starting Qwen Image editing:', { prompt, style, aspectRatio });
+    // Create generation record
+    generation = await createGeneration(userId, {
+      prompt,
+      model: modelId,
+      style,
+      status: 'PENDING'
+    });
 
-    if (!input_image) {
-      return res.status(400).json({ error: 'Input image is required for image editing' });
-    }
+    console.log('Qwen Ultra generation request:', {
+      hasPrompt: !!prompt,
+      hasImage: !!input_image,
+      style,
+      aspectRatio
+    });
 
-    // Define credits calculation
-    const modelId = 'qwen-image';
-    const creditsPerImage = 20; // 20 кредитов за изображение
-    const requiredCredits = creditsPerImage * (numImages || 1); // Умножаем на количество изображений
+    // Process image URL
+    const imageUrl = await processImageUrl(input_image);
 
-    // Check credits if user is authenticated
-    if (userId) {
+    // Prepare request body
+    const requestBody = {
+      prompt,
+      inputImage: imageUrl,
+      style: style || 'default',
+      aspectRatio: aspectRatio || '1:1',
+      enableTranslation: true,
+      outputFormat: 'jpeg',
+      enhanceQuality: true
+    };
+
+    // Make API request
+    const response = await axios.post(QWEN_ULTRA_URL, requestBody, {
+      headers: {
+        'Authorization': `Bearer ${QWEN_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    console.log('Qwen Ultra API response:', JSON.stringify(response.data, null, 2));
+
+    if (response.data?.success && response.data?.data?.url) {
+      const imageUrl = response.data.data.url;
       
+      // Update generation status
+      await completeGeneration(generation.id);
+      
+      // Try to save the generated image
       try {
-        const creditCheckResponse = await axios.post('http://localhost:5000/api/users/check-credits', {
-          modelId
-        }, {
-          headers: {
-            'Authorization': req.headers.authorization
-          }
-        });
-
-        if (!creditCheckResponse.data.canAfford) {
-          return res.status(400).json({ 
-            error: 'Insufficient credits',
-            required: requiredCredits,
-            available: creditCheckResponse.data.available,
-            modelId
-          });
-        }
-      } catch (creditError) {
-        console.log('Credit check failed, proceeding for testing:', creditError.message);
-      }
-    }
-
-    // Create generation record only for authenticated users  
-    if (userId) {
-      generation = await prisma.generation.create({
-        data: {
-          userId: userId,
-          prompt,
-          negativePrompt: negativePrompt || 'blurry, ugly, low quality',
-          model: 'qwen-image',
-          style: style || 'none',
-          creditsUsed: requiredCredits,
-          status: 'processing'
-        }
-      });
-    }
-
-    // Build final prompt based on style
-    let finalPrompt = prompt;
-    if (style && style !== 'custom' && style !== 'none') {
-      finalPrompt = `${prompt} in ${style} style`;
-    }
-
-    // Edit image
-    const result = await qwenService.editImage(input_image, finalPrompt, {
-      aspectRatio,
-      negativePrompt: negativePrompt || 'blurry, ugly, low quality',
-      seed: seed ? parseInt(seed) : undefined,
-      numInferenceSteps,
-      guidanceScale,
-      numImages,
-      outputFormat,
-      acceleration,
-      enableSafetyChecker,
-      syncMode
-    });
-
-    // Update generation with results
-    if (generation?.id) {
-      await prisma.generation.update({
-        where: { id: generation.id },
-        data: {
-          status: 'completed',
-          completedAt: new Date()
-        }
-      });
-    }
-
-    // Deduct credits if user is authenticated
-    if (userId) {
-      try {
-        await axios.post('http://localhost:5000/api/users/deduct-credits', {
-          modelId: 'qwen-image'
-        }, {
-          headers: {
-            'Authorization': req.headers.authorization
-          }
-        });
-        console.log('✅ Credits deducted for qwen-image editing');
-      } catch (creditError) {
-        console.log('Credit deduction failed (but generation succeeded):', creditError.message);
-      }
-    }
-
-    // Save image if user is authenticated and eligible
-    let savedImage = null;
-    if (userId && req.user) {
-      try {
-        savedImage = await saveGeneratedImage(result.images[0], req.user, generation);
+        await saveGeneratedImage(
+          { url: imageUrl, width: 1024, height: 1024 },
+          user,
+          generation
+        );
+        console.log('Image saved to user gallery');
       } catch (saveError) {
-        console.log('Image save failed (but generation succeeded):', saveError.message);
+        console.log('Image not saved:', saveError.message);
       }
+      
+      // Send success response
+      return sendSuccess(res, {
+        success: true,
+        image: imageUrl,
+        thumbnailUrl: imageUrl,
+        credits: {
+          used: creditsUsed,
+          remaining: user.totalCredits - creditsUsed
+        },
+        model: modelId
+      });
+    } else {
+      throw new Error('Unexpected response structure from Qwen API');
     }
-
-    console.log('✅ Qwen Image editing completed successfully');
-
-    res.json({
-      success: true,
-      images: result.images,
-      prompt: result.prompt,
-      model: 'qwen-image',
-      generation_id: generation?.id || null,
-      saved_image: savedImage,
-      seed: result.seed,
-      timings: result.timings
-    });
 
   } catch (error) {
-    logAIServiceError(error, 'Qwen Image', 'Image editing');
-    const userFriendlyMessage = getUserFriendlyAIError(error, 'Qwen Image');
+    // Log the error
+    logAIServiceError(error, 'Qwen', 'generateImageUltra');
     
-    // Update generation status to failed if it exists
-    try {
-      if (typeof generation !== 'undefined' && generation?.id) {
-        await prisma.generation.update({
-          where: { id: generation.id },
-          data: {
-            status: 'failed',
-            error: error.message
-          }
-        });
-      }
-    } catch (updateError) {
-      console.error('Failed to update generation status:', updateError);
+    // If generation was created but failed, update its status
+    if (generation) {
+      await failGeneration(generation.id, error.message);
     }
-
-    res.status(500).json({
-      error: userFriendlyMessage,
-      message: error.message,
-      model: 'qwen-image'
+    
+    // If credits were deducted but generation failed, refund them
+    if (creditsUsed > 0 && userId) {
+      try {
+        await refundCredits(userId, creditsUsed, 'Qwen generation failed');
+      } catch (refundError) {
+        console.error('Failed to refund credits:', refundError);
+      }
+    }
+    
+    // Send user-friendly error
+    const userFriendlyMessage = getUserFriendlyAIError(error, 'Qwen');
+    return sendServerError(res, userFriendlyMessage, {
+      details: error.response?.data || error.message
     });
   }
-};
+});
+
+/**
+ * Helper function to process image URL
+ */
+async function processImageUrl(input_image) {
+  // If it's already a URL, return it
+  if (input_image.startsWith('http')) {
+    return input_image;
+  }
+
+  // If it's base64, try to upload it to ImgBB
+  const IMGBB_API_KEY = process.env.IMGBB_API_KEY;
+  if (!IMGBB_API_KEY) {
+    console.warn('ImgBB API key not configured, using base64 directly');
+    return input_image;
+  }
+
+  try {
+    // Remove data:image prefix if present
+    const cleanBase64 = input_image.replace(/^data:image\/[a-z]+;base64,/, '');
+    
+    const formData = new URLSearchParams();
+    formData.append('key', IMGBB_API_KEY);
+    formData.append('image', cleanBase64);
+    
+    const imgbbResponse = await axios.post('https://api.imgbb.com/1/upload', formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+    
+    if (imgbbResponse.data?.success && imgbbResponse.data?.data?.url) {
+      console.log('Image uploaded to ImgBB successfully');
+      return imgbbResponse.data.data.url;
+    }
+  } catch (uploadError) {
+    console.error('Failed to upload to ImgBB:', uploadError.message);
+  }
+
+  // Fallback to base64
+  return input_image;
+}
