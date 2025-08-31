@@ -104,6 +104,14 @@ export const useImageToImageGeneration = () => {
         // Some APIs return direct URL
         setGeneratedImage(result.url);
         toast.success('Image generated successfully!');
+      } else if (result?.image) {
+        // FLUX API returns image field
+        setGeneratedImage(result.image);
+        toast.success('Image generated successfully!');
+      } else if (result?.success && result?.data?.url) {
+        // Nano-Banana and similar APIs return nested data structure
+        setGeneratedImage(result.data.url);
+        toast.success('Image generated successfully!');
       } else {
         console.error('❌ Unexpected result structure:', result);
         throw new Error('No image generated');

@@ -123,7 +123,7 @@ export const generateImage = async (req, res) => {
     const requestBody = {
       prompt: prompt,
       input_image: input_image.replace(/^data:image\/[a-z]+;base64,/, ''), // Clean base64
-      aspect_ratio: aspectRatio || '1:1',  // Use provided aspect ratio or default to 1:1
+      aspect_ratio: aspectRatio === 'match' ? '1:1' : (aspectRatio || '1:1'),  // Handle 'match' case by defaulting to 1:1
       output_format: 'jpeg'
     };
     
@@ -550,7 +550,7 @@ export const generateImageToImage = async (req, res) => {
     const requestBody = {
       prompt: fullPrompt,
       input_image: input_image.replace(/^data:image\/[a-z]+;base64,/, ''), // Clean base64
-      aspect_ratio: aspectRatio || '1:1',
+      aspect_ratio: aspectRatio === 'match' ? '1:1' : (aspectRatio || '1:1'),  // Handle 'match' case by defaulting to 1:1
       output_format: 'jpeg'
     };
 

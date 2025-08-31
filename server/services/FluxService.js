@@ -204,7 +204,7 @@ class FluxService extends BaseAIService {
     };
 
     // Handle aspect ratio - Flux supports string format directly
-    if (aspectRatio) {
+    if (aspectRatio && aspectRatio !== 'match') {
       // Flux Kontext supports aspect ratios from 3:7 to 7:3 in string format
       payload.aspect_ratio = aspectRatio;
       // Remove default width/height as aspect_ratio overrides them
