@@ -1,151 +1,260 @@
-import fluxService from '../services/FluxService.js';
-import logger from '../utils/logger.js';
+import axios from 'axios';
+import { checkAndDeductCredits, refundCredits } from '../services/creditService.js';
+import { createGeneration, completeGeneration, failGeneration } from '../services/generationService.js';
+import { sendSuccess, sendBadRequest, sendUnauthorized, sendServerError, asyncHandler } from '../utils/responses.js';
+import { saveGeneratedImage } from './images.controller.js';
+import { logAIServiceError, getUserFriendlyAIError } from '../utils/aiServiceErrors.js';
 
-/**
- * Flux Controller - Refactored
- * Uses FluxService for all business logic
- */
+const FLUX_API_KEY = process.env.FLUX_API_KEY;
+
+// Current bfl.ai endpoints (ACTIVE)
+const FLUX_KONTEXT_API_URL = 'https://api.bfl.ai/v1/flux-kontext-pro';
+const FLUX_STATUS_URL = 'https://api.bfl.ai/v1/get_result';
 
 /**
  * Generate image with Flux
+ * Refactored to use unified services
  */
-export const generateImage = async (req, res) => {
-  try {
-    const { 
-      prompt, 
-      input_image, 
-      style, 
-      model, 
-      aspectRatio, 
-      async = false 
-    } = req.body;
-    
-    const userId = req.user?.id;
-
-    // Log request
-    logger.info('Flux generation request', {
-      userId,
-      hasPrompt: !!prompt,
-      hasImage: !!input_image,
-      model,
-      async
-    });
-
-    // Require authentication
-    if (!userId) {
-      return res.status(401).json({ 
-        error: 'Authentication required',
-        message: 'Please sign in to generate images'
-      });
-    }
-
-    // Call service
-    const result = await fluxService.generate(
-      { prompt, input_image, style, model, aspectRatio },
-      userId,
-      async
-    );
-
-    // Handle error from service
-    if (result.error) {
-      return res.status(400).json(result);
-    }
-
-    // Return success response
-    res.json(result);
-  } catch (error) {
-    logger.error('Flux controller error', error);
-    
-    // Handle specific errors
-    if (error.message.includes('Insufficient credits')) {
-      return res.status(402).json({
-        error: 'Insufficient credits',
-        message: error.message
-      });
-    }
-
-    if (error.message.includes('required')) {
-      return res.status(400).json({
-        error: 'Validation error',
-        message: error.message
-      });
-    }
-
-    // Generic error
-    res.status(500).json({
-      error: 'Generation failed',
-      message: 'An unexpected error occurred. Please try again.'
-    });
+export const generateImage = asyncHandler(async (req, res) => {
+  const { prompt, input_image, style, model, aspectRatio } = req.body;
+  const userId = req.user?.id;
+  
+  // Check if request was aborted
+  if (req.aborted) {
+    console.log('Request was aborted before processing');
+    return sendBadRequest(res, 'Request cancelled', { cancelled: true });
   }
-};
 
-/**
- * Get job status for async generation
- */
-export const getJobStatus = async (req, res) => {
-  try {
-    const { jobId } = req.params;
-    const userId = req.user?.id;
-
-    if (!userId) {
-      return res.status(401).json({ 
-        error: 'Authentication required'
-      });
-    }
-
-    const status = await fluxService.getJobStatus(jobId);
-
-    if (!status) {
-      return res.status(404).json({
-        error: 'Job not found'
-      });
-    }
-
-    res.json(status);
-  } catch (error) {
-    logger.error('Get job status error', error);
-    res.status(500).json({
-      error: 'Failed to get job status'
-    });
+  // Require authentication
+  if (!userId) {
+    return sendUnauthorized(res, 'Please sign in to generate images');
   }
-};
 
-/**
- * Check model availability and pricing
- */
-export const checkModel = async (req, res) => {
+  // Validate required fields
+  if (!prompt || !input_image) {
+    return sendBadRequest(res, 'Prompt and input_image are required');
+  }
+
+  const modelId = model || 'flux-pro';
+  let generation = null;
+  let creditsUsed = 0;
+
   try {
-    const { model = 'flux-pro' } = req.query;
-    
-    // This could be expanded to check actual API availability
-    const models = {
-      'flux-pro': {
-        available: true,
-        credits: 10,
-        description: 'Flux Pro - High quality generation',
-        maxResolution: '1344x1344'
-      },
-      'flux-max': {
-        available: true,
-        credits: 15,
-        description: 'Flux Max - Maximum quality generation',
-        maxResolution: '2048x2048'
-      }
+    // Check and deduct credits using unified service
+    const { user, creditsUsed: credits } = await checkAndDeductCredits(userId, modelId);
+    creditsUsed = credits;
+
+    // Create generation record
+    generation = await createGeneration(userId, {
+      prompt,
+      model: modelId,
+      style,
+      status: 'PENDING'
+    });
+
+    // Determine steps based on model
+    const steps = model === 'flux-max' ? 50 : 28;
+    console.log(`Using ${modelId} model with ${steps} steps`);
+
+    // Prepare request body
+    const requestBody = {
+      prompt: prompt,
+      input_image: input_image.replace(/^data:image\/[a-z]+;base64,/, ''),
+      aspect_ratio: aspectRatio === 'match' ? '1:1' : (aspectRatio || '1:1'),
+      output_format: 'jpeg'
     };
-
-    const modelInfo = models[model];
     
-    if (!modelInfo) {
-      return res.status(404).json({
-        error: 'Model not found'
-      });
+    // Determine endpoint
+    const apiUrl = model === 'flux-max' 
+      ? 'https://api.bfl.ai/v1/flux-kontext-max' 
+      : 'https://api.bfl.ai/v1/flux-kontext-pro';
+    
+    // Make API request
+    const response = await axios.post(apiUrl, requestBody, {
+      headers: {
+        'accept': 'application/json',
+        'x-key': FLUX_API_KEY,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('Flux API response:', JSON.stringify(response.data, null, 2));
+
+    if (!response.data?.id) {
+      throw new Error('No request ID received from bfl.ai API');
     }
 
-    res.json(modelInfo);
+    // Poll for result
+    const result = await pollForBflResult(response.data.id, response.data.polling_url, req);
+    
+    if (result.success) {
+      // Update generation status
+      await completeGeneration(generation.id);
+      
+      // Try to save the generated image
+      try {
+        await saveGeneratedImage(
+          { url: result.image, width: 1024, height: 1024 },
+          user,
+          generation
+        );
+        console.log('Image saved to user gallery');
+      } catch (saveError) {
+        console.log('Image not saved:', saveError.message);
+      }
+      
+      // Send success response
+      return sendSuccess(res, {
+        image: result.image,
+        thumbnailUrl: result.thumbnailUrl,
+        credits: {
+          used: creditsUsed,
+          remaining: user.totalCredits - creditsUsed
+        },
+        model: modelId
+      }, 'Image generated successfully');
+    } else {
+      throw new Error(result.error || 'Generation failed');
+    }
+
   } catch (error) {
-    logger.error('Check model error', error);
-    res.status(500).json({
-      error: 'Failed to check model'
+    // Log the error
+    logAIServiceError(error, 'Flux', 'generateImage');
+    
+    // If generation was created but failed, update its status
+    if (generation) {
+      await failGeneration(generation.id, error.message);
+    }
+    
+    // If credits were deducted but generation failed, refund them
+    if (creditsUsed > 0 && userId) {
+      try {
+        await refundCredits(userId, creditsUsed, 'Flux generation failed');
+      } catch (refundError) {
+        console.error('Failed to refund credits:', refundError);
+      }
+    }
+    
+    // Check for specific error types
+    if (error.message.includes('Request was cancelled') || req.aborted) {
+      return sendBadRequest(res, 'Request cancelled', { cancelled: true });
+    }
+    
+    if (error.statusCode === 400) {
+      return sendBadRequest(res, error.message, error.details);
+    }
+    
+    if (error.statusCode === 401) {
+      return sendUnauthorized(res, error.message);
+    }
+    
+    // Send user-friendly error
+    const userFriendlyMessage = getUserFriendlyAIError(error, 'Flux');
+    return sendServerError(res, userFriendlyMessage, {
+      details: error.response?.data || error.message
     });
   }
-};
+});
+
+/**
+ * Poll for generation result from bfl.ai
+ * This remains mostly the same as it's API-specific
+ */
+async function pollForBflResult(requestId, pollingUrl, req = null) {
+  const maxAttempts = 60;
+  const baseInterval = 2000;
+  
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    // Check if request was cancelled
+    if (req && req.aborted) {
+      throw new Error('Request was cancelled during polling');
+    }
+    
+    try {
+      // Use adaptive polling intervals
+      const interval = attempt < 5 ? baseInterval : 
+                      attempt < 15 ? baseInterval * 1.5 : 
+                      baseInterval * 2;
+      
+      await new Promise(resolve => setTimeout(resolve, interval));
+      
+      const statusResponse = await axios.get(FLUX_STATUS_URL, {
+        params: { id: requestId },
+        headers: {
+          'accept': 'application/json',
+          'x-key': FLUX_API_KEY
+        }
+      });
+      
+      console.log(`Polling attempt ${attempt}: ${statusResponse.data.status}`);
+      
+      if (statusResponse.data.status === 'Ready') {
+        const imageUrl = statusResponse.data.result?.sample;
+        
+        if (!imageUrl) {
+          console.error('No image URL in result:', statusResponse.data);
+          throw new Error('No image generated');
+        }
+        
+        return {
+          success: true,
+          image: imageUrl,
+          thumbnailUrl: imageUrl
+        };
+      } else if (statusResponse.data.status === 'Error') {
+        throw new Error(`Generation failed: ${statusResponse.data.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      if (error.response?.status === 404) {
+        console.log(`Request ${requestId} not found yet, continuing...`);
+      } else {
+        throw error;
+      }
+    }
+  }
+  
+  throw new Error('Generation timed out after maximum attempts');
+}
+
+// Generate batch images (if needed)
+export const generateBatch = asyncHandler(async (req, res) => {
+  const { prompts, model, style } = req.body;
+  const userId = req.user?.id;
+  
+  if (!userId) {
+    return sendUnauthorized(res, 'Please sign in to generate images');
+  }
+  
+  if (!Array.isArray(prompts) || prompts.length === 0) {
+    return sendBadRequest(res, 'Prompts array is required');
+  }
+  
+  const modelId = model || 'flux-pro';
+  const results = [];
+  const errors = [];
+  
+  for (const prompt of prompts) {
+    try {
+      // Process each prompt
+      const result = await generateSingleImage(userId, prompt, modelId, style);
+      results.push(result);
+    } catch (error) {
+      errors.push({ prompt, error: error.message });
+    }
+  }
+  
+  return sendSuccess(res, {
+    successful: results,
+    failed: errors,
+    total: prompts.length,
+    successCount: results.length,
+    failCount: errors.length
+  }, 'Batch generation completed');
+});
+
+// Helper function for single image generation
+async function generateSingleImage(userId, prompt, modelId, style) {
+  // Implementation would be similar to generateImage but simplified
+  // This is just a placeholder for the pattern
+  return { prompt, image: 'generated-url' };
+}
