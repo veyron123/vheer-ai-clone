@@ -138,7 +138,7 @@ model Image {
   @@index([isPublic, likes(sort: Desc)]) // Public gallery sorted by popularity
   @@index([isPublic, createdAt(sort: Desc)]) // Public gallery sorted by date
   @@index([generationId]) // Generation relationship
-  // Note: For full-text search on PostgreSQL, use GIN/GiST indexes via raw SQL
+  @@fulltext([prompt]) // Full-text search on prompts (PostgreSQL only)
   @@map("colibrrri_images")
 }
 

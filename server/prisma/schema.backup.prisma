@@ -36,10 +36,6 @@ model User {
   cartSessions    CartSession[]
   paymentIntents  PaymentIntent[]
 
-  // New indexes for performance
-  @@index([createdAt(sort: Desc)]) // For sorting users by creation date
-  @@index([role]) // For filtering by role (admin queries)
-  @@index([totalCredits]) // For credit-based queries
   @@map("colibrrri_users")
 }
 
@@ -50,6 +46,7 @@ model Subscription {
   plan            String    @default("FREE")
   status          String    @default("ACTIVE")
   currentPeriodEnd DateTime?
+  // Stripe fields removed - using WayForPay only
   wayforpayOrderReference String? // WayForPay orderReference for cancellation
   
   // Recurring payment fields
@@ -65,9 +62,6 @@ model Subscription {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   
-  // New indexes
-  @@index([status, nextPaymentDate]) // For finding subscriptions to renew
-  @@index([plan]) // For subscription statistics
   @@map("colibrrri_subscriptions")
 }
 
@@ -80,16 +74,13 @@ model Credit {
   description     String?
   createdAt       DateTime  @default(now())
   
-  // New indexes
-  @@index([userId, createdAt(sort: Desc)]) // For user credit history
-  @@index([type]) // For credit type analytics
   @@map("colibrrri_credits")
 }
 
 model PaymentIntent {
   id            String    @id @default(cuid())
   trackingId    String    @unique
-  orderReference String?  @unique
+  orderReference String?  @unique // NEW: Store orderReference for callback matching
   userId        String
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   planId        String
@@ -100,9 +91,6 @@ model PaymentIntent {
   updatedAt     DateTime  @updatedAt
   expiresAt     DateTime? // Auto-expire after 1 hour
 
-  // New indexes
-  @@index([userId, status]) // For user payment queries
-  @@index([status, expiresAt]) // For cleanup queries
   @@map("colibrrri_payment_intents")
 }
 
@@ -112,7 +100,7 @@ model Image {
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   url             String
   thumbnailUrl    String?
-  cloudPath       String?   // Path for cloud storage deletion
+  cloudPath       String?   // Path for cloud storage deletion (Cloudinary public_id, S3 key, etc.)
   prompt          String
   negativePrompt  String?
   model           String
@@ -132,13 +120,6 @@ model Image {
   favorites       Favorite[]
   tags            Tag[]
 
-  // Critical performance indexes
-  @@index([userId, createdAt(sort: Desc)]) // User's images sorted by date
-  @@index([model]) // Filter by AI model
-  @@index([isPublic, likes(sort: Desc)]) // Public gallery sorted by popularity
-  @@index([isPublic, createdAt(sort: Desc)]) // Public gallery sorted by date
-  @@index([generationId]) // Generation relationship
-  // Note: For full-text search on PostgreSQL, use GIN/GiST indexes via raw SQL
   @@map("colibrrri_images")
 }
 
@@ -159,10 +140,6 @@ model Generation {
   
   images          Image[]
 
-  // New indexes
-  @@index([userId, createdAt(sort: Desc)]) // User generation history
-  @@index([status]) // For finding pending/failed generations
-  @@index([model, createdAt(sort: Desc)]) // Analytics by model
   @@map("colibrrri_generations")
 }
 
@@ -175,8 +152,6 @@ model Favorite {
   createdAt       DateTime  @default(now())
   
   @@unique([userId, imageId])
-  // Additional index for faster queries
-  @@index([imageId]) // For counting favorites per image
   @@map("colibrrri_favorites")
 }
 
@@ -187,15 +162,12 @@ model Payment {
   amount          Float
   currency        String    @default("USD")
   status          String
+  // Stripe field removed - using WayForPay only
   wayforpayOrderReference String? @unique
   description     String?
   cartItems       Json?     // Store original cart items for WayForPay callbacks
   createdAt       DateTime  @default(now())
 
-  // New indexes
-  @@index([userId, createdAt(sort: Desc)]) // User payment history
-  @@index([status]) // Payment analytics
-  @@index([createdAt(sort: Desc)]) // Recent payments
   @@map("colibrrri_payments")
 }
 
@@ -248,11 +220,6 @@ model CartOrder {
   shippedAt               DateTime?
   deliveredAt             DateTime?
   
-  // New indexes
-  @@index([userId, createdAt(sort: Desc)]) // User order history
-  @@index([paymentStatus]) // Payment status queries
-  @@index([orderStatus]) // Order fulfillment queries
-  @@index([customerEmail]) // Customer lookup
   @@map("colibrrri_cart_orders")
 }
 
@@ -271,7 +238,6 @@ model Session {
   data      String
   expiresAt DateTime
 
-  @@index([expiresAt]) // For session cleanup
   @@map("colibrrri_sessions")
 }
 
@@ -295,9 +261,5 @@ model CartSession {
   updatedAt             DateTime  @updatedAt
   expiresAt             DateTime?
 
-  // New indexes
-  @@index([status, abandonedAt]) // For finding abandoned carts
-  @@index([userId]) // User cart queries
-  @@index([expiresAt]) // For cleanup
   @@map("colibrrri_cart_sessions")
 }
