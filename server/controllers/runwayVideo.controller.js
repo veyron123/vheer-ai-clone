@@ -1,5 +1,5 @@
 import RunwayVideoService from '../services/RunwayVideoService.js';
-import CreditService from '../services/creditService.js';
+import * as CreditService from '../services/creditService.js';
 import { getUserFriendlyAIError, logAIServiceError } from '../utils/aiServiceErrors.js';
 
 class RunwayVideoController {

@@ -1,4 +1,4 @@
-import CreditService from '../services/creditService.js';
+import * as CreditService from '../services/creditService.js';
 
 // Middleware для проверки и начисления ежедневных кредитов
 export const checkDailyCredits = async (req, res, next) => {

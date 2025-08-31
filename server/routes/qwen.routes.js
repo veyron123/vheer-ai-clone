@@ -1,5 +1,5 @@
 import express from 'express';
-import { generateImage, editImage } from '../controllers/qwen.controller.js';
+import { generateImageTurbo, generateImageUltra } from '../controllers/qwen.controller.js';
 import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -21,10 +21,10 @@ const optionalAuth = (req, res, next) => {
   }
 };
 
-// Generate image (text-to-image)
-router.post('/generate', optionalAuth, generateImage);
+// Generate image with Turbo model
+router.post('/generate-turbo', optionalAuth, generateImageTurbo);
 
-// Edit image (image-to-image) 
-router.post('/edit', optionalAuth, editImage);
+// Generate image with Ultra model
+router.post('/generate-ultra', optionalAuth, generateImageUltra);
 
 export default router;

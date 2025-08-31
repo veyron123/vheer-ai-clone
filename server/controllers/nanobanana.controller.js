@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/genai';
+import { GoogleGenAI } from '@google/genai';
 import { checkAndDeductCredits, refundCredits } from '../services/creditService.js';
 import { createGeneration, completeGeneration, failGeneration } from '../services/generationService.js';
 import { sendSuccess, sendBadRequest, sendUnauthorized, sendServerError, asyncHandler } from '../utils/responses.js';
@@ -6,7 +6,7 @@ import { saveGeneratedImage } from './images.controller.js';
 import { getUserFriendlyAIError, logAIServiceError } from '../utils/aiServiceErrors.js';
 
 // Initialize Gemini API client
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 /**
  * Generate image with Nano-Banana (Gemini)

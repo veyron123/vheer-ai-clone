@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { AppError } from '../middleware/error.middleware.js';
-import CreditService from '../services/creditService.js';
+import * as CreditService from '../services/creditService.js';
 import notificationService from '../services/NotificationService.js';
 
 const prisma = new PrismaClient();

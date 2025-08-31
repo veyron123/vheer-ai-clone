@@ -1,5 +1,5 @@
 import express from 'express';
-import { generateImageToImage, generateTextToImage } from '../controllers/midjourney.controller.js';
+import { generateImageToImage, generateImage } from '../controllers/midjourney.controller.js';
 import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -8,6 +8,6 @@ const router = express.Router();
 router.post('/image-to-image', authenticate, generateImageToImage);
 
 // Generate text-to-image with Midjourney (requires authentication for credit tracking)
-router.post('/text-to-image', authenticate, generateTextToImage);
+router.post('/text-to-image', authenticate, generateImage);
 
 export default router;

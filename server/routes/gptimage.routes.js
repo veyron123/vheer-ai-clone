@@ -1,5 +1,5 @@
 import express from 'express';
-import { generateImage, generateImageToImage } from '../controllers/gptimage.controller.js';
+import { generateImage, generateImageWithoutInput } from '../controllers/gptimage.controller.js';
 import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -7,7 +7,7 @@ const router = express.Router();
 // Generate image with GPT IMAGE (requires authentication for credit tracking)
 router.post('/generate', authenticate, generateImage);
 
-// Generate image-to-image with GPT IMAGE (requires authentication for credit tracking)
-router.post('/image-to-image', authenticate, generateImageToImage);
+// Generate image without input (requires authentication for credit tracking)
+router.post('/generate-without-input', authenticate, generateImageWithoutInput);
 
 export default router;

@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import CreditService from '../services/creditService.js';
+import * as CreditService from '../services/creditService.js';
 
 class CreditCronJob {
   static init() {
