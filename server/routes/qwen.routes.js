@@ -21,10 +21,16 @@ const optionalAuth = (req, res, next) => {
   }
 };
 
-// Generate image with Turbo model
+// Generate image (text-to-image) - uses Turbo model by default
+router.post('/generate', optionalAuth, generateImageTurbo);
+
+// Edit image (image-to-image) - uses Ultra model
+router.post('/edit', optionalAuth, generateImageUltra);
+
+// Generate image with Turbo model (explicit)
 router.post('/generate-turbo', optionalAuth, generateImageTurbo);
 
-// Generate image with Ultra model
+// Generate image with Ultra model (explicit)  
 router.post('/generate-ultra', optionalAuth, generateImageUltra);
 
 export default router;

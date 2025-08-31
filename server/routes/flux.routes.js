@@ -1,5 +1,5 @@
 import express from 'express';
-import { generateImage, generateImageToImage } from '../controllers/flux.controller.js';
+import { generateImage, generateBatch } from '../controllers/flux.controller.js';
 import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -30,7 +30,10 @@ if (process.env.NODE_ENV === 'development') {
 // Test route without authentication (for development only)
 router.post('/generate-test', generateImage);
 
-// Generate image-to-image with Flux (requires authentication for credit tracking)
-router.post('/image-to-image', authenticate, generateImageToImage);
+// Generate image-to-image with Flux (alias for generate)
+router.post('/image-to-image', authenticate, generateImage);
+
+// Generate batch images with Flux (requires authentication for credit tracking)
+router.post('/batch', authenticate, generateBatch);
 
 export default router;
