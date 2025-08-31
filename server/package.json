@@ -14,7 +14,9 @@
     "db:seed": "node prisma/seed.js",
     "db:backup": "node scripts/backup-db.js",
     "db:restore": "node scripts/backup-db.js restore",
-    "db:reset": "prisma migrate reset --force"
+    "db:reset": "prisma migrate reset --force",
+    "admin:setup": "node scripts/setup-admin-production.js",
+    "admin:check": "node scripts/check-admin.js"
   },
   "dependencies": {
     "@fal-ai/client": "^1.6.2",
