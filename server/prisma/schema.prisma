@@ -46,8 +46,7 @@ model Subscription {
   plan            String    @default("FREE")
   status          String    @default("ACTIVE")
   currentPeriodEnd DateTime?
-  stripeCustomerId String?  @unique
-  stripeSubscriptionId String? @unique
+  // Stripe fields removed - using WayForPay only
   wayforpayOrderReference String? // WayForPay orderReference for cancellation
   
   // Recurring payment fields
@@ -163,7 +162,7 @@ model Payment {
   amount          Float
   currency        String    @default("USD")
   status          String
-  stripePaymentId String?   @unique
+  // Stripe field removed - using WayForPay only
   wayforpayOrderReference String? @unique
   description     String?
   cartItems       Json?     // Store original cart items for WayForPay callbacks

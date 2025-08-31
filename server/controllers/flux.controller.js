@@ -5,7 +5,7 @@ import { saveGeneratedImage } from './images.controller.js';
 
 const prisma = new PrismaClient();
 
-const FLUX_API_KEY = process.env.FLUX_API_KEY || '2f58d1ef-d2d1-48f0-8c1f-a7b5525748c0';
+const FLUX_API_KEY = process.env.FLUX_API_KEY;
 const FLUX_API_URL = process.env.FLUX_API_URL || 'https://api.bfl.ai/v1/flux-kontext-pro';
 
 // Current bfl.ai endpoints (ACTIVE)
@@ -31,11 +31,7 @@ const FLUX_STATUS_URL = 'https://api.bfl.ai/v1/get_result';
  * FLUX_API_URL="https://api.kie.ai/api/v1/flux/kontext/generate"
  * ===================================================== */
 
-console.log('Flux API configuration:', {
-  FLUX_API_KEY: FLUX_API_KEY ? `Set (${FLUX_API_KEY.substring(0, 8)}...)` : 'Not set',
-  FLUX_API_URL,
-  NODE_ENV: process.env.NODE_ENV
-});
+// Flux API configured
 
 // Generate image with Flux
 export const generateImage = async (req, res) => {
@@ -49,18 +45,11 @@ export const generateImage = async (req, res) => {
       return res.status(499).json({ error: 'Request cancelled' });
     }
 
-    console.log('Flux generation request:', { 
-      style, 
-      model, 
-      aspectRatio, 
-      hasPrompt: !!prompt, 
-      hasImage: !!input_image, 
-      userId 
-    });
+    // Processing Flux generation request
 
     // Require authentication for image generation
     if (!userId) {
-      console.log('User not authenticated - generation requires login');
+      // User not authenticated - generation requires login
       return res.status(401).json({ 
         error: 'Authentication required',
         message: 'Please sign in to generate images'
@@ -478,7 +467,7 @@ export const generateImageToImage = async (req, res) => {
 
     // Require authentication for image generation
     if (!userId) {
-      console.log('User not authenticated - generation requires login');
+      // User not authenticated - generation requires login
       return res.status(401).json({ 
         error: 'Authentication required',
         message: 'Please sign in to generate images'

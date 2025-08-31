@@ -6,16 +6,11 @@ import { getUserFriendlyAIError, logAIServiceError } from '../utils/aiServiceErr
 
 const prisma = new PrismaClient();
 
-const GPT_IMAGE_API_KEY = process.env.GPT_IMAGE_API_KEY || 'b5cfe077850a194e434914eedd7111d5';
+const GPT_IMAGE_API_KEY = process.env.GPT_IMAGE_API_KEY;
 const GPT_IMAGE_API_URL = process.env.GPT_IMAGE_API_URL || 'https://api.kie.ai/api/v1/gpt4o-image/generate';
-const IMGBB_API_KEY = process.env.IMGBB_API_KEY || 'd5872cba0cfa53b44580045b14466f9c';
+const IMGBB_API_KEY = process.env.IMGBB_API_KEY;
 
-console.log('GPT Image API configuration:', {
-  GPT_IMAGE_API_KEY: GPT_IMAGE_API_KEY ? 'Set' : 'Not set',
-  GPT_IMAGE_API_URL,
-  IMGBB_API_KEY: IMGBB_API_KEY ? 'Set' : 'Not set',
-  NODE_ENV: process.env.NODE_ENV
-});
+// GPT Image API configured
 
 // Generate image with GPT IMAGE 1
 export const generateImage = async (req, res) => {

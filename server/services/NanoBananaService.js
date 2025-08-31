@@ -16,7 +16,7 @@ class NanoBananaService extends BaseAIService {
   constructor() {
     super('NanoBanana');
     
-    this.apiKey = process.env.NANO_BANANA_API_KEY || 'AIzaSyCztVZluFy-BzhJovZFKnT3Rwn7_4FoOcw';
+    this.apiKey = process.env.NANO_BANANA_API_KEY;
     this.imgbbKey = process.env.IMGBB_API_KEY;
     this.modelName = 'gemini-2.5-flash-image-preview';
     

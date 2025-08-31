@@ -3,7 +3,7 @@ import { useAuthStore } from './stores/authStore';
 
 // Layout
 import Layout from './components/Layout';
-import LocalizedRoutes from './components/LocalizedRoutes';
+import LocalizedRoutes from './components/LocalizedRoutesOptimized';
 import { useGlobalAnalytics } from './hooks/useGlobalAnalytics';
 
 function App() {

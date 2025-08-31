@@ -42,6 +42,8 @@ import webhookRoutes, { setupWebSocket } from './routes/webhook.routes.js';
 // Middleware
 import { errorHandler } from './middleware/error.middleware.js';
 import { checkDailyCredits } from './middleware/credit.middleware.js';
+import { globalErrorHandler, notFoundHandler, handleUnhandledRejection, handleUncaughtException } from './middleware/errorHandler.js';
+import { authenticate, optionalAuth } from './middleware/auth.js';
 import CreditCronJob from './jobs/creditCronJob.js';
 import initializeSubscriptionExpiryJobs from './jobs/subscriptionExpiryJob.js';
 import initializeAutoPaymentJobs from './jobs/autoPaymentJob.js';
@@ -220,8 +222,11 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// Error handling middleware
-app.use(errorHandler);
+// 404 handler (must be before error handler)
+app.use(notFoundHandler);
+
+// Error handling middleware (must be last)
+app.use(globalErrorHandler);
 
 // Initialize credit cron jobs
 CreditCronJob.init();
@@ -232,6 +237,10 @@ initializeAutoPaymentJobs();
 
 // Initialize cart tracking jobs
 initializeCartTrackingJobs();
+
+// Handle unhandled rejections and uncaught exceptions
+handleUnhandledRejection();
+handleUncaughtException();
 
 // Start server with increased timeout
 const server = app.listen(PORT, () => {
