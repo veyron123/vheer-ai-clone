@@ -120,7 +120,7 @@ export const generateImageTurbo = asyncHandler(async (req, res) => {
 
     // Prepare KIE API request body
     const requestBody = {
-      model: 'qwen/image-edit',
+      model: 'qwen2vl-flux-ultra',
       input: {
         prompt,
         image_url: imageUrl,
@@ -196,7 +196,7 @@ export const generateImageTurbo = asyncHandler(async (req, res) => {
         model: modelId,
         metadata: {
           provider: 'KIE API',
-          model: 'qwen/image-edit'
+          model: 'qwen2vl-flux-ultra'
         }
       });
     } else {
@@ -298,7 +298,7 @@ export const generateImageUltra = asyncHandler(async (req, res) => {
 
     // Prepare KIE API request body with enhanced settings for Ultra
     const requestBody = {
-      model: 'qwen/image-edit',
+      model: 'qwen2vl-flux-ultra',
       input: {
         prompt,
         image_url: imageUrl,
@@ -380,7 +380,7 @@ export const generateImageUltra = asyncHandler(async (req, res) => {
         model: modelId,
         metadata: {
           provider: 'KIE API',
-          model: 'qwen/image-edit',
+          model: 'qwen2vl-flux-ultra',
           quality: 'ultra'
         }
       });
