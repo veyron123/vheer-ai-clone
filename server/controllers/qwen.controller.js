@@ -211,14 +211,54 @@ export const generateImageTurbo = asyncHandler(async (req, res) => {
       // Try to save the generated image and get Cloudinary URLs
       let savedImageData = null;
       try {
+        console.log('🔄 [QWEN] Attempting to save image to Cloudinary:', {
+          originalUrl: result.url,
+          userId: user.id,
+          userCanSave: user.isPremium || user.isAdmin || false
+        });
+        
         savedImageData = await saveGeneratedImage(
           { url: result.url, width: 1024, height: 1024 },
           user,
           generation
         );
-        console.log('Image saved to user gallery');
+        
+        if (savedImageData) {
+          console.log('✅ [QWEN] Image saved to Cloudinary successfully:', {
+            cloudinaryUrl: savedImageData.url,
+            thumbnailUrl: savedImageData.thumbnailUrl,
+            savedImageId: savedImageData.id
+          });
+        } else {
+          console.log('⚠️ [QWEN] Image not saved to gallery - user not eligible');
+          console.log('🔄 [QWEN] Attempting temporary Cloudinary upload for HTTPS compatibility...');
+          
+          // Even if user can't save to gallery, upload temporarily to Cloudinary for HTTPS
+          try {
+            const { getStorageProvider } = await import('../utils/storageProvider.js');
+            const storageProvider = getStorageProvider();
+            
+            const tempUpload = await storageProvider.uploadImage(result.url, 'temp');
+            const tempThumbnail = await storageProvider.generateThumbnail(tempUpload.url);
+            
+            // Create temporary image data object without saving to database
+            savedImageData = {
+              url: tempUpload.url,
+              thumbnailUrl: tempThumbnail.url,
+              id: 'temp-' + Date.now()
+            };
+            
+            console.log('✅ [QWEN] Temporary Cloudinary upload successful:', {
+              cloudinaryUrl: savedImageData.url,
+              thumbnailUrl: savedImageData.thumbnailUrl
+            });
+          } catch (tempError) {
+            console.error('❌ [QWEN] Temporary upload failed:', tempError.message);
+          }
+        }
       } catch (saveError) {
-        console.log('Image not saved:', saveError.message);
+        console.error('❌ [QWEN] Image save error:', saveError.message);
+        console.error('❌ [QWEN] Save error stack:', saveError.stack);
       }
       
       // Send success response in the format frontend expects
@@ -437,14 +477,54 @@ export const generateImageUltra = asyncHandler(async (req, res) => {
       // Try to save the generated image and get Cloudinary URLs
       let savedImageData = null;
       try {
+        console.log('🔄 [QWEN] Attempting to save image to Cloudinary:', {
+          originalUrl: result.url,
+          userId: user.id,
+          userCanSave: user.isPremium || user.isAdmin || false
+        });
+        
         savedImageData = await saveGeneratedImage(
           { url: result.url, width: 1024, height: 1024 },
           user,
           generation
         );
-        console.log('Image saved to user gallery');
+        
+        if (savedImageData) {
+          console.log('✅ [QWEN] Image saved to Cloudinary successfully:', {
+            cloudinaryUrl: savedImageData.url,
+            thumbnailUrl: savedImageData.thumbnailUrl,
+            savedImageId: savedImageData.id
+          });
+        } else {
+          console.log('⚠️ [QWEN] Image not saved to gallery - user not eligible');
+          console.log('🔄 [QWEN] Attempting temporary Cloudinary upload for HTTPS compatibility...');
+          
+          // Even if user can't save to gallery, upload temporarily to Cloudinary for HTTPS
+          try {
+            const { getStorageProvider } = await import('../utils/storageProvider.js');
+            const storageProvider = getStorageProvider();
+            
+            const tempUpload = await storageProvider.uploadImage(result.url, 'temp');
+            const tempThumbnail = await storageProvider.generateThumbnail(tempUpload.url);
+            
+            // Create temporary image data object without saving to database
+            savedImageData = {
+              url: tempUpload.url,
+              thumbnailUrl: tempThumbnail.url,
+              id: 'temp-' + Date.now()
+            };
+            
+            console.log('✅ [QWEN] Temporary Cloudinary upload successful:', {
+              cloudinaryUrl: savedImageData.url,
+              thumbnailUrl: savedImageData.thumbnailUrl
+            });
+          } catch (tempError) {
+            console.error('❌ [QWEN] Temporary upload failed:', tempError.message);
+          }
+        }
       } catch (saveError) {
-        console.log('Image not saved:', saveError.message);
+        console.error('❌ [QWEN] Image save error:', saveError.message);
+        console.error('❌ [QWEN] Save error stack:', saveError.stack);
       }
       
       // Send success response in the format frontend expects
