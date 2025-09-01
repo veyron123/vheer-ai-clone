@@ -133,12 +133,13 @@ export const generateImageTurbo = asyncHandler(async (req, res) => {
       }
     };
 
-    console.log('Sending request to KIE API:', {
+    console.log('🔍 [QWEN TURBO DEBUG] Full request to KIE API:', {
       url: `${KIE_API_URL}/createTask`,
-      model: requestBody.model,
-      prompt: requestBody.input.prompt,
-      imageUrl: requestBody.input.image_url,
-      fullRequestBody: JSON.stringify(requestBody, null, 2)
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${KIE_API_KEY.substring(0, 10)}...`
+      },
+      body: JSON.stringify(requestBody, null, 2)
     });
 
     // Create task with KIE API
@@ -338,8 +339,21 @@ export const generateImageUltra = asyncHandler(async (req, res) => {
       body: JSON.stringify(requestBody)
     });
 
+    const responseText = await createTaskResponse.text();
+    console.log('🔍 [QWEN DEBUG] Raw KIE API Response:', {
+      status: createTaskResponse.status,
+      statusText: createTaskResponse.statusText,
+      responseText: responseText
+    });
+    
     if (!createTaskResponse.ok) {
-      const errorData = await createTaskResponse.json().catch(() => ({}));
+      let errorData = {};
+      try {
+        errorData = JSON.parse(responseText);
+      } catch (e) {
+        errorData = { rawResponse: responseText };
+      }
+      
       console.log('🚨 KIE API Error Response (Ultra):', {
         status: createTaskResponse.status,
         statusText: createTaskResponse.statusText,
@@ -347,7 +361,7 @@ export const generateImageUltra = asyncHandler(async (req, res) => {
         url: `${KIE_API_URL}/createTask`,
         requestBody: JSON.stringify(requestBody, null, 2)
       });
-      throw new Error(errorData.message || `HTTP error! status: ${createTaskResponse.status}`);
+      throw new Error(errorData.message || errorData.msg || `HTTP error! status: ${createTaskResponse.status}`);
     }
 
     const taskResult = await createTaskResponse.json();
