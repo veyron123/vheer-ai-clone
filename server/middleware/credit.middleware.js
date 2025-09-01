@@ -34,12 +34,12 @@ export const requireCredits = (requiredAmount) => {
 
       const userCredits = await CreditService.getUserCredits(req.user.id);
       
-      if (userCredits.currentCredits < requiredAmount) {
+      if (userCredits.totalCredits < requiredAmount) {
         return res.status(402).json({ 
           error: 'Insufficient credits',
           required: requiredAmount,
-          current: userCredits.currentCredits,
-          message: `You need ${requiredAmount} credits but only have ${userCredits.currentCredits}`
+          current: userCredits.totalCredits,
+          message: `You need ${requiredAmount} credits but only have ${userCredits.totalCredits}`
         });
       }
 
