@@ -120,7 +120,7 @@ export const generateImageTurbo = asyncHandler(async (req, res) => {
 
     // Prepare KIE API request body
     const requestBody = {
-      model: 'qwen2vl-flux-ultra',
+      model: 'qwen/image-edit',
       input: {
         prompt,
         image_url: imageUrl,
@@ -137,7 +137,8 @@ export const generateImageTurbo = asyncHandler(async (req, res) => {
       url: `${KIE_API_URL}/createTask`,
       model: requestBody.model,
       prompt: requestBody.input.prompt,
-      imageUrl: requestBody.input.image_url
+      imageUrl: requestBody.input.image_url,
+      fullRequestBody: JSON.stringify(requestBody, null, 2)
     });
 
     // Create task with KIE API
@@ -152,6 +153,13 @@ export const generateImageTurbo = asyncHandler(async (req, res) => {
 
     if (!createTaskResponse.ok) {
       const errorData = await createTaskResponse.json().catch(() => ({}));
+      console.log('🚨 KIE API Error Response (Turbo):', {
+        status: createTaskResponse.status,
+        statusText: createTaskResponse.statusText,
+        errorData: JSON.stringify(errorData, null, 2),
+        url: `${KIE_API_URL}/createTask`,
+        requestBody: JSON.stringify(requestBody, null, 2)
+      });
       throw new Error(errorData.message || `HTTP error! status: ${createTaskResponse.status}`);
     }
 
@@ -196,7 +204,7 @@ export const generateImageTurbo = asyncHandler(async (req, res) => {
         model: modelId,
         metadata: {
           provider: 'KIE API',
-          model: 'qwen2vl-flux-ultra'
+          model: 'qwen/image-edit'
         }
       });
     } else {
@@ -298,7 +306,7 @@ export const generateImageUltra = asyncHandler(async (req, res) => {
 
     // Prepare KIE API request body with enhanced settings for Ultra
     const requestBody = {
-      model: 'qwen2vl-flux-ultra',
+      model: 'qwen/image-edit',
       input: {
         prompt,
         image_url: imageUrl,
@@ -317,11 +325,7 @@ export const generateImageUltra = asyncHandler(async (req, res) => {
       model: requestBody.model,
       prompt: requestBody.input.prompt,
       imageUrl: requestBody.input.image_url,
-      settings: {
-        num_inference_steps,
-        guidance_scale,
-        acceleration: 'regular'
-      }
+      fullRequestBody: JSON.stringify(requestBody, null, 2)
     });
 
     // Create task with KIE API
@@ -336,6 +340,13 @@ export const generateImageUltra = asyncHandler(async (req, res) => {
 
     if (!createTaskResponse.ok) {
       const errorData = await createTaskResponse.json().catch(() => ({}));
+      console.log('🚨 KIE API Error Response (Ultra):', {
+        status: createTaskResponse.status,
+        statusText: createTaskResponse.statusText,
+        errorData: JSON.stringify(errorData, null, 2),
+        url: `${KIE_API_URL}/createTask`,
+        requestBody: JSON.stringify(requestBody, null, 2)
+      });
       throw new Error(errorData.message || `HTTP error! status: ${createTaskResponse.status}`);
     }
 
@@ -380,7 +391,7 @@ export const generateImageUltra = asyncHandler(async (req, res) => {
         model: modelId,
         metadata: {
           provider: 'KIE API',
-          model: 'qwen2vl-flux-ultra',
+          model: 'qwen/image-edit',
           quality: 'ultra'
         }
       });
