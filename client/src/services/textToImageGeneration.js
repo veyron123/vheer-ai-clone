@@ -96,7 +96,22 @@ export async function generateWithQwenTextToImage(prompt, negativePrompt = '', s
     
     const result = await response.json();
     
-    if (result.success && result.images && result.images.length > 0) {
+    // Handle both new format (single image) and old format (images array)
+    if (result.success && result.image) {
+      console.log('🎯 [QWEN TEXT-TO-IMAGE] Processing successful result:', {
+        hasImage: !!result.image,
+        imageUrl: result.image.substring(0, 80) + '...'
+      });
+      return {
+        images: [{
+          url: result.image,
+          thumbnailUrl: result.thumbnailUrl || result.image,
+          width: 1024,
+          height: 1024,
+          content_type: 'image/png'
+        }]
+      };
+    } else if (result.success && result.images && result.images.length > 0) {
       return {
         images: result.images.map(img => ({
           url: img.url,

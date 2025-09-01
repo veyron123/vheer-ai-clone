@@ -596,8 +596,15 @@ export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = '
       
       // Handle both old format (images array) and new format (single image)
       if (result.success && result.image) {
+        console.log('🎯 [QWEN CLIENT] Processing successful result:', {
+          hasImage: !!result.image,
+          imageUrl: result.image.substring(0, 80) + '...'
+        });
         return {
-          images: [result.image]
+          images: [{
+            url: result.image,
+            thumbnailUrl: result.thumbnailUrl || result.image
+          }]
         };
       } else if (result.success && result.images && result.images.length > 0) {
         return {

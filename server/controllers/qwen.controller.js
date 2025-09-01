@@ -222,7 +222,7 @@ export const generateImageTurbo = asyncHandler(async (req, res) => {
       }
       
       // Send success response in the format frontend expects
-      return res.status(200).json({
+      const responseData = {
         success: true,
         image: savedImageData?.url || result.url,
         thumbnailUrl: savedImageData?.thumbnailUrl || result.url,
@@ -235,7 +235,18 @@ export const generateImageTurbo = asyncHandler(async (req, res) => {
           provider: 'KIE API',
           model: 'qwen/image-edit'
         }
+      };
+      
+      console.log('📤 [QWEN] Sending success response to client:', {
+        success: responseData.success,
+        hasImage: !!responseData.image,
+        hasThumb: !!responseData.thumbnailUrl,
+        imageUrl: responseData.image?.substring(0, 80) + '...',
+        creditsUsed: responseData.credits.used,
+        creditsRemaining: responseData.credits.remaining
       });
+      
+      return res.status(200).json(responseData);
     } else {
       throw new Error('Failed to generate image');
     }
