@@ -118,13 +118,29 @@ export const generateImageTurbo = asyncHandler(async (req, res) => {
     // Process image URL
     const imageUrl = await processImageUrl(input_image);
 
-    // Prepare KIE API request body
+    // Map aspectRatio to KIE API image_size format
+    const getImageSize = (aspectRatio) => {
+      const mapping = {
+        '1:1': 'square',
+        'square': 'square',
+        '3:4': 'portrait_4_3',
+        'portrait': 'portrait_4_3', 
+        '9:16': 'portrait_16_9',
+        '4:3': 'landscape_4_3',
+        'landscape': 'landscape_4_3',
+        'landscape_4_3': 'landscape_4_3',
+        '16:9': 'landscape_16_9'
+      };
+      return mapping[aspectRatio] || 'landscape_4_3'; // default
+    };
+
+    // Prepare KIE API request body with proper image_size
     const requestBody = {
       model: 'qwen/image-edit',
       input: {
         prompt,
         image_url: imageUrl,
-        image_size: aspectRatio,
+        image_size: getImageSize(aspectRatio),
         num_inference_steps,
         guidance_scale,
         enable_safety_checker: true,
@@ -305,13 +321,29 @@ export const generateImageUltra = asyncHandler(async (req, res) => {
     const imageUrl = await processImageUrl(input_image);
     console.log('🎯 [QWEN ULTRA] Image URL processed:', imageUrl ? 'SUCCESS' : 'FAILED');
 
-    // Prepare KIE API request body with enhanced settings for Ultra
+    // Map aspectRatio to KIE API image_size format
+    const getImageSize = (aspectRatio) => {
+      const mapping = {
+        '1:1': 'square',
+        'square': 'square',
+        '3:4': 'portrait_4_3',
+        'portrait': 'portrait_4_3', 
+        '9:16': 'portrait_16_9',
+        '4:3': 'landscape_4_3',
+        'landscape': 'landscape_4_3',
+        'landscape_4_3': 'landscape_4_3',
+        '16:9': 'landscape_16_9'
+      };
+      return mapping[aspectRatio] || 'landscape_4_3'; // default
+    };
+
+    // Prepare KIE API request body with enhanced settings for Ultra and proper image_size
     const requestBody = {
       model: 'qwen/image-edit',
       input: {
         prompt,
         image_url: imageUrl,
-        image_size: aspectRatio,
+        image_size: getImageSize(aspectRatio),
         num_inference_steps, // Higher for better quality
         guidance_scale, // Higher for better prompt adherence
         enable_safety_checker: true,
