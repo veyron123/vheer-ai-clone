@@ -612,31 +612,18 @@ export const generateImageUltra = asyncHandler(async (req, res) => {
 
 /**
  * Helper function to process image URL for KIE API
- * KIE API requires a public URL from supported image hosts (not Cloudinary)
  */
 async function processImageUrl(input_image) {
-  // If it's already a URL, return it
+  // If it's already a URL, return it as is
   if (input_image.startsWith('http')) {
     return input_image;
   }
 
-  // If it's base64, upload it to a KIE.ai compatible service
-  if (input_image.startsWith('data:') || !input_image.startsWith('http')) {
-    try {
-      // KIE.ai doesn't support Cloudinary URLs - use fallback approach
-      console.log('Base64 image detected, using fallback for KIE.ai compatibility');
-      
-      // KIE.ai has issues with Cloudinary URLs, use a known working placeholder for now
-      // In production, this should be replaced with proper image hosting compatible with KIE.ai
-      console.log('Using fallback image URL for KIE API compatibility');
-      return 'https://file.aiquickdraw.com/custom-page/akr/section-images/1755603225969i6j87xnw.jpg';
-    } catch (uploadError) {
-      console.error('Image processing error:', uploadError.message);
-      
-      // Fallback to known working image
-      console.log('Using fallback placeholder image for KIE API compatibility');
-      return 'https://file.aiquickdraw.com/custom-page/akr/section-images/1755603225969i6j87xnw.jpg';
-    }
+  // For base64 images, we need to convert them to a public URL
+  if (input_image.startsWith('data:')) {
+    // TODO: Implement proper base64 to URL conversion
+    // For now, return the base64 as KIE API should handle it
+    return input_image;
   }
 
   return input_image;

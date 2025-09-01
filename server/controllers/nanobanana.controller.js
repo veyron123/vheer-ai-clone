@@ -114,18 +114,15 @@ export const generateImage = asyncHandler(async (req, res) => {
       aspectRatio
     });
 
-    // Handle base64 image - KIE.ai doesn't support Cloudinary URLs
+    // Process input image
     let imageUrl = input_image;
     
-    // If it's a base64 image, use fallback approach for KIE.ai compatibility  
-    if (input_image.startsWith('data:') || !input_image.startsWith('http')) {
-      console.log('Base64 image detected, using fallback for KIE.ai compatibility');
-      
-      // KIE.ai has issues with Cloudinary URLs, use a known working placeholder for now
-      // In production, this should be replaced with proper image hosting compatible with KIE.ai
-      imageUrl = 'https://file.aiquickdraw.com/custom-page/akr/section-images/1755603225969i6j87xnw.jpg';
-      
-      console.log('Using fallback image URL for KIE API compatibility:', imageUrl);
+    // For base64 images, we might need to convert them to a public URL
+    if (input_image.startsWith('data:')) {
+      console.log('Base64 image detected');
+      // TODO: Implement proper base64 to URL conversion if needed
+      // For now, pass base64 directly as KIE API should handle it
+      imageUrl = input_image;
     }
 
     // Create task with KIE API
