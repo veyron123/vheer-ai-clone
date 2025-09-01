@@ -10,6 +10,8 @@ import AspectRatioSelector from '../components/anime/AspectRatioSelector';
 import GenerateButton from '../components/anime/GenerateButton';
 import ExampleGallery from '../components/anime/ExampleGallery';
 import MockupSection from '../components/common/MockupSection';
+import ReviewsSection from '../components/common/ReviewsSection';
+import TextReviewsSection from '../components/common/TextReviewsSection';
 import SEO from '../components/SEO';
 import CreditDisplay from '../components/CreditDisplay';
 
@@ -156,6 +158,19 @@ const StyleTransferPage = () => {
       </div>
 
     </div>
+
+    {/* Reviews Section */}
+    <div className="bg-gray-50 py-12">
+      <div className="container mx-auto px-4">
+        <ReviewsSection />
+      </div>
+    </div>
+    
+    {/* Detailed Text Reviews */}
+    <div className="container mx-auto px-4 pb-12">
+      <TextReviewsSection />
+    </div>
+
     </>
   );
 };

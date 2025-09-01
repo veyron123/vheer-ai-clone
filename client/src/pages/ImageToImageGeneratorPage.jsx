@@ -166,13 +166,17 @@ const ImageToImageGeneratorPage = () => {
 
       </div>
 
-      {/* Блок отзывов карусель - скрыт */}
-      {/* <ReviewsSection /> */}
+      {/* Reviews Section */}
+      <div className="bg-gray-50 py-12">
+        <div className="container mx-auto px-4">
+          <ReviewsSection />
+        </div>
+      </div>
       
-      {/* Блок текстовых отзывов - скрыт */}
-      {/* <div className="container mx-auto px-4 pb-8">
+      {/* Detailed Text Reviews */}
+      <div className="container mx-auto px-4 pb-12">
         <TextReviewsSection />
-      </div> */}
+      </div>
       
     </>
   );
