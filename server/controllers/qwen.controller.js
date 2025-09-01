@@ -17,6 +17,51 @@ console.log('🔑 KIE API configured for Qwen:', {
 });
 
 /**
+ * Upload base64 image to IMGBB for public URL access
+ * KIE API requires public HTTP URLs, not base64 data
+ */
+async function uploadBase64ToImgbb(base64Data) {
+  const IMGBB_API_KEY = process.env.IMGBB_API_KEY;
+  
+  if (!IMGBB_API_KEY) {
+    throw new Error('IMGBB_API_KEY not configured - cannot convert base64 to public URL');
+  }
+
+  try {
+    console.log('📤 [IMGBB] Converting base64 to public URL...');
+    
+    // Extract base64 content (remove data:image/...;base64, prefix)
+    const base64Content = base64Data.replace(/^data:image\/[a-z]+;base64,/, '');
+    
+    // Upload to IMGBB
+    const formData = new URLSearchParams();
+    formData.append('key', IMGBB_API_KEY);
+    formData.append('image', base64Content);
+    
+    const response = await axios.post('https://api.imgbb.com/1/upload', formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      timeout: 30000
+    });
+    
+    if (response.data?.success && response.data?.data?.url) {
+      const publicUrl = response.data.data.url;
+      console.log('✅ [IMGBB] Base64 uploaded successfully:', publicUrl);
+      return publicUrl;
+    } else {
+      throw new Error('IMGBB upload failed - no URL in response');
+    }
+  } catch (error) {
+    console.error('❌ [IMGBB] Upload error:', error.message);
+    if (error.response?.data) {
+      console.error('❌ [IMGBB] Error details:', error.response.data);
+    }
+    throw error;
+  }
+}
+
+/**
  * Upload image URL to IMGBB for HTTPS compatibility
  */
 async function uploadToImgbb(imageUrl) {
@@ -633,10 +678,18 @@ async function processImageUrl(input_image) {
 
   // For base64 images, we need to convert them to a public URL
   if (input_image.startsWith('data:')) {
-    console.log('📷 [QWEN DEBUG] Received base64 image data');
-    // TODO: Implement proper base64 to URL conversion
-    // For now, return the base64 as KIE API should handle it
-    return input_image;
+    console.log('📷 [QWEN DEBUG] Received base64 image data - converting to public URL');
+    
+    // KIE API requires public HTTP URLs, not base64 data
+    // Convert base64 to IMGBB hosted URL for public access
+    try {
+      const imgbbUrl = await uploadBase64ToImgbb(input_image);
+      console.log('✅ [QWEN DEBUG] Base64 converted to public URL:', imgbbUrl);
+      return imgbbUrl;
+    } catch (error) {
+      console.error('❌ [QWEN DEBUG] Failed to convert base64 to URL:', error.message);
+      throw new Error(`Failed to process image: ${error.message}`);
+    }
   }
 
   console.log('❓ [QWEN DEBUG] Unknown image format, returning as-is:', input_image);
