@@ -101,6 +101,7 @@ export const isAdmin = async (req, res, next) => {
     const adminEmails = [
       'admin@colibrrri.com',
       'denisbelikin31@gmail.com', // Add your admin email here
+      'unitradacergo@gmail.com',  // Admin user for dashboard access
       process.env.ADMIN_EMAIL
     ].filter(Boolean);
     

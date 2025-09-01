@@ -4,33 +4,29 @@ import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Apply optional authentication (allows both authenticated and unauthenticated requests)
-const optionalAuth = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    authenticate(req, res, (error) => {
-      if (error) {
-        console.log('Auth failed, continuing without user:', error.message);
-        req.user = null;
-      }
-      next();
-    });
-  } else {
-    req.user = null;
-    next();
-  }
+// Debug middleware to track requests
+const debugQwenRequest = (req, res, next) => {
+  console.log('🚨 [QWEN ROUTES] Incoming request:', {
+    method: req.method,
+    url: req.url,
+    path: req.path,
+    hasAuth: !!req.headers.authorization,
+    bodySize: req.body ? JSON.stringify(req.body).length : 0
+  });
+  next();
 };
 
+// Use same authentication as Nano-Banana (required authentication)
 // Generate image (text-to-image) - uses Turbo model by default
-router.post('/generate', optionalAuth, generateImageTurbo);
+router.post('/generate', debugQwenRequest, authenticate, generateImageTurbo);
 
 // Edit image (image-to-image) - uses Ultra model
-router.post('/edit', optionalAuth, generateImageUltra);
+router.post('/edit', debugQwenRequest, authenticate, generateImageUltra);
 
 // Generate image with Turbo model (explicit)
-router.post('/generate-turbo', optionalAuth, generateImageTurbo);
+router.post('/generate-turbo', debugQwenRequest, authenticate, generateImageTurbo);
 
 // Generate image with Ultra model (explicit)  
-router.post('/generate-ultra', optionalAuth, generateImageUltra);
+router.post('/generate-ultra', debugQwenRequest, authenticate, generateImageUltra);
 
 export default router;

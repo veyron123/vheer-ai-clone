@@ -135,7 +135,10 @@ class StorageProvider {
   }
 
   async uploadCloudinary(buffer, filename, type = 'generated') {
+    console.log('☁️ Cloudinary upload called:', { filename, type, bufferSize: buffer?.length || 'N/A' });
+    
     if (!this.cloudinary) {
+      console.log('🔧 Initializing Cloudinary client...');
       const cloudinary = await import('cloudinary');
       this.cloudinary = cloudinary.v2;
       
@@ -144,12 +147,15 @@ class StorageProvider {
         api_key: this.apiKey,
         api_secret: this.apiSecret
       });
+      console.log('✅ Cloudinary client configured');
     }
 
     const folder = `vheer-ai/${type}`;
     const publicId = filename.replace(/\.[^/.]+$/, ''); // Remove extension
+    console.log('📁 Upload target:', { folder, publicId });
     
     return new Promise((resolve, reject) => {
+      console.log('🚀 Starting Cloudinary upload stream...');
       this.cloudinary.uploader.upload_stream(
         {
           folder,
@@ -160,8 +166,14 @@ class StorageProvider {
         },
         (error, result) => {
           if (error) {
+            console.error('❌ Cloudinary upload failed:', error);
             reject(error);
           } else {
+            console.log('✅ Cloudinary upload successful:', {
+              url: result.secure_url,
+              public_id: result.public_id,
+              size: result.bytes
+            });
             resolve({
               url: result.secure_url,
               path: result.public_id,
@@ -227,16 +239,25 @@ class StorageProvider {
    * UNIVERSAL METHODS
    */
   async uploadImage(source, type = 'generated') {
+    console.log('📸 StorageProvider.uploadImage called with:', { 
+      sourceType: typeof source, 
+      isUrl: typeof source === 'string' && source.startsWith('http'),
+      type,
+      provider: this.provider 
+    });
+    
     const filename = `${uuidv4()}.png`;
     let buffer;
 
     // Convert source to buffer
     if (typeof source === 'string') {
       if (source.startsWith('data:')) {
+        console.log('🔢 Processing base64 data...');
         // Base64 data with prefix
         const base64Data = source.replace(/^data:image\/[a-z]+;base64,/, '');
         buffer = Buffer.from(base64Data, 'base64');
       } else if (source.startsWith('http')) {
+        console.log('🌐 Downloading image from URL:', source);
         // URL - download first
         const response = await axios({
           method: 'GET',

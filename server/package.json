@@ -21,10 +21,12 @@
   "dependencies": {
     "@fal-ai/client": "^1.6.2",
     "@google/genai": "^1.15.0",
+    "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^5.22.0",
     "@quixo3/prisma-session-store": "^3.1.13",
     "axios": "^1.11.0",
     "bcryptjs": "^2.4.3",
+    "canvas": "^3.2.0",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",

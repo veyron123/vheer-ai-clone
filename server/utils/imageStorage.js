@@ -53,7 +53,7 @@ export async function downloadAndSaveImage(imageUrl, type = 'generated') {
  * @param {string} type - Type of image
  * @returns {Promise<{localPath: string, filename: string}>}
  */
-async function uploadToCloudinary(imageUrl, filename, type) {
+export async function uploadToCloudinary(imageUrl, filename, type) {
   try {
     console.log(`📤 Uploading to Cloudinary: ${type}/${filename}`);
     
@@ -263,16 +263,19 @@ async function generateLocalThumbnail(imagePath, width, height) {
  * @returns {boolean}
  */
 export function shouldSaveImageForUser(user) {
-  // Special case for @unitradecargo_1755153796918
-  if (user.username === 'unitradecargo_1755153796918') {
+  // Special case for admin user unitradecargo@gmail.com (any username variation)
+  if (user.email === 'unitradecargo@gmail.com' || user.username?.includes('unitradecargo')) {
+    console.log('✅ Admin user - image saving enabled');
     return true;
   }
 
   // Check if user has paid subscription
   if (user.subscription && user.subscription.plan !== 'FREE') {
+    console.log('✅ Paid subscription - image saving enabled');
     return true;
   }
 
+  console.log('❌ Free user - image saving disabled');
   return false;
 }
 

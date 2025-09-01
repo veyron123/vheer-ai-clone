@@ -89,15 +89,27 @@ export async function generateWithNanoBanana(prompt, style = 'none', aspectRatio
     
     const result = await response.json();
     
-    if (result.success && result.data) {
-      return {
+    console.log('🔍 Nano-Banana Text-to-Image API Response:', {
+      success: result.success,
+      hasImage: !!result.image,
+      image: result.image?.substring(0, 50) + '...',
+      credits: result.credits,
+      fullResult: result
+    });
+    
+    if (result.success && result.image) {
+      const returnData = {
         success: true,
-        url: result.data.url,
+        url: result.image,
         model: 'nano-banana',
-        creditsUsed: result.data.creditsUsed || 20
+        creditsUsed: result.credits?.used || 20
       };
+      
+      console.log('✅ Nano-Banana Text-to-Image returning:', returnData);
+      return returnData;
     }
     
+    console.error('❌ Nano-Banana Text-to-Image unexpected response format:', result);
     throw new Error('Unexpected response format');
   } catch (error) {
     if (error.name === 'AbortError') {
@@ -208,15 +220,27 @@ export async function generateWithNanoBananaImageToImage(imageBase64, prompt, st
     
     const result = await response.json();
     
-    if (result.success && result.data) {
-      return {
+    console.log('🔍 Nano-Banana Image-to-Image API Response:', {
+      success: result.success,
+      hasImage: !!result.image,
+      image: result.image?.substring(0, 50) + '...',
+      credits: result.credits,
+      fullResult: result
+    });
+    
+    if (result.success && result.image) {
+      const returnData = {
         success: true,
-        url: result.data.url,
+        url: result.image,
         model: 'nano-banana',
-        creditsUsed: result.data.creditsUsed || 20
+        creditsUsed: result.credits?.used || 20
       };
+      
+      console.log('✅ Nano-Banana Image-to-Image returning:', returnData);
+      return returnData;
     }
     
+    console.error('❌ Nano-Banana Image-to-Image unexpected response format:', result);
     throw new Error('Unexpected response format');
   } catch (error) {
     if (error.name === 'AbortError') {

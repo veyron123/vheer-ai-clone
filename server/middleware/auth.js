@@ -8,9 +8,11 @@ const prisma = new PrismaClient();
  * Verifies JWT token and attaches user to request
  */
 export const authenticate = async (req, res, next) => {
+  console.log('🔐 [AUTH MIDDLEWARE] Starting authentication check...');
   try {
     // Extract token from Authorization header
     const authHeader = req.headers.authorization;
+    console.log('🔐 [AUTH MIDDLEWARE] Auth header:', authHeader ? 'EXISTS' : 'MISSING');
     
     if (!authHeader) {
       return res.status(401).json({
@@ -188,8 +190,8 @@ export const optionalAuth = async (req, res, next) => {
 export const adminAuth = async (req, res, next) => {
   // First run regular authentication
   await authenticate(req, res, () => {
-    // Check if user has admin privileges
-    if (!req.user || req.user.role !== 'ADMIN') {
+    // Check if user is admin by email
+    if (!req.user || req.user.email !== 'unitradecargo@gmail.com') {
       return res.status(403).json({
         success: false,
         error: 'Access denied',

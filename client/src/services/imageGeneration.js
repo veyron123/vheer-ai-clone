@@ -531,42 +531,21 @@ export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = '
       // Get auth token from store
       const token = useAuthStore.getState().token;
       
-      // Upload image to FAL storage first
-      let uploadedImageUrl;
+      // For KIE.ai API, send the image data directly to backend
+      // Backend will handle uploading to Cloudinary and converting to public URL
+      let inputImage;
       
       if (imageUrl.startsWith('http')) {
         // If it's already a URL, use it directly
-        uploadedImageUrl = imageUrl;
+        inputImage = imageUrl;
       } else {
-        // If it's base64, convert to blob and upload to FAL storage
+        // Send base64 data directly to backend - it will handle conversion
         let base64Data = imageUrl;
         if (!imageUrl.startsWith('data:')) {
           base64Data = await urlToBase64(imageUrl);
         }
-        
-        // Convert base64 to blob without using fetch
-        // Extract the base64 content and mime type
-        const [header, base64Content] = base64Data.split(',');
-        const mimeMatch = header.match(/:(.*?);/);
-        const mimeType = mimeMatch ? mimeMatch[1] : 'image/png';
-        
-        // Decode base64 to binary
-        const binaryString = atob(base64Content);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-        
-        // Create blob from binary data
-        const blob = new Blob([bytes], { type: mimeType });
-        
-        // Create a File object from blob
-        const file = new File([blob], 'image.png', { type: mimeType });
-        
-        // Upload to FAL storage
-        console.log('Uploading image to FAL storage...');
-        uploadedImageUrl = await fal.storage.upload(file);
-        console.log('Image uploaded to FAL:', uploadedImageUrl);
+        inputImage = base64Data;
+        console.log('Sending base64 image to backend for KIE.ai processing...');
       }
       
       // Construct the prompt for Qwen Image
@@ -587,18 +566,18 @@ export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = '
         headers['Authorization'] = `Bearer ${token}`;
       }
       
-      // Use our backend proxy for Qwen Image API with the uploaded URL
+      // Use our backend proxy for Qwen Image API with KIE.ai
       const response = await fetch(getApiUrl('/qwen/edit'), {
         method: 'POST',
         headers,
+        signal: abortSignal,
         body: JSON.stringify({
           prompt: prompt,
-          input_image: uploadedImageUrl,
+          input_image: inputImage,
           style: style,
           aspectRatio: aspectRatio,
           negativePrompt: 'blurry, ugly, low quality'
-        }),
-        signal: abortSignal
+        })
       });
       
       if (!response.ok) {
@@ -615,7 +594,12 @@ export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = '
       
       const result = await response.json();
       
-      if (result.success && result.images && result.images.length > 0) {
+      // Handle both old format (images array) and new format (single image)
+      if (result.success && result.image) {
+        return {
+          images: [result.image]
+        };
+      } else if (result.success && result.images && result.images.length > 0) {
         return {
           images: result.images
         };

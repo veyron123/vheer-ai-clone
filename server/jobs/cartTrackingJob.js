@@ -10,11 +10,8 @@ const prisma = new PrismaClient();
  */
 const markAbandonedCarts = async () => {
   try {
-    // Получаем настройку задержки для отправки email
-    const delaySetting = await prisma.appSetting.findUnique({
-      where: { key: 'abandoned_cart_delay_hours' }
-    });
-    const delayHours = parseInt(delaySetting?.value) || 2;
+    // Используем фиксированную задержку 2 часа (можно вынести в env)
+    const delayHours = 2;
     const delayTime = new Date(Date.now() - delayHours * 60 * 60 * 1000);
     
     // Находим корзины для пометки как брошенные
@@ -47,11 +44,10 @@ const markAbandonedCarts = async () => {
     
     // Отправляем email уведомления
     let emailsSent = 0;
-    const emailEnabled = await prisma.appSetting.findUnique({
-      where: { key: 'email_notifications_enabled' }
-    });
+    // Временно отключаем email уведомления, так как нет таблицы настроек
+    const emailEnabled = false;
     
-    if (emailEnabled?.value === 'true') {
+    if (emailEnabled) {
       for (const cart of cartsToMark) {
         if (cart.customerEmail && !cart.emailSent) {
           try {

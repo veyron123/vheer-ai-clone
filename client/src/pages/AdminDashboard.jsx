@@ -16,7 +16,21 @@ import AdminOrders from '../components/AdminOrders';
 import AdminCarts from '../components/AdminCarts';
 
 const AdminDashboard = () => {
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
+  
+  // Check if user is admin
+  if (!user || user.email !== 'unitradecargo@gmail.com') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 text-center">
+          <Shield className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-white mb-2">Access Denied</h1>
+          <p className="text-gray-300">You don't have permission to access the admin panel.</p>
+        </div>
+      </div>
+    );
+  }
+  
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);

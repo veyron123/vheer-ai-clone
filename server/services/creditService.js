@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/prisma.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { getModelCredits } from '../config/pricing.config.js';
-
-const prisma = new PrismaClient();
 
 /**
  * Check if user has enough credits for the operation
@@ -159,6 +157,53 @@ export async function refundCredits(userId, credits, reason = 'Generation failed
 }
 
 /**
+ * Get user's credit information
+ * @param {string} userId - User ID
+ * @returns {Promise<Object>} User credit information
+ */
+export async function getUserCredits(userId) {
+  const startTime = Date.now();
+  console.log(`[getUserCredits] Fetching credits for user: ${userId}`);
+  
+  try {
+    // Добавляем таймаут для запроса к БД (5 секунд)
+    const user = await Promise.race([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { 
+          id: true,
+          totalCredits: true,
+          email: true,
+          username: true,
+          subscription: true
+        }
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Database query timeout after 5s')), 5000)
+      )
+    ]);
+    
+    const queryTime = Date.now() - startTime;
+    console.log(`[getUserCredits] Query completed in ${queryTime}ms`);
+    
+    if (!user) {
+      throw new AppError('User not found', 404);
+    }
+    
+    // Если запрос занял больше 1 секунды, логируем предупреждение
+    if (queryTime > 1000) {
+      console.warn(`[getUserCredits] Slow query detected: ${queryTime}ms for user ${userId}`);
+    }
+    
+    return user;
+  } catch (error) {
+    const queryTime = Date.now() - startTime;
+    console.error(`[getUserCredits] Error after ${queryTime}ms:`, error.message);
+    throw error;
+  }
+}
+
+/**
  * Get user's credit balance
  * @param {string} userId - User ID
  * @returns {Promise<number>} Credit balance
@@ -174,6 +219,113 @@ export async function getCreditBalance(userId) {
   }
 
   return user.totalCredits;
+}
+
+/**
+ * Check and add daily credits to user if needed
+ * @param {string} userId - User ID
+ * @returns {Promise<Object>} Result with credits added
+ */
+export async function checkAndAddDailyCredits(userId) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { 
+      id: true,
+      totalCredits: true,
+      lastCreditUpdate: true,
+      subscription: true
+    }
+  });
+
+  if (!user) {
+    throw new AppError('User not found', 404);
+  }
+
+  // Check if 24 hours have passed since last credit update
+  const now = new Date();
+  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+  if (user.lastCreditUpdate < oneDayAgo) {
+    // Add daily credits based on subscription plan
+    const dailyCredits = user.subscription?.plan === 'PREMIUM' ? 500 : 100;
+    
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        totalCredits: {
+          increment: dailyCredits
+        },
+        lastCreditUpdate: now
+      }
+    });
+
+    // Log the credit addition
+    await prisma.credit.create({
+      data: {
+        userId,
+        amount: dailyCredits,
+        type: 'DAILY',
+        description: 'Daily credit bonus'
+      }
+    });
+
+    console.log(`💰 Added ${dailyCredits} daily credits to user ${userId}`);
+    return { creditsAdded: dailyCredits, newTotal: updatedUser.totalCredits };
+  }
+
+  return { creditsAdded: 0, newTotal: user.totalCredits };
+}
+
+/**
+ * Add daily credits to all users (for cron job)
+ * @returns {Promise<Object>} Result with stats
+ */
+export async function addDailyCreditsToAllUsers() {
+  const users = await prisma.user.findMany({
+    select: { 
+      id: true,
+      totalCredits: true,
+      lastCreditUpdate: true,
+      subscription: true
+    }
+  });
+
+  const now = new Date();
+  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  
+  let usersUpdated = 0;
+  let totalCreditsAdded = 0;
+
+  for (const user of users) {
+    if (user.lastCreditUpdate < oneDayAgo) {
+      const dailyCredits = user.subscription?.plan === 'PREMIUM' ? 500 : 100;
+      
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          totalCredits: {
+            increment: dailyCredits
+          },
+          lastCreditUpdate: now
+        }
+      });
+
+      await prisma.credit.create({
+        data: {
+          userId: user.id,
+          amount: dailyCredits,
+          type: 'DAILY',
+          description: 'Daily credit bonus (cron)'
+        }
+      });
+
+      usersUpdated++;
+      totalCreditsAdded += dailyCredits;
+    }
+  }
+
+  console.log(`💰 Daily credits added: ${usersUpdated} users, ${totalCreditsAdded} total credits`);
+  return { usersUpdated, totalCreditsAdded };
 }
 
 /**

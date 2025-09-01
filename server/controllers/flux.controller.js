@@ -6,6 +6,7 @@ import { saveGeneratedImage } from './images.controller.js';
 import { logAIServiceError, getUserFriendlyAIError } from '../utils/aiServiceErrors.js';
 
 const FLUX_API_KEY = process.env.FLUX_API_KEY;
+console.log('🔑 FLUX_API_KEY loaded:', FLUX_API_KEY ? 'YES (length: ' + FLUX_API_KEY.length + ')' : 'NO - MISSING!');
 
 // Current bfl.ai endpoints (ACTIVE)
 const FLUX_KONTEXT_API_URL = 'https://api.bfl.ai/v1/flux-kontext-pro';
@@ -91,9 +92,10 @@ export const generateImage = asyncHandler(async (req, res) => {
       // Update generation status
       await completeGeneration(generation.id);
       
-      // Try to save the generated image
+      // Try to save the generated image and get Cloudinary URLs
+      let savedImageData = null;
       try {
-        await saveGeneratedImage(
+        savedImageData = await saveGeneratedImage(
           { url: result.image, width: 1024, height: 1024 },
           user,
           generation
@@ -103,22 +105,34 @@ export const generateImage = asyncHandler(async (req, res) => {
         console.log('Image not saved:', saveError.message);
       }
       
-      // Send success response
-      return sendSuccess(res, {
-        image: result.image,
-        thumbnailUrl: result.thumbnailUrl,
+      // Send success response with Cloudinary URLs if available
+      console.log('📤 Sending success response to client...');
+      const response = {
+        image: savedImageData?.url || result.image,
+        thumbnailUrl: savedImageData?.thumbnailUrl || result.thumbnailUrl,
         credits: {
           used: creditsUsed,
           remaining: user.totalCredits - creditsUsed
         },
         model: modelId
-      }, 'Image generated successfully');
+      };
+      console.log('📦 Response data prepared:', { ...response, image: 'URL_PRESENT', thumbnailUrl: 'URL_PRESENT' });
+      console.log('🚀 About to send success response...');
+      // Send response in the format frontend expects
+      const finalResponse = {
+        success: true,
+        ...response
+      };
+      console.log('✅ Sending response in correct format');
+      return res.status(200).json(finalResponse);
     } else {
       throw new Error(result.error || 'Generation failed');
     }
 
   } catch (error) {
     // Log the error
+    console.error('❌ Error caught in flux.controller:', error.message);
+    console.error('❌ Stack trace:', error.stack);
     logAIServiceError(error, 'Flux', 'generateImage');
     
     // If generation was created but failed, update its status
@@ -187,6 +201,7 @@ async function pollForBflResult(requestId, pollingUrl, req = null) {
       });
       
       console.log(`Polling attempt ${attempt}: ${statusResponse.data.status}`);
+      console.log('Full status response:', JSON.stringify(statusResponse.data, null, 2));
       
       if (statusResponse.data.status === 'Ready') {
         const imageUrl = statusResponse.data.result?.sample;
@@ -196,12 +211,15 @@ async function pollForBflResult(requestId, pollingUrl, req = null) {
           throw new Error('No image generated');
         }
         
+        console.log('✅ Flux generation successful, image URL:', imageUrl);
+        
         return {
           success: true,
           image: imageUrl,
           thumbnailUrl: imageUrl
         };
       } else if (statusResponse.data.status === 'Error') {
+        console.error('❌ Flux generation failed:', statusResponse.data.error);
         throw new Error(`Generation failed: ${statusResponse.data.error || 'Unknown error'}`);
       }
     } catch (error) {
