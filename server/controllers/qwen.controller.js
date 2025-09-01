@@ -4,6 +4,7 @@ import { sendSuccess, sendBadRequest, sendUnauthorized, sendServerError, asyncHa
 import { saveGeneratedImage } from './images.controller.js';
 import { getUserFriendlyAIError, logAIServiceError } from '../utils/aiServiceErrors.js';
 import fetch from 'node-fetch';
+import axios from 'axios';
 
 // KIE API Configuration for Qwen
 const KIE_API_KEY = process.env.KIE_API_KEY || '2286be72f9c75b12557518051d46c551';
@@ -14,6 +15,52 @@ console.log('🔑 KIE API configured for Qwen:', {
   keyLength: KIE_API_KEY?.length,
   apiUrl: KIE_API_URL
 });
+
+/**
+ * Upload image URL to IMGBB for HTTPS compatibility
+ */
+async function uploadToImgbb(imageUrl) {
+  const IMGBB_API_KEY = process.env.IMGBB_API_KEY;
+  
+  if (!IMGBB_API_KEY) {
+    throw new Error('IMGBB_API_KEY not configured');
+  }
+
+  try {
+    console.log('📤 [IMGBB] Downloading image from:', imageUrl);
+    
+    // Download image from URL
+    const response = await axios.get(imageUrl, {
+      responseType: 'arraybuffer',
+      timeout: 30000
+    });
+    
+    // Convert to base64
+    const base64 = Buffer.from(response.data).toString('base64');
+    
+    // Upload to IMGBB
+    const formData = new URLSearchParams();
+    formData.append('key', IMGBB_API_KEY);
+    formData.append('image', base64);
+    
+    const imgbbResponse = await axios.post('https://api.imgbb.com/1/upload', formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      timeout: 30000
+    });
+    
+    if (imgbbResponse.data?.success && imgbbResponse.data?.data?.url) {
+      console.log('✅ [IMGBB] Upload successful:', imgbbResponse.data.data.url);
+      return imgbbResponse.data.data.url;
+    } else {
+      throw new Error('IMGBB upload failed - no URL in response');
+    }
+  } catch (error) {
+    console.error('❌ [IMGBB] Upload error:', error.message);
+    throw error;
+  }
+}
 
 /**
  * Poll KIE API task status until completion
@@ -231,29 +278,24 @@ export const generateImageTurbo = asyncHandler(async (req, res) => {
           });
         } else {
           console.log('⚠️ [QWEN] Image not saved to gallery - user not eligible');
-          console.log('🔄 [QWEN] Attempting temporary Cloudinary upload for HTTPS compatibility...');
+          console.log('🔄 [QWEN] Uploading to IMGBB for HTTPS compatibility...');
           
-          // Even if user can't save to gallery, upload temporarily to Cloudinary for HTTPS
+          // Even if user can't save to gallery, upload to IMGBB for HTTPS compatibility
           try {
-            const { getStorageProvider } = await import('../utils/storageProvider.js');
-            const storageProvider = getStorageProvider();
-            
-            const tempUpload = await storageProvider.uploadImage(result.url, 'temp');
-            const tempThumbnail = await storageProvider.generateThumbnail(tempUpload.url);
+            const imgbbUrl = await uploadToImgbb(result.url);
             
             // Create temporary image data object without saving to database
             savedImageData = {
-              url: tempUpload.url,
-              thumbnailUrl: tempThumbnail.url,
+              url: imgbbUrl,
+              thumbnailUrl: imgbbUrl,
               id: 'temp-' + Date.now()
             };
             
-            console.log('✅ [QWEN] Temporary Cloudinary upload successful:', {
-              cloudinaryUrl: savedImageData.url,
-              thumbnailUrl: savedImageData.thumbnailUrl
+            console.log('✅ [QWEN] IMGBB upload successful:', {
+              imgbbUrl: savedImageData.url
             });
           } catch (tempError) {
-            console.error('❌ [QWEN] Temporary upload failed:', tempError.message);
+            console.error('❌ [QWEN] IMGBB upload failed:', tempError.message);
           }
         }
       } catch (saveError) {
@@ -497,29 +539,24 @@ export const generateImageUltra = asyncHandler(async (req, res) => {
           });
         } else {
           console.log('⚠️ [QWEN] Image not saved to gallery - user not eligible');
-          console.log('🔄 [QWEN] Attempting temporary Cloudinary upload for HTTPS compatibility...');
+          console.log('🔄 [QWEN] Uploading to IMGBB for HTTPS compatibility...');
           
-          // Even if user can't save to gallery, upload temporarily to Cloudinary for HTTPS
+          // Even if user can't save to gallery, upload to IMGBB for HTTPS compatibility
           try {
-            const { getStorageProvider } = await import('../utils/storageProvider.js');
-            const storageProvider = getStorageProvider();
-            
-            const tempUpload = await storageProvider.uploadImage(result.url, 'temp');
-            const tempThumbnail = await storageProvider.generateThumbnail(tempUpload.url);
+            const imgbbUrl = await uploadToImgbb(result.url);
             
             // Create temporary image data object without saving to database
             savedImageData = {
-              url: tempUpload.url,
-              thumbnailUrl: tempThumbnail.url,
+              url: imgbbUrl,
+              thumbnailUrl: imgbbUrl,
               id: 'temp-' + Date.now()
             };
             
-            console.log('✅ [QWEN] Temporary Cloudinary upload successful:', {
-              cloudinaryUrl: savedImageData.url,
-              thumbnailUrl: savedImageData.thumbnailUrl
+            console.log('✅ [QWEN] IMGBB upload successful:', {
+              imgbbUrl: savedImageData.url
             });
           } catch (tempError) {
-            console.error('❌ [QWEN] Temporary upload failed:', tempError.message);
+            console.error('❌ [QWEN] IMGBB upload failed:', tempError.message);
           }
         }
       } catch (saveError) {

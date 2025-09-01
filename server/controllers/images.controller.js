@@ -11,6 +11,53 @@ const prisma = new PrismaClient();
  * @param {Object} generation - Generation record
  * @returns {Promise<Object>} Saved image record
  */
+/**
+ * Upload image URL to IMGBB for HTTPS compatibility
+ */
+async function uploadToImgbb(imageUrl) {
+  const IMGBB_API_KEY = process.env.IMGBB_API_KEY;
+  
+  if (!IMGBB_API_KEY) {
+    throw new Error('IMGBB_API_KEY not configured');
+  }
+
+  try {
+    console.log('📤 [IMGBB] Downloading image from:', imageUrl);
+    
+    // Download image from URL  
+    const axios = (await import('axios')).default;
+    const response = await axios.get(imageUrl, {
+      responseType: 'arraybuffer',
+      timeout: 30000
+    });
+    
+    // Convert to base64
+    const base64 = Buffer.from(response.data).toString('base64');
+    
+    // Upload to IMGBB
+    const formData = new URLSearchParams();
+    formData.append('key', IMGBB_API_KEY);
+    formData.append('image', base64);
+    
+    const imgbbResponse = await axios.post('https://api.imgbb.com/1/upload', formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      timeout: 30000
+    });
+    
+    if (imgbbResponse.data?.success && imgbbResponse.data?.data?.url) {
+      console.log('✅ [IMGBB] Upload successful:', imgbbResponse.data.data.url);
+      return imgbbResponse.data.data.url;
+    } else {
+      throw new Error('IMGBB upload failed - no URL in response');
+    }
+  } catch (error) {
+    console.error('❌ [IMGBB] Upload error:', error.message);
+    throw error;
+  }
+}
+
 export async function saveGeneratedImage(imageData, user, generation) {
   try {
     console.log('Starting to save generated image for user:', user.username);
@@ -23,16 +70,23 @@ export async function saveGeneratedImage(imageData, user, generation) {
 
     const { url: imageUrl, width = 1024, height = 1024 } = imageData;
     
-    // Use StorageProvider for consistent handling
-    const storageProvider = getStorageProvider();
+    // 🚨 CRITICAL FIX: Always use IMGBB for HTTPS compatibility
+    // Instead of using StorageProvider (which defaults to localhost), 
+    // upload to IMGBB to ensure HTTPS URLs work on production
+    console.log('🔄 [HTTPS FIX] Uploading to IMGBB for HTTPS compatibility...');
+    const imgbbUrl = await uploadToImgbb(imageUrl);
     
-    // Upload image using universal storage provider
-    console.log('🔄 Uploading image to storage provider...');
-    const uploadResult = await storageProvider.uploadImage(imageUrl, 'generated');
+    const uploadResult = {
+      url: imgbbUrl,
+      path: `imgbb/${Date.now()}`,
+      filename: `imgbb-${Date.now()}.png`
+    };
     
-    // Generate thumbnail
-    console.log('🔄 Generating thumbnail...');
-    const thumbnailResult = await storageProvider.generateThumbnail(uploadResult.url);
+    const thumbnailResult = {
+      url: imgbbUrl, // Use same IMGBB URL as thumbnail
+      path: uploadResult.path,
+      filename: uploadResult.filename
+    };
     
     console.log('✅ Upload complete:', {
       imageUrl: uploadResult.url,
