@@ -9,8 +9,6 @@ import GenerateButton from '../components/anime/GenerateButton';
 import TextToImageResult from '../components/text-to-image/TextToImageResult';
 import AdvancedSettings from '../components/text-to-image/AdvancedSettings.jsx';
 import MockupSection from '../components/common/MockupSection';
-import ReviewsSection from '../components/common/ReviewsSection';
-import TextReviewsSection from '../components/common/TextReviewsSection';
 import SEO from '../components/SEO';
 
 // Constants
@@ -230,18 +228,6 @@ const TextToImageGeneratorPage = () => {
           </div>
           
         </div>
-      </div>
-
-      {/* Reviews Section */}
-      <div className="bg-gray-50 py-12">
-        <div className="container mx-auto px-4">
-          <ReviewsSection />
-        </div>
-      </div>
-      
-      {/* Detailed Text Reviews */}
-      <div className="container mx-auto px-4 pb-12">
-        <TextReviewsSection />
       </div>
     </>
   );

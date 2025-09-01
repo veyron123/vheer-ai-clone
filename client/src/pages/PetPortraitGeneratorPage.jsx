@@ -11,8 +11,6 @@ import GenerateButton from '../components/anime/GenerateButton';
 import ExampleGallery from '../components/anime/ExampleGallery';
 import SEO from '../components/SEO';
 import MockupSection from '../components/common/MockupSection';
-import ReviewsSection from '../components/common/ReviewsSection';
-import TextReviewsSection from '../components/common/TextReviewsSection';
 
 // Constants
 import { PET_PORTRAIT_STYLES } from '../constants/petPortrait.constants';
@@ -156,19 +154,6 @@ const PetPortraitGeneratorPage = () => {
       </div>
 
     </div>
-
-    {/* Reviews Section */}
-    <div className="bg-gray-50 py-12">
-      <div className="container mx-auto px-4">
-        <ReviewsSection />
-      </div>
-    </div>
-    
-    {/* Detailed Text Reviews */}
-    <div className="container mx-auto px-4 pb-12">
-      <TextReviewsSection />
-    </div>
-
     </>
   );
 };
