@@ -169,7 +169,14 @@ export const generateImageTurbo = asyncHandler(async (req, res) => {
     });
 
     if (!createTaskResponse.ok) {
-      const errorData = await createTaskResponse.json().catch(() => ({}));
+      const errorText = await createTaskResponse.text();
+      let errorData = {};
+      try {
+        errorData = JSON.parse(errorText);
+      } catch (e) {
+        errorData = { rawResponse: errorText };
+      }
+      
       console.log('🚨 KIE API Error Response (Turbo):', {
         status: createTaskResponse.status,
         statusText: createTaskResponse.statusText,
@@ -181,6 +188,11 @@ export const generateImageTurbo = asyncHandler(async (req, res) => {
     }
 
     const taskResult = await createTaskResponse.json();
+    console.log('✅ [QWEN TURBO DEBUG] Parsed KIE API Response:', {
+      code: taskResult.code,
+      taskId: taskResult.data?.taskId,
+      success: taskResult.code === 200
+    });
     
     if (taskResult.code !== 200) {
       throw new Error(taskResult.message || 'Failed to create task');
@@ -371,19 +383,13 @@ export const generateImageUltra = asyncHandler(async (req, res) => {
       body: JSON.stringify(requestBody)
     });
 
-    const responseText = await createTaskResponse.text();
-    console.log('🔍 [QWEN DEBUG] Raw KIE API Response:', {
-      status: createTaskResponse.status,
-      statusText: createTaskResponse.statusText,
-      responseText: responseText
-    });
-    
     if (!createTaskResponse.ok) {
+      const errorText = await createTaskResponse.text();
       let errorData = {};
       try {
-        errorData = JSON.parse(responseText);
+        errorData = JSON.parse(errorText);
       } catch (e) {
-        errorData = { rawResponse: responseText };
+        errorData = { rawResponse: errorText };
       }
       
       console.log('🚨 KIE API Error Response (Ultra):', {
@@ -397,6 +403,11 @@ export const generateImageUltra = asyncHandler(async (req, res) => {
     }
 
     const taskResult = await createTaskResponse.json();
+    console.log('✅ [QWEN DEBUG] Parsed KIE API Response:', {
+      code: taskResult.code,
+      taskId: taskResult.data?.taskId,
+      success: taskResult.code === 200
+    });
     
     if (taskResult.code !== 200) {
       throw new Error(taskResult.message || 'Failed to create task');
