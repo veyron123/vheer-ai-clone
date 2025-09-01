@@ -376,7 +376,9 @@ export const generateImageUltra = asyncHandler(async (req, res) => {
     hasImage: !!input_image,
     userId: userId || 'NONE',
     style,
-    aspectRatio
+    aspectRatio,
+    imagePreview: input_image?.substring(0, 100) + '...',
+    imageType: input_image?.startsWith('http') ? 'HTTP_URL' : input_image?.startsWith('data:') ? 'BASE64' : 'OTHER'
   });
 
   // Require authentication
@@ -614,17 +616,29 @@ export const generateImageUltra = asyncHandler(async (req, res) => {
  * Helper function to process image URL for KIE API
  */
 async function processImageUrl(input_image) {
+  console.log('🔍 [QWEN DEBUG] processImageUrl called with:', {
+    type: typeof input_image,
+    length: input_image?.length,
+    preview: input_image?.substring(0, 100) + '...',
+    isHttp: input_image?.startsWith('http'),
+    isData: input_image?.startsWith('data:'),
+    fullUrl: input_image
+  });
+
   // If it's already a URL, return it as is
   if (input_image.startsWith('http')) {
+    console.log('🌐 [QWEN DEBUG] Returning HTTP URL as-is:', input_image);
     return input_image;
   }
 
   // For base64 images, we need to convert them to a public URL
   if (input_image.startsWith('data:')) {
+    console.log('📷 [QWEN DEBUG] Received base64 image data');
     // TODO: Implement proper base64 to URL conversion
     // For now, return the base64 as KIE API should handle it
     return input_image;
   }
 
+  console.log('❓ [QWEN DEBUG] Unknown image format, returning as-is:', input_image);
   return input_image;
 }
