@@ -4,6 +4,7 @@ import { sendSuccess, sendBadRequest, sendUnauthorized, sendServerError, asyncHa
 import { saveGeneratedImage } from './images.controller.js';
 import { getUserFriendlyAIError, logAIServiceError } from '../utils/aiServiceErrors.js';
 import fetch from 'node-fetch';
+import axios from 'axios';
 
 // KIE API Configuration
 const KIE_API_KEY = process.env.NANO_BANANA_API_KEY || process.env.KIE_API_KEY;
@@ -12,8 +13,55 @@ const KIE_API_URL = process.env.NANO_BANANA_API_URL || 'https://api.kie.ai/api/v
 console.log('🔑 KIE API configured:', {
   hasKey: !!KIE_API_KEY,
   keyLength: KIE_API_KEY?.length,
-  apiUrl: KIE_API_URL
+  apiUrl: KIE_API_URL,
+  hasImgbbKey: !!process.env.IMGBB_API_KEY,
+  imgbbKeyLength: process.env.IMGBB_API_KEY?.length
 });
+
+/**
+ * Upload base64 image to IMGBB for public URL access
+ * KIE API requires public HTTP URLs, not base64 data
+ */
+async function uploadBase64ToImgbb(base64Data) {
+  const IMGBB_API_KEY = process.env.IMGBB_API_KEY;
+  
+  if (!IMGBB_API_KEY) {
+    throw new Error('IMGBB_API_KEY not configured - cannot convert base64 to public URL');
+  }
+
+  try {
+    console.log('📤 [IMGBB] Converting base64 to public URL...');
+    
+    // Extract base64 content (remove data:image/...;base64, prefix)
+    const base64Content = base64Data.replace(/^data:image\/[a-z]+;base64,/, '');
+    
+    // Upload to IMGBB
+    const formData = new URLSearchParams();
+    formData.append('key', IMGBB_API_KEY);
+    formData.append('image', base64Content);
+    
+    const response = await axios.post('https://api.imgbb.com/1/upload', formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      timeout: 30000
+    });
+    
+    if (response.data?.success && response.data?.data?.url) {
+      const publicUrl = response.data.data.url;
+      console.log('✅ [IMGBB] Base64 uploaded successfully:', publicUrl);
+      return publicUrl;
+    } else {
+      throw new Error('IMGBB upload failed - no URL in response');
+    }
+  } catch (error) {
+    console.error('❌ [IMGBB] Upload error:', error.message);
+    if (error.response?.data) {
+      console.error('❌ [IMGBB] Error details:', error.response.data);
+    }
+    throw error;
+  }
+}
 
 /**
  * Poll KIE API task status until completion
@@ -111,18 +159,38 @@ export const generateImage = asyncHandler(async (req, res) => {
       hasPrompt: !!prompt,
       hasImage: !!input_image,
       imagePreview: input_image?.substring(0, 50) + '...',
-      aspectRatio
+      aspectRatio,
+      imageType: input_image?.startsWith('data:') ? 'base64_with_prefix' : 
+                 (input_image?.length > 100 && !input_image?.startsWith('http')) ? 'base64_raw' : 'url',
+      hasImgbbKey: !!process.env.IMGBB_API_KEY
     });
 
-    // Process input image
+    // Process input image - Convert base64 to public URL like other working models
     let imageUrl = input_image;
     
-    // For base64 images, we might need to convert them to a public URL
-    if (input_image.startsWith('data:')) {
-      console.log('Base64 image detected');
-      // TODO: Implement proper base64 to URL conversion if needed
-      // For now, pass base64 directly as KIE API should handle it
-      imageUrl = input_image;
+    // Check if it's base64 data (with or without data URL prefix)
+    const isBase64 = input_image.startsWith('data:') || 
+                     (input_image.length > 100 && !input_image.startsWith('http'));
+    
+    if (isBase64) {
+      console.log('📷 [NANO-BANANA] Converting base64 to public URL...');
+      console.log('🔑 [NANO-BANANA] IMGBB Key available:', !!process.env.IMGBB_API_KEY);
+      try {
+        // Add data URL prefix if missing
+        let base64WithPrefix = input_image;
+        if (!input_image.startsWith('data:')) {
+          base64WithPrefix = `data:image/png;base64,${input_image}`;
+          console.log('🔧 [NANO-BANANA] Added data URL prefix to base64 string');
+        }
+        
+        imageUrl = await uploadBase64ToImgbb(base64WithPrefix);
+        console.log('✅ [NANO-BANANA] Base64 converted to public URL:', imageUrl);
+      } catch (error) {
+        console.error('❌ [NANO-BANANA] Failed to convert base64 to URL:', error.message);
+        throw new Error(`Failed to process image: ${error.message}`);
+      }
+    } else {
+      console.log('🔗 [NANO-BANANA] Using input image as URL (no conversion needed):', imageUrl?.substring(0, 50) + '...');
     }
 
     // Create task with KIE API
@@ -277,6 +345,22 @@ export const generateFromPrompt = asyncHandler(async (req, res) => {
       'Clean white canvas background', 
       'Base image for AI generation'
     );
+
+    // Convert base image to IMGBB URL if it's base64
+    let baseImageUrl = baseImageResult.url;
+    const isBaseBase64 = baseImageUrl.startsWith('data:') || 
+                         (baseImageUrl.length > 100 && !baseImageUrl.startsWith('http'));
+    
+    if (isBaseBase64) {
+      console.log('📷 [NANO-BANANA TEXT] Converting base image to public URL...');
+      // Add data URL prefix if missing
+      let base64WithPrefix = baseImageUrl;
+      if (!baseImageUrl.startsWith('data:')) {
+        base64WithPrefix = `data:image/png;base64,${baseImageUrl}`;
+        console.log('🔧 [NANO-BANANA TEXT] Added data URL prefix to base image');
+      }
+      baseImageUrl = await uploadBase64ToImgbb(base64WithPrefix);
+    }
     
     // Create task with KIE API using the base image
     const createTaskResponse = await fetch(`${KIE_API_URL}/createTask`, {
@@ -289,7 +373,7 @@ export const generateFromPrompt = asyncHandler(async (req, res) => {
         model: 'google/nano-banana-edit',
         input: {
           prompt: `Create a new image based on this description: ${prompt}`,
-          image_urls: [baseImageResult.url]
+          image_urls: [baseImageUrl]
         }
       })
     });
