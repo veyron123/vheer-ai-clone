@@ -246,34 +246,48 @@ export async function checkAndAddDailyCredits(userId) {
   const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
   if (user.lastCreditUpdate < oneDayAgo) {
-    // Add daily credits based on subscription plan
-    const dailyCredits = user.subscription?.plan === 'PREMIUM' ? 500 : 100;
+    const isFreePlan = !user.subscription || user.subscription.plan === 'FREE';
     
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        totalCredits: {
-          increment: dailyCredits
-        },
-        lastCreditUpdate: now
-      }
-    });
+    let updatedUser;
+    let creditsDescription;
+    let creditsAdded;
+    
+    if (isFreePlan) {
+      // For FREE users: Reset to exactly 100 credits (not add)
+      const previousCredits = user.totalCredits;
+      updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: {
+          totalCredits: 100,
+          lastCreditUpdate: now
+        }
+      });
+      
+      creditsAdded = 100 - previousCredits;
+      creditsDescription = `Daily credit reset to 100 (was ${previousCredits})`;
+      
+    } else {
+      // For PREMIUM users: No daily credits - they get credits only when purchasing
+      // Premium plans provide credits only at purchase time, not daily
+      console.log(`⏭️ Skipping premium user ${userId} - no daily credits for paid plans`);
+      return { creditsAdded: 0, newTotal: user.totalCredits, wasReset: false };
+    }
 
-    // Log the credit addition
+    // Log the credit operation
     await prisma.credit.create({
       data: {
         userId,
-        amount: dailyCredits,
+        amount: creditsAdded,
         type: 'DAILY',
-        description: 'Daily credit bonus'
+        description: creditsDescription
       }
     });
 
-    console.log(`💰 Added ${dailyCredits} daily credits to user ${userId}`);
-    return { creditsAdded: dailyCredits, newTotal: updatedUser.totalCredits };
+    console.log(`💰 ${isFreePlan ? 'Reset' : 'Added'} ${Math.abs(creditsAdded)} daily credits for user ${userId} (${isFreePlan ? 'FREE' : 'PREMIUM'} plan)`);
+    return { creditsAdded: Math.abs(creditsAdded), newTotal: updatedUser.totalCredits, wasReset: isFreePlan };
   }
 
-  return { creditsAdded: 0, newTotal: user.totalCredits };
+  return { creditsAdded: 0, newTotal: user.totalCredits, wasReset: false };
 }
 
 /**
@@ -293,39 +307,60 @@ export async function addDailyCreditsToAllUsers() {
   const now = new Date();
   const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
   
-  let usersUpdated = 0;
-  let totalCreditsAdded = 0;
+  let totalUsers = users.length;
+  let updatedUsers = 0;
+  let skippedUsers = 0;
+  let freeUsersReset = 0;
+  let premiumUsersAdded = 0;
 
   for (const user of users) {
     if (user.lastCreditUpdate < oneDayAgo) {
-      const dailyCredits = user.subscription?.plan === 'PREMIUM' ? 500 : 100;
+      const isFreePlan = !user.subscription || user.subscription.plan === 'FREE';
       
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          totalCredits: {
-            increment: dailyCredits
-          },
-          lastCreditUpdate: now
-        }
-      });
+      if (isFreePlan) {
+        // For FREE users: Reset to exactly 100 credits
+        const previousCredits = user.totalCredits;
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            totalCredits: 100,
+            lastCreditUpdate: now
+          }
+        });
 
-      await prisma.credit.create({
-        data: {
-          userId: user.id,
-          amount: dailyCredits,
-          type: 'DAILY',
-          description: 'Daily credit bonus (cron)'
-        }
-      });
+        await prisma.credit.create({
+          data: {
+            userId: user.id,
+            amount: 100 - previousCredits,
+            type: 'DAILY',
+            description: `Daily credit reset to 100 (was ${previousCredits}) - cron`
+          }
+        });
 
-      usersUpdated++;
-      totalCreditsAdded += dailyCredits;
+        freeUsersReset++;
+        
+      } else {
+        // For PREMIUM users: No daily credits - they get credits only when purchasing
+        // Premium plans provide credits only at purchase time, not daily
+        console.log(`⏭️ Skipping premium user ${user.id} (${user.subscription?.plan}) - no daily credits for paid plans`);
+        skippedUsers++;
+        continue; // Skip to next user without incrementing updatedUsers
+      }
+      
+      updatedUsers++;
+    } else {
+      skippedUsers++;
     }
   }
 
-  console.log(`💰 Daily credits added: ${usersUpdated} users, ${totalCreditsAdded} total credits`);
-  return { usersUpdated, totalCreditsAdded };
+  console.log(`💰 Daily credits processed: ${updatedUsers} users updated (${freeUsersReset} FREE reset, ${premiumUsersAdded} PREMIUM added), ${skippedUsers} skipped`);
+  return { 
+    totalUsers,
+    updatedUsers, 
+    skippedUsers,
+    freeUsersReset,
+    premiumUsersAdded
+  };
 }
 
 /**

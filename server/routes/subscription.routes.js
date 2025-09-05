@@ -69,7 +69,7 @@ router.get('/plans', (req, res) => {
       credits: 800,
       paymentUrl: paymentUrls.BASIC,
       features: [
-        '800 credits monthly',
+        '800 credits at purchase',
         'All models',
         'HD resolution',
         'Priority support',
@@ -84,7 +84,7 @@ router.get('/plans', (req, res) => {
       credits: 3000,
       paymentUrl: paymentUrls.PRO,
       features: [
-        '3000 credits monthly',
+        '3000 credits at purchase',
         'All models',
         '4K resolution',
         'Priority processing',
@@ -100,7 +100,7 @@ router.get('/plans', (req, res) => {
       credits: 15000,
       paymentUrl: paymentUrls.ENTERPRISE,
       features: [
-        '15000 credits monthly',
+        '15000 credits at purchase',
         'Custom models',
         'Unlimited resolution',
         'Dedicated support',
