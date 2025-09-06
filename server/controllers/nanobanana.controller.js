@@ -15,10 +15,15 @@ import { getStorageProvider } from '../utils/storageProvider.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// KIE API Configuration
+// API Provider Configuration
+// Set USE_FAL_AI=true to use Fal.ai, false or undefined to use KIE API
+const USE_FAL_AI = process.env.USE_FAL_AI === 'true';
+
+// KIE API Configuration (default)
 const KIE_API_KEY = process.env.NANO_BANANA_API_KEY || process.env.KIE_API_KEY;
 const KIE_API_URL = process.env.NANO_BANANA_API_URL || 'https://api.kie.ai/api/v1/playground';
 
+console.log('🎯 API Provider:', USE_FAL_AI ? 'Fal.ai' : 'KIE API');
 console.log('🔑 KIE API configured:', {
   hasKey: !!KIE_API_KEY,
   keyLength: KIE_API_KEY?.length,
