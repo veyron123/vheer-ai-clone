@@ -5,11 +5,17 @@ import { Coins, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const CreditDisplay = () => {
-  const { user, updateUser } = useAuthStore();
+  const { user, updateUser, updateCredits } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [creditInfo, setCreditInfo] = useState(null);
 
   const fetchCredits = async () => {
+    // Если кредиты уже есть в user store, не делаем запрос
+    if (user?.totalCredits !== undefined && user.totalCredits >= 0) {
+      setCreditInfo({ totalCredits: user.totalCredits });
+      return;
+    }
+
     try {
       // Добавляем таймаут для предотвращения зависших запросов
       const controller = new AbortController();
@@ -22,8 +28,8 @@ const CreditDisplay = () => {
       clearTimeout(timeoutId);
       setCreditInfo(response.data);
       // Update user store with current credits
-      if (response.data.currentCredits !== user?.totalCredits) {
-        updateUser({ totalCredits: response.data.currentCredits });
+      if (response.data.totalCredits !== user?.totalCredits) {
+        updateCredits(response.data.totalCredits);
       }
     } catch (error) {
       if (error.name === 'AbortError') {
@@ -54,14 +60,9 @@ const CreditDisplay = () => {
 
   useEffect(() => {
     if (user) {
-      // Дебаунсинг для предотвращения частых запросов
-      const timeoutId = setTimeout(() => {
-        fetchCredits();
-      }, 500); // 500ms задержка
-      
-      return () => clearTimeout(timeoutId);
+      fetchCredits();
     }
-  }, [user]);
+  }, [user?.id, user?.totalCredits]); // Реагируем на изменения ID пользователя или кредитов
 
   if (!user) return null;
 

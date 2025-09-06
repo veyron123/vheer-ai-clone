@@ -72,6 +72,13 @@ export const useAuthStore = create(
           user: { ...state.user, ...userData }
         }));
       },
+
+      // Update just credits without full user refresh
+      updateCredits: (totalCredits) => {
+        set(state => ({
+          user: { ...state.user, totalCredits }
+        }));
+      },
       
       checkAuth: async () => {
         const token = get().token;
@@ -95,7 +102,6 @@ export const useAuthStore = create(
           set({ 
             user: response.data, 
             isAuthenticated: true,
-            totalCredits: response.data.totalCredits,
             lastAuthCheck: now
           });
         } catch (error) {

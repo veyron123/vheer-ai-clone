@@ -19,11 +19,12 @@ import {
   ChevronDown,
   Wand2,
   Image,
-  Brush
+  Brush,
+  Heart
 } from 'lucide-react';
 
 const HomePage = () => {
-  const [currentFeature, setCurrentFeature] = useState(1);
+  const [currentFeature, setCurrentFeature] = useState(2);
   const [openFaq, setOpenFaq] = useState(null);
   const [activeCategory, setActiveCategory] = useState('anime');
   const { t } = useTranslation('home');
@@ -65,6 +66,15 @@ const HomePage = () => {
       icon: <Brush className="w-5 h-5" />,
       color: 'from-blue-400 to-cyan-500',
       link: '/image-style-transfer'
+    },
+    {
+      id: 4,
+      title: t('features.pet_portrait.title'),
+      description: t('features.pet_portrait.description'),
+      image: '/Pet Portrait/il_1140xN.6386808676_cs9x.webp',
+      icon: <Heart className="w-5 h-5" />,
+      color: 'from-purple-400 to-indigo-500',
+      link: '/pet-portrait-generator'
     }
   ];
 
@@ -145,12 +155,26 @@ const HomePage = () => {
     }
   };
 
+  // Переменные для слайдера
+  const itemsPerView = 3; // Количество отображаемых элементов
+  const totalItems = aiFeatures.length; // Общее количество элементов
+
   const nextFeature = () => {
-    setCurrentFeature((prev) => (prev === 3 ? 1 : prev + 1));
+    setCurrentFeature((prev) => (prev + 1) % totalItems);
   };
 
   const prevFeature = () => {
-    setCurrentFeature((prev) => (prev === 1 ? 3 : prev - 1));
+    setCurrentFeature((prev) => (prev - 1 + totalItems) % totalItems);
+  };
+
+  // Получаем видимые элементы для текущего состояния слайдера (круговое движение)
+  const getVisibleFeatures = () => {
+    const visible = [];
+    for (let i = 0; i < itemsPerView; i++) {
+      const index = (currentFeature + i) % totalItems;
+      visible.push(aiFeatures[index]);
+    }
+    return visible;
   };
 
   const faqs = t('faq.questions', { returnObjects: true }) || [];
@@ -192,12 +216,9 @@ const HomePage = () => {
           {/* AI Features Cards */}
           <div className="relative max-w-6xl mx-auto">
             <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
-              {aiFeatures.map((feature, index) => (
-                <motion.div
+              {getVisibleFeatures().map((feature, index) => (
+                <div
                   key={feature.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.15 }}
                   className="group relative"
                 >
                   <Link to={createLocalizedLink(feature.link)} className="block">
@@ -260,7 +281,7 @@ const HomePage = () => {
                       </div>
                     </div>
                   </Link>
-                </motion.div>
+                </div>
               ))}
             </div>
 

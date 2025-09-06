@@ -136,6 +136,28 @@ const AffiliateDashboard = () => {
     );
   }
 
+  // Проверка прав администратора
+  if (user?.email !== 'unitradecargo@gmail.com') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Доступ запрещен
+          </h2>
+          <p className="text-gray-600 mb-6">
+            У вас нет прав для доступа к партнерскому кабинету
+          </p>
+          <button
+            onClick={() => navigate('/')}
+            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+          >
+            На главную
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">

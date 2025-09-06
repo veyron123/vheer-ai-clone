@@ -15,6 +15,10 @@
     "style_transfer": {
       "title": "AI Style Transfer",
       "description": "Blend art movements with your photos. From Van Gogh brushstrokes to futuristic cyberpunk aesthetics in seconds."
+    },
+    "pet_portrait": {
+      "title": "Pet Portrait Generator",
+      "description": "Transform your beloved pets into stunning artistic portraits. Create beautiful memories with AI-powered pet art generation."
     }
   },
   "sections": {

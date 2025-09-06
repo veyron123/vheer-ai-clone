@@ -18,7 +18,6 @@ import {
   User, 
   CreditCard,
   LogOut,
-  Settings,
   Frame,
   Shield,
   ShoppingCart,
@@ -139,27 +138,15 @@ const Layout = ({ children }) => {
                         <User className="w-4 h-4" />
                         <span>{t('navigation.profile')}</span>
                       </button>
-                      <button 
-                        onClick={() => {
-                          navigate(createLocalizedLink('/profile'));
-                          // Можно добавить параметр для автоматического переключения на вкладку settings
-                          setTimeout(() => {
-                            const settingsTab = document.querySelector('[data-tab="settings"]');
-                            if (settingsTab) settingsTab.click();
-                          }, 100);
-                        }} 
-                        className="dropdown-item"
-                      >
-                        <Settings className="w-4 h-4" />
-                        <span>{t('navigation.settings')}</span>
-                      </button>
-                      <button
-                        onClick={() => navigate(createLocalizedLink('/affiliate'))}
-                        className="dropdown-item"
-                      >
-                        <DollarSign className="w-4 h-4" />
-                        <span>{t('navigation.affiliate') || 'Партнерская программа'}</span>
-                      </button>
+                      {user?.email === 'unitradecargo@gmail.com' && (
+                        <button
+                          onClick={() => navigate(createLocalizedLink('/affiliate'))}
+                          className="dropdown-item"
+                        >
+                          <DollarSign className="w-4 h-4" />
+                          <span>{t('navigation.affiliate') || 'Партнерская программа'}</span>
+                        </button>
+                      )}
                       {user?.email === 'unitradecargo@gmail.com' && (
                         <button 
                           onClick={() => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { motion } from 'framer-motion';
 import { 
@@ -35,6 +35,26 @@ const ProfilePage = () => {
   const { user, logout, updateUser } = useAuthStore();
   const { t } = useTranslation('profile');
   const [activeTab, setActiveTab] = useState('images');
+
+  // Handle anchor links from URL hash (for mobile Settings navigation)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.substring(1); // Remove #
+      if (hash && ['images', 'generations', 'subscription', 'settings'].includes(hash)) {
+        setActiveTab(hash);
+      }
+    };
+
+    // Check on component mount
+    handleHashChange();
+    
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashChange);
+    
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
   
   // Function to translate plan names
   const translatePlan = (plan) => {

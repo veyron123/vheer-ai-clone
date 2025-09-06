@@ -4,7 +4,6 @@ import { PrismaClient } from '@prisma/client';
 import { AppError } from '../middleware/error.middleware.js';
 import * as CreditService from '../services/creditService.js';
 import notificationService from '../services/NotificationService.js';
-import { getClientIP, normalizeIP } from '../utils/requestUtils.js';
 import affiliateService from '../services/affiliateService.js';
 
 const prisma = new PrismaClient();
@@ -36,9 +35,6 @@ export const register = async (req, res, next) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    // Get client IP address
-    const clientIP = normalizeIP(getClientIP(req));
-    
     // Create user with subscription and initial credits
     const user = await prisma.user.create({
       data: {
@@ -48,9 +44,6 @@ export const register = async (req, res, next) => {
         fullName,
         totalCredits: 100, // Initial daily credits
         lastCreditUpdate: new Date(), // Set current time for daily credits tracking
-        registrationIP: clientIP, // IP адрес регистрации
-        lastLoginIP: clientIP, // IP адрес первого входа
-        lastLoginAt: new Date(), // Время первого входа
         subscription: {
           create: {
             plan: 'FREE',
@@ -137,18 +130,6 @@ export const login = async (req, res, next) => {
     if (!isPasswordValid) {
       throw new AppError('Invalid credentials', 401);
     }
-    
-    // Get client IP address and update last login info
-    const clientIP = normalizeIP(getClientIP(req));
-    
-    // Update user's last login info
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        lastLoginIP: clientIP,
-        lastLoginAt: new Date()
-      }
-    });
     
     const token = generateToken(user.id);
     

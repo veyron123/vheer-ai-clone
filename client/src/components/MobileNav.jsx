@@ -16,7 +16,9 @@ import {
   Settings,
   ChevronRight,
   Frame,
-  ShoppingCart
+  ShoppingCart,
+  DollarSign,
+  Shield
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import ColorfulLogo from './ColorfulLogo';
@@ -33,8 +35,14 @@ const MobileNav = () => {
   useScrollToTop();
 
   // Function to handle menu link clicks with scroll to top
-  const handleMenuLinkClick = () => {
+  const handleMenuLinkClick = (path) => {
     setIsOpen(false);
+    
+    // Don't scroll to top for settings link - let ProfilePage handle the hash
+    if (path === '/profile#settings') {
+      return;
+    }
+    
     window.scrollTo({
       top: 0,
       left: 0,
@@ -75,7 +83,12 @@ const MobileNav = () => {
 
   const userMenuItems = [
     { path: '/profile', label: 'Profile', icon: User },
-    { path: '/profile#settings', label: 'Settings', icon: Settings },
+  ];
+
+  // Admin menu items (only for unitradecargo@gmail.com)
+  const adminMenuItems = [
+    { path: '/affiliate', label: 'Affiliate Program', icon: DollarSign },
+    { path: '/admin', label: 'Admin Panel', icon: Shield },
   ];
 
   return (
@@ -195,6 +208,7 @@ const MobileNav = () => {
                         <Link
                           key={item.path}
                           to={item.path}
+                          onClick={() => handleMenuLinkClick(item.path)}
                           className={`
                             flex items-center justify-between px-4 py-3 rounded-lg
                             transition-colors touch-manipulation
@@ -228,6 +242,7 @@ const MobileNav = () => {
                             <Link
                               key={item.path}
                               to={item.path}
+                              onClick={() => handleMenuLinkClick(item.path)}
                               className="
                                 flex items-center justify-between px-4 py-3 rounded-lg
                                 hover:bg-gray-50 text-gray-700 transition-colors
@@ -242,6 +257,37 @@ const MobileNav = () => {
                             </Link>
                           );
                         })}
+                        
+                        {/* Admin Menu Items (only for unitradecargo@gmail.com) */}
+                        {user?.email === 'unitradecargo@gmail.com' && (
+                          <>
+                            <div className="my-2 px-6">
+                              <div className="border-t border-gray-200" />
+                            </div>
+                            {adminMenuItems.map((item) => {
+                              const Icon = item.icon;
+                              
+                              return (
+                                <Link
+                                  key={item.path}
+                                  to={item.path}
+                                  onClick={() => handleMenuLinkClick(item.path)}
+                                  className="
+                                    flex items-center justify-between px-4 py-3 rounded-lg
+                                    hover:bg-gray-50 text-gray-700 transition-colors
+                                    touch-manipulation
+                                  "
+                                >
+                                  <div className="flex items-center space-x-3">
+                                    <Icon className="w-5 h-5" />
+                                    <span className="font-medium">{item.label}</span>
+                                  </div>
+                                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                                </Link>
+                              );
+                            })}
+                          </>
+                        )}
                         
                         {/* Logout Button */}
                         <button
