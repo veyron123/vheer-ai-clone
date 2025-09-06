@@ -263,7 +263,7 @@ class StorageProvider {
           method: 'GET',
           url: source,
           responseType: 'arraybuffer',
-          timeout: 30000
+          timeout: 90000
         });
         buffer = Buffer.from(response.data);
       } else {

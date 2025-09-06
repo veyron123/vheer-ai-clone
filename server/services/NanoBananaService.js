@@ -286,7 +286,7 @@ class NanoBananaService extends BaseAIService {
         headers: {
           ...formData.getHeaders()
         },
-        timeout: 30000
+        timeout: 90000
       });
 
       if (response.data && response.data.data && response.data.data.url) {

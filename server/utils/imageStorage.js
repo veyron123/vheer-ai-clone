@@ -103,7 +103,7 @@ async function saveToLocal(imageUrl, filename, type) {
       method: 'GET',
       url: imageUrl,
       responseType: 'stream',
-      timeout: 30000
+      timeout: 90000
     });
 
     // Save to file
