@@ -9,6 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { getStorageProvider } from '../utils/storageProvider.js';
 
 // ES Module compatible __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -22,108 +23,64 @@ console.log('🔑 KIE API configured:', {
   hasKey: !!KIE_API_KEY,
   keyLength: KIE_API_KEY?.length,
   apiUrl: KIE_API_URL,
-  hasImgbbKey: !!process.env.IMGBB_API_KEY,
-  imgbbKeyLength: process.env.IMGBB_API_KEY?.length
+  hasCloudinaryConfig: !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET),
+  cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME
 });
 
 /**
- * Upload base64 image to IMGBB for public URL access
+ * Upload base64 image to Cloudinary for public URL access
  * KIE API requires public HTTP URLs, not base64 data
  */
-async function uploadBase64ToImgbb(base64Data) {
-  const IMGBB_API_KEY = process.env.IMGBB_API_KEY;
-  
-  if (!IMGBB_API_KEY) {
-    throw new Error('IMGBB_API_KEY not configured - cannot convert base64 to public URL');
-  }
-
+async function uploadBase64ToCloudinary(base64Data) {
   try {
-    console.log('📤 [IMGBB] Converting base64 to public URL...');
+    console.log('📤 [CLOUDINARY] Converting base64 to public URL...');
     
-    // Extract base64 content (remove data:image/...;base64, prefix)
-    const base64Content = base64Data.replace(/^data:image\/[a-z]+;base64,/, '');
+    // Get storage provider (configured as Cloudinary)
+    const storageProvider = getStorageProvider({ provider: 'cloudinary' });
     
-    // Upload to IMGBB
-    const formData = new URLSearchParams();
-    formData.append('key', IMGBB_API_KEY);
-    formData.append('image', base64Content);
+    // Upload base64 data directly to Cloudinary
+    const result = await storageProvider.uploadImage(base64Data, 'nano-banana-temp');
     
-    const response = await axios.post('https://api.imgbb.com/1/upload', formData, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      timeout: 30000
-    });
-    
-    if (response.data?.success && response.data?.data?.url) {
-      const publicUrl = response.data.data.url;
-      console.log('✅ [IMGBB] Base64 uploaded successfully:', publicUrl);
-      return publicUrl;
-    } else {
-      throw new Error('IMGBB upload failed - no URL in response');
-    }
+    console.log('✅ [CLOUDINARY] Base64 uploaded successfully:', result.url);
+    return result.url;
   } catch (error) {
-    console.error('❌ [IMGBB] Upload error:', error.message);
-    if (error.response?.data) {
-      console.error('❌ [IMGBB] Error details:', error.response.data);
-    }
-    throw error;
+    console.error('❌ [CLOUDINARY] Upload error:', error.message);
+    throw new Error(`Cloudinary upload failed: ${error.message}`);
   }
 }
 
 /**
- * Upload local file to IMGBB for public URL access
+ * Upload local file to Cloudinary for public URL access
  * Reads file from filesystem and converts to public URL
  */
-async function uploadLocalFileToImgbb(filePath) {
-  const IMGBB_API_KEY = process.env.IMGBB_API_KEY;
-  
-  if (!IMGBB_API_KEY) {
-    throw new Error('IMGBB_API_KEY not configured - cannot upload local file');
-  }
-
+async function uploadLocalFileToCloudinary(filePath) {
   try {
-    console.log('📂 [IMGBB] Reading local file:', filePath);
+    console.log('📂 [CLOUDINARY] Reading local file:', filePath);
     
     // Check if file exists before reading
     if (!fs.existsSync(filePath)) {
       throw new Error(`File does not exist at path: ${filePath}`);
     }
     
-    // Read file as base64
+    // Read file as buffer
     const fileBuffer = fs.readFileSync(filePath);
-    const base64Content = fileBuffer.toString('base64');
     
-    console.log('📤 [IMGBB] Uploading local file to IMGBB...');
+    console.log('📤 [CLOUDINARY] Uploading local file to Cloudinary...');
     
-    // Upload to IMGBB
-    const formData = new URLSearchParams();
-    formData.append('key', IMGBB_API_KEY);
-    formData.append('image', base64Content);
+    // Get storage provider (configured as Cloudinary)
+    const storageProvider = getStorageProvider({ provider: 'cloudinary' });
     
-    const response = await axios.post('https://api.imgbb.com/1/upload', formData, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      timeout: 30000
-    });
+    // Upload buffer to Cloudinary
+    const result = await storageProvider.uploadImage(fileBuffer, 'nano-banana-styles');
     
-    if (response.data?.success && response.data?.data?.url) {
-      const publicUrl = response.data.data.url;
-      console.log('✅ [IMGBB] Local file uploaded successfully:', publicUrl);
-      return publicUrl;
-    } else {
-      throw new Error('IMGBB upload failed - no URL in response');
-    }
+    console.log('✅ [CLOUDINARY] Local file uploaded successfully:', result.url);
+    return result.url;
   } catch (error) {
-    console.error('❌ [IMGBB] Local file upload error:', error.message);
+    console.error('❌ [CLOUDINARY] Local file upload error:', error.message);
     if (error.code === 'ENOENT') {
       throw new Error(`File not found: ${filePath}`);
     }
-    if (error.response?.data) {
-      console.error('❌ [IMGBB] Error details:', error.response.data);
-    }
-    throw error;
+    throw new Error(`Cloudinary local file upload failed: ${error.message}`);
   }
 }
 
@@ -232,7 +189,7 @@ export const generateImage = asyncHandler(async (req, res) => {
       aspectRatio,
       imageType: input_image?.startsWith('data:') ? 'base64_with_prefix' : 
                  (input_image?.length > 100 && !input_image?.startsWith('http')) ? 'base64_raw' : 'url',
-      hasImgbbKey: !!process.env.IMGBB_API_KEY
+      hasCloudinaryConfig: !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY)
     });
 
     // Process input image - Convert base64 to public URL like other working models
@@ -244,7 +201,7 @@ export const generateImage = asyncHandler(async (req, res) => {
     
     if (isBase64) {
       console.log('📷 [NANO-BANANA] Converting base64 to public URL...');
-      console.log('🔑 [NANO-BANANA] IMGBB Key available:', !!process.env.IMGBB_API_KEY);
+      console.log('🔑 [NANO-BANANA] Cloudinary available:', !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY));
       try {
         // Add data URL prefix if missing
         let base64WithPrefix = input_image;
@@ -253,7 +210,7 @@ export const generateImage = asyncHandler(async (req, res) => {
           console.log('🔧 [NANO-BANANA] Added data URL prefix to base64 string');
         }
         
-        imageUrl = await uploadBase64ToImgbb(base64WithPrefix);
+        imageUrl = await uploadBase64ToCloudinary(base64WithPrefix);
         console.log('✅ [NANO-BANANA] Base64 converted to public URL:', imageUrl);
       } catch (error) {
         console.error('❌ [NANO-BANANA] Failed to convert base64 to URL:', error.message);
@@ -421,7 +378,7 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
     if (userImageUrl.startsWith('data:') || (userImageUrl.length > 100 && !userImageUrl.startsWith('http'))) {
       console.log('📷 [NANO-BANANA] Converting user image base64 to public URL...');
       let base64WithPrefix = userImageUrl.startsWith('data:') ? userImageUrl : `data:image/png;base64,${userImageUrl}`;
-      processedUserImageUrl = await uploadBase64ToImgbb(base64WithPrefix);
+      processedUserImageUrl = await uploadBase64ToCloudinary(base64WithPrefix);
       console.log('✅ [NANO-BANANA] User image converted:', processedUserImageUrl.substring(0, 50) + '...');
     }
     
@@ -430,7 +387,7 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
       // Handle base64 style images
       console.log('🎨 [NANO-BANANA] Converting style image base64 to public URL...');
       let base64WithPrefix = styleImageUrl.startsWith('data:') ? styleImageUrl : `data:image/png;base64,${styleImageUrl}`;
-      processedStyleImageUrl = await uploadBase64ToImgbb(base64WithPrefix);
+      processedStyleImageUrl = await uploadBase64ToCloudinary(base64WithPrefix);
       console.log('✅ [NANO-BANANA] Style image converted:', processedStyleImageUrl.substring(0, 50) + '...');
     } else if (styleImageUrl.startsWith('/')) {
       // Handle local file paths (starts with /) - most common case for Pet Portrait styles
@@ -451,7 +408,7 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
         try {
           if (fs.existsSync(tryPath)) {
             console.log('✅ [NANO-BANANA] Found file at:', tryPath);
-            processedStyleImageUrl = await uploadLocalFileToImgbb(tryPath);
+            processedStyleImageUrl = await uploadLocalFileToCloudinary(tryPath);
             console.log('✅ [NANO-BANANA] Local style image uploaded:', processedStyleImageUrl.substring(0, 50) + '...');
             uploadedSuccessfully = true;
             break;
@@ -666,7 +623,7 @@ export const generateFromPrompt = asyncHandler(async (req, res) => {
         base64WithPrefix = `data:image/png;base64,${baseImageUrl}`;
         console.log('🔧 [NANO-BANANA TEXT] Added data URL prefix to base image');
       }
-      baseImageUrl = await uploadBase64ToImgbb(base64WithPrefix);
+      baseImageUrl = await uploadBase64ToCloudinary(base64WithPrefix);
     }
     
     // Create task with KIE API using the base image
