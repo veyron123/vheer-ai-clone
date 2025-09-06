@@ -567,7 +567,7 @@ export const generatePetPortrait = async (req, res, next) => {
         
         // Log detailed request information
         console.log('🍌 Nano-banana request details:', {
-          url: 'http://localhost:5000/api/nano-banana/pet-portrait',
+          url: `${process.env.NANO_BANANA_API_URL || 'https://api.kie.ai/api/v1/playground'}/nano-banana/pet-portrait`,
           method: 'POST',
           headers: {
             ...nanoRequestHeaders,
@@ -585,7 +585,7 @@ export const generatePetPortrait = async (req, res, next) => {
         try {
           console.log('🍌 Sending nano-banana API request...');
           
-          const nanoResponse = await axios.post('http://localhost:5000/api/nano-banana/pet-portrait', nanoRequestData, {
+          const nanoResponse = await axios.post(`${process.env.NANO_BANANA_API_URL || 'https://api.kie.ai/api/v1/playground'}/nano-banana/pet-portrait`, nanoRequestData, {
             headers: nanoRequestHeaders,
             timeout: 300000, // 5 minute timeout
             validateStatus: function (status) {
