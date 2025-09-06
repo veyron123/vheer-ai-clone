@@ -866,6 +866,7 @@ async function generateWithFluxPetPortrait(userImageUrl, styleImageUrl, prompt, 
     userImageUrl: userImageUrl,
     styleImageUrl: styleImageUrl,
     styleName: prompt.includes('aesthetic') ? prompt.match(/maintaining the (.+?) aesthetic/)?.[1] || 'custom' : 'custom',
+    prompt: prompt, // Add missing prompt parameter
     aiModel: aiModel,
     aspectRatio: aspectRatio,
     width: width,
@@ -927,6 +928,7 @@ async function generateWithGPTImagePetPortrait(userImageUrl, styleImageUrl, prom
     userImageUrl: userImageUrl,
     styleImageUrl: styleImageUrl,
     styleName: prompt.includes('aesthetic') ? prompt.match(/maintaining the (.+?) aesthetic/)?.[1] || 'custom' : 'custom',
+    prompt: prompt, // Add missing prompt parameter
     aiModel: 'gpt-image',
     aspectRatio: aspectRatio,
     width: width,
@@ -982,6 +984,7 @@ async function generateWithQwenPetPortrait(userImageUrl, styleImageUrl, prompt, 
     userImageUrl: userImageUrl,
     styleImageUrl: styleImageUrl,
     styleName: prompt.includes('aesthetic') ? prompt.match(/maintaining the (.+?) aesthetic/)?.[1] || 'custom' : 'custom',
+    prompt: prompt, // Add missing prompt parameter
     aiModel: 'qwen-image',
     aspectRatio: aspectRatio,
     width: width,
@@ -1026,6 +1029,7 @@ async function generateWithNanoBananaPetPortrait(userImageUrl, styleImageUrl, pr
     userImageUrl: userImageUrl,
     styleImageUrl: styleImageUrl,
     styleName: prompt.includes('aesthetic') ? prompt.match(/maintaining the (.+?) aesthetic/)?.[1] || 'custom' : 'custom',
+    prompt: prompt, // Add missing prompt parameter
     aiModel: 'nano-banana',
     aspectRatio: '1:1', // Nano-Banana always uses 1:1
     width: 1024,
