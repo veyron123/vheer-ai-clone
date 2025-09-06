@@ -2,6 +2,17 @@ import prisma from '../lib/prisma.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { getModelCredits } from '../config/pricing.config.js';
 
+// Простой кеш для данных пользователя (в продакшене лучше использовать Redis)
+const userCache = new Map();
+const CACHE_TTL = 30000; // 30 секунд кеш
+
+// Функция для инвалидации кеша пользователя
+function invalidateUserCache(userId) {
+  const cacheKey = `user_credits_${userId}`;
+  userCache.delete(cacheKey);
+  console.log(`[Cache] Invalidated cache for user: ${userId}`);
+}
+
 /**
  * Check if user has enough credits for the operation
  * @param {string} userId - User ID
@@ -71,6 +82,9 @@ export async function deductCredits(userId, credits) {
     }
   });
 
+  // Инвалидируем кеш после изменения кредитов
+  invalidateUserCache(userId);
+  
   console.log(`✅ Deducted ${credits} credits from user ${userId}. Remaining: ${updatedUser.totalCredits}`);
   
   return updatedUser;
@@ -152,6 +166,9 @@ export async function refundCredits(userId, credits, reason = 'Generation failed
     }
   });
 
+  // Инвалидируем кеш после изменения кредитов
+  invalidateUserCache(userId);
+  
   console.log(`💰 Refunded ${credits} credits to user ${userId}. Total: ${updatedUser.totalCredits}`);
   return updatedUser;
 }
@@ -164,6 +181,14 @@ export async function refundCredits(userId, credits, reason = 'Generation failed
 export async function getUserCredits(userId) {
   const startTime = Date.now();
   console.log(`[getUserCredits] Fetching credits for user: ${userId}`);
+  
+  // Проверяем кеш
+  const cacheKey = `user_credits_${userId}`;
+  const cached = userCache.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+    console.log(`[getUserCredits] Cache hit for user: ${userId}`);
+    return cached.data;
+  }
   
   try {
     // Добавляем таймаут для запроса к БД (5 секунд)
@@ -189,6 +214,12 @@ export async function getUserCredits(userId) {
     if (!user) {
       throw new AppError('User not found', 404);
     }
+    
+    // Сохраняем в кеш
+    userCache.set(cacheKey, {
+      data: user,
+      timestamp: Date.now()
+    });
     
     // Если запрос занял больше 1 секунды, логируем предупреждение
     if (queryTime > 1000) {

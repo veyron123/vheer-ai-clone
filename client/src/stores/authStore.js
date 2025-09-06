@@ -10,6 +10,7 @@ export const useAuthStore = create(
       token: null,
       isAuthenticated: false,
       isLoading: false,
+      lastAuthCheck: null,
       
       login: async (email, password) => {
         set({ isLoading: true });
@@ -74,8 +75,17 @@ export const useAuthStore = create(
       
       checkAuth: async () => {
         const token = get().token;
+        const currentUser = get().user;
+        
         if (!token) {
           set({ isAuthenticated: false, user: null });
+          return;
+        }
+        
+        // Если у нас уже есть данные пользователя, не запрашиваем снова слишком часто
+        const lastCheck = get().lastAuthCheck;
+        const now = Date.now();
+        if (currentUser && lastCheck && (now - lastCheck) < 30000) { // 30 секунд кеш
           return;
         }
         
@@ -85,7 +95,8 @@ export const useAuthStore = create(
           set({ 
             user: response.data, 
             isAuthenticated: true,
-            totalCredits: response.data.totalCredits 
+            totalCredits: response.data.totalCredits,
+            lastAuthCheck: now
           });
         } catch (error) {
           console.error('Auth check failed:', error);

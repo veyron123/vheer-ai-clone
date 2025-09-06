@@ -11,14 +11,26 @@ const CreditDisplay = () => {
 
   const fetchCredits = async () => {
     try {
-      const response = await api.get('/credits');
+      // Добавляем таймаут для предотвращения зависших запросов
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 секунд таймаут
+      
+      const response = await api.get('/credits', {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
       setCreditInfo(response.data);
       // Update user store with current credits
       if (response.data.currentCredits !== user?.totalCredits) {
         updateUser({ totalCredits: response.data.currentCredits });
       }
     } catch (error) {
-      console.error('Error fetching credits:', error);
+      if (error.name === 'AbortError') {
+        console.warn('Credits request timed out');
+      } else {
+        console.error('Error fetching credits:', error);
+      }
     }
   };
 
@@ -42,7 +54,12 @@ const CreditDisplay = () => {
 
   useEffect(() => {
     if (user) {
-      fetchCredits();
+      // Дебаунсинг для предотвращения частых запросов
+      const timeoutId = setTimeout(() => {
+        fetchCredits();
+      }, 500); // 500ms задержка
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [user]);
 
