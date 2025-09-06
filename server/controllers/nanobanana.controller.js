@@ -129,8 +129,9 @@ async function uploadLocalFileToImgbb(filePath) {
 
 /**
  * Poll KIE API task status until completion
+ * Increased timeout for nano-banana processing (5 minutes instead of 2)
  */
-async function pollTaskStatus(taskId, maxAttempts = 60, delayMs = 2000) {
+async function pollTaskStatus(taskId, maxAttempts = 150, delayMs = 2000) {
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
       const response = await fetch(`${KIE_API_URL}/recordInfo?taskId=${taskId}`, {
@@ -152,7 +153,12 @@ async function pollTaskStatus(taskId, maxAttempts = 60, delayMs = 2000) {
 
       const { state, resultJson, failMsg } = result.data;
       
-      console.log(`Task ${taskId} status:`, { state, hasResult: !!resultJson });
+      console.log(`🔄 [POLLING] Task ${taskId} attempt ${attempt + 1}/${maxAttempts}:`, { 
+        state, 
+        hasResult: !!resultJson, 
+        timeElapsed: `${(attempt * delayMs / 1000).toFixed(1)}s`,
+        failMsg 
+      });
 
       // Check task state
       if (state === 'success') {
@@ -182,7 +188,7 @@ async function pollTaskStatus(taskId, maxAttempts = 60, delayMs = 2000) {
     }
   }
 
-  throw new Error('Task timeout - exceeded maximum polling attempts');
+  throw new Error(`Task timeout - exceeded maximum polling attempts (${maxAttempts} attempts over ${(maxAttempts * delayMs / 1000 / 60).toFixed(1)} minutes)`);
 }
 
 /**
