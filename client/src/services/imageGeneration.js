@@ -872,7 +872,7 @@ async function generateWithFluxPetPortrait(userImageUrl, styleImageUrl, prompt, 
     height: height
   };
   
-  const response = await fetch(getApiUrl('/generate/pet-portrait'), {
+  const response = await fetch(getApiUrl('/nano-banana/pet-portrait'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -933,7 +933,7 @@ async function generateWithGPTImagePetPortrait(userImageUrl, styleImageUrl, prom
     height: height
   };
 
-  const response = await fetch(getApiUrl('/generate/pet-portrait'), {
+  const response = await fetch(getApiUrl('/nano-banana/pet-portrait'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -988,7 +988,7 @@ async function generateWithQwenPetPortrait(userImageUrl, styleImageUrl, prompt, 
     height: height
   };
 
-  const response = await fetch(getApiUrl('/generate/pet-portrait'), {
+  const response = await fetch(getApiUrl('/nano-banana/pet-portrait'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -1032,7 +1032,7 @@ async function generateWithNanoBananaPetPortrait(userImageUrl, styleImageUrl, pr
     height: 1024
   };
 
-  const response = await fetch(getApiUrl('/generate/pet-portrait'), {
+  const response = await fetch(getApiUrl('/nano-banana/pet-portrait'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
