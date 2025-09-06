@@ -59,20 +59,14 @@ export const AI_MODELS = {
 export const EXAMPLE_IMAGES = [
   {
     id: 1,
-    original: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&h=400&fit=crop',
-    generated: '/il_794xN.6879206739_46as.avif',
-    style: 'Anime'
+    original: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&h=400&fit=crop',
+    generated: '/EXAMPLE RESULTS/e79e05027731.png',
+    style: 'Cartoon Style'
   },
   {
     id: 2,
-    original: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&h=400&fit=crop',
-    generated: '/il_794xN.6879206749_a1eo (1).avif',
-    style: 'Manga'
-  },
-  {
-    id: 3,
-    original: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop',
-    generated: '/il_794xN.6831231318_lw9v.webp',
-    style: 'Disney'
+    original: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&h=400&fit=crop',
+    generated: '/EXAMPLE RESULTS/il_fullxfull.6889243426_7t7a.webp',
+    style: 'Anime Portrait'
   }
 ];

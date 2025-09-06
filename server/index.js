@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -39,9 +40,11 @@ import notificationsRoutes from './routes/notifications.routes.js';
 import imageProxyRoutes from './routes/image-proxy.routes.js';
 import webhookRoutes, { setupWebSocket } from './routes/webhook.routes.js';
 import healthRoutes from './routes/health.routes.js';
+import affiliateRoutes from './routes/affiliate.routes.js';
 
 // Middleware
 import { errorHandler } from './middleware/error.middleware.js';
+import { trackAffiliateClick } from './middleware/affiliateTracking.js';
 import { checkDailyCredits } from './middleware/credit.middleware.js';
 import { globalErrorHandler, notFoundHandler, handleUnhandledRejection, handleUncaughtException } from './middleware/errorHandler.js';
 import { authenticate, optionalAuth } from './middleware/auth.js';
@@ -88,6 +91,7 @@ app.use(securityHeaders);
 
 // CORS configuration
 app.use(cors(corsOptions));
+app.use(cookieParser());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
@@ -127,6 +131,9 @@ app.use(session({
 // Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Affiliate tracking middleware - should be before rate limiting
+app.use(trackAffiliateClick);
 
 app.use('/api', limiter);
 
@@ -175,6 +182,9 @@ app.use('/api/cart-orders', cartOrdersRoutes);
 app.use('/api/carts', cartTrackingRoutes);
 app.use('/api/cart-stats', cartStatsRoutes);
 app.use('/api/notifications', notificationsRoutes);
+
+// Affiliate routes
+app.use('/api/affiliate', affiliateRoutes);
 
 // Image proxy routes (no authentication required for public images)
 app.use('/api/image-proxy', imageProxyRoutes);

@@ -95,11 +95,11 @@ const markAbandonedCarts = async () => {
 };
 
 /**
- * Очистка старых корзин (старше 30 дней)
+ * Очистка старых корзин (старше 90 дней для лучшей аналитики)
  */
 const cleanupOldCarts = async () => {
   try {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
     
     const result = await prisma.cartSession.deleteMany({
       where: {
@@ -107,13 +107,13 @@ const cleanupOldCarts = async () => {
           {
             status: 'abandoned',
             abandonedAt: {
-              lt: thirtyDaysAgo
+              lt: ninetyDaysAgo
             }
           },
           {
             status: 'converted',
             createdAt: {
-              lt: thirtyDaysAgo
+              lt: ninetyDaysAgo
             }
           }
         ]
@@ -146,7 +146,7 @@ const initializeCartTrackingJobs = () => {
   
   console.log('✅ Задачи отслеживания корзин инициализированы');
   console.log('   - Проверка брошенных корзин: каждые 30 минут');
-  console.log('   - Очистка старых корзин: ежедневно в 3:00');
+  console.log('   - Очистка старых корзин (>90 дней): ежедневно в 3:00');
 };
 
 export default initializeCartTrackingJobs;

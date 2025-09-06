@@ -5,87 +5,87 @@ const ReviewsSection = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollRef = useRef(null);
 
-  // Заглушки для отзывов с фото работ
+  // Sample reviews with customer artwork - using local AI-generated images
   const reviews = [
     {
       id: 1,
-      image: 'https://images.unsplash.com/photo-1555169062-013468b47731?w=400&h=400&fit=crop',
-      customerPhoto: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=80&h=80&fit=crop&crop=face',
-      name: 'Анна',
+      image: '/Image for main reviews/personalized-anime-portrait-640x533.jpg', // Dragon Ball Z style art
+      customerPhoto: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face', // Male customer to match the person in photo
+      name: 'Alex Thompson',
       rating: 5,
-      comment: 'Спасибо за потрясающую работу. Качество печати превосходное, доставка быстрая. Обязательно закажу еще!',
+      comment: "Yooo this is sick! 🔥 Got myself as Vegeta and I'm absolutely loving it! My friends think I'm crazy but honestly this is the coolest thing on my wall. Dragon Ball Z vibes are unmatched!",
       verified: true
     },
     {
       id: 2,
-      image: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=400&fit=crop',
-      customerPhoto: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face',
-      name: 'Дмитрий',
+      image: '/Image for main reviews/7P9-pv5kX_mid.jpg', // Romantic couple on boat
+      customerPhoto: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=80&h=80&fit=crop&crop=face', // Female customer
+      name: 'Sarah Mitchell',
       rating: 5,
-      comment: 'Заказывал постер с личной фотографией. Результат превзошел ожидания! Рамка отличного качества.',
+      comment: "This turned out so beautiful! 😍 Me and my boyfriend's anniversary photo reimagined as this elegant romantic scene. The frame quality is amazing too - it looks so professional hanging in our bedroom!",
       verified: true
     },
     {
       id: 3,
-      image: 'https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?w=400&h=400&fit=crop',
-      customerPhoto: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face',
-      name: 'Мария',
+      image: '/Image for main reviews/2_3068a735-f3f5-4d52-a8dc-b7544e643a4f.webp', // Two girls with Demon Slayer style art
+      customerPhoto: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face', // Female customer
+      name: 'Emma Rodriguez',
       rating: 5,
-      comment: 'Очень довольна покупкой! Цвета яркие, печать четкая. Украшение для моей гостиной.',
+      comment: "OMG me and my bestie are obsessed! 😭💕 We got ourselves as Demon Slayer characters and it's literally perfect. The artist captured our friendship so well - we both look so badass! Can't stop staring at it lol",
       verified: true
     },
     {
       id: 4,
-      image: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=400&h=400&fit=crop',
-      customerPhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face',
-      name: 'Алексей',
+      image: '/Image for main reviews/8ObJ2VvQD_mid.jpg', // Romantic couple in forest setting
+      customerPhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face', // Male customer
+      name: 'Jake Wilson',
       rating: 5,
-      comment: 'Отличный сервис! Помогли с выбором размера и рамки. Доставка точно в срок.',
+      comment: "This is absolutely stunning! Got this made for my girlfriend's birthday - we're both in this beautiful forest scene that looks like something from Studio Ghibli. She literally cried when she saw it. Worth every penny! 🌲✨",
       verified: true
     },
     {
       id: 5,
-      image: 'https://images.unsplash.com/photo-1481349518771-20055b2a7b24?w=400&h=400&fit=crop',
-      customerPhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&crop=face',
-      name: 'Елена',
+      image: '/Image for main reviews/3_6d8dc6b9-6101-48b2-bc34-32a12ea6e7b4.webp', // Guy with glasses holding anime version of himself
+      customerPhoto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face', // Male customer with glasses
+      name: 'Marcus Thompson',
       rating: 5,
-      comment: 'Заказываю уже третий раз. Всегда отличное качество и быстрая доставка!',
+      comment: "Dude this is so cool! 😎 I look like some kind of anime scientist or professor in this yellow coat. My coworkers are gonna flip when they see this in my office. The detail work is incredible - even got my glasses right!",
       verified: true
     },
     {
       id: 6,
-      image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
-      customerPhoto: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=80&h=80&fit=crop&crop=face',
-      name: 'Светлана',
+      image: '/Image for main reviews/iap_600x600.6958415160_mbxydv1x.webp', // Female AI art
+      customerPhoto: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=80&h=80&fit=crop&crop=face', // Female customer
+      name: 'Jennifer Lee',
       rating: 5,
-      comment: 'Прекрасный подарок на день рождения! Упаковка тоже на высоте.',
+      comment: 'Perfect birthday gift! The packaging was also top-notch.',
       verified: true
     },
     {
       id: 7,
-      image: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=400&h=400&fit=crop',
-      customerPhoto: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&crop=face',
-      name: 'Ольга',
+      image: '/Image for main reviews/iap_600x600.7155436136_k76xgxhm.webp', // Female AI art
+      customerPhoto: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&crop=face', // Female customer
+      name: 'Amanda Clark',
       rating: 5,
-      comment: 'Невероятное качество печати! Заказала несколько постеров для офиса, все в восторге!',
+      comment: 'Incredible print quality! Ordered several posters for the office and everyone loves them!',
       verified: true
     },
     {
       id: 8,
-      image: 'https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=400&h=400&fit=crop',
-      customerPhoto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face',
-      name: 'Виктор',
+      image: '/Image for main reviews/images.jpg', // Neutral/Male AI art
+      customerPhoto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face', // Male customer
+      name: 'Robert Miller',
       rating: 5,
-      comment: 'Быстро, качественно и недорого! Постеры выглядят потрясающе в моей квартире.',
+      comment: 'Fast, high-quality and affordable! The posters look amazing in my apartment.',
       verified: true
     },
     {
       id: 9,
-      image: 'https://images.unsplash.com/photo-1533158326339-7f3cf2404354?w=400&h=400&fit=crop',
-      customerPhoto: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&h=80&fit=crop&crop=face',
-      name: 'Игорь',
+      image: '/Image for main reviews/images (1).jpg', // Neutral/Male AI art  
+      customerPhoto: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&h=80&fit=crop&crop=face', // Male customer
+      name: 'David Anderson',
       rating: 5,
-      comment: 'Отличная работа! Помогли выбрать идеальный размер и оформление. Супер сервис!',
+      comment: 'Excellent work! They helped me choose the perfect size and design. Super service!',
       verified: true
     }
   ];
@@ -138,10 +138,10 @@ const ReviewsSection = () => {
           <span className="text-gray-700 text-sm font-medium">Rated 4.9 from 1000+ reviews</span>
         </div>
         <h2 className="text-3xl font-bold text-gray-800 mb-2">
-          Клиенты любят наши постеры!
+          Customers Love Our AI Art!
         </h2>
         <p className="text-gray-700">
-          Более 1000 довольных покупателей по всей Украине
+          Over 1000 happy customers worldwide
         </p>
       </div>
 
@@ -211,7 +211,7 @@ const ReviewsSection = () => {
                     />
                     <div className="flex-1">
                       <p className="text-sm font-medium text-gray-900">{review.name}</p>
-                      <p className="text-xs text-gray-500">Проверенный покупатель</p>
+                      <p className="text-xs text-gray-500">Verified Customer</p>
                     </div>
                     {review.verified && (
                       <CheckCircle className="w-4 h-4 text-green-500" />
@@ -242,7 +242,7 @@ const ReviewsSection = () => {
       {/* Кнопка действия */}
       <div className="text-center mt-8">
         <button className="bg-gray-800 hover:bg-gray-900 text-white px-8 py-3 rounded-full font-semibold hover:shadow-xl transform hover:scale-105 transition-all">
-          Создать свой постер
+          Create Your Art
         </button>
       </div>
     </div>

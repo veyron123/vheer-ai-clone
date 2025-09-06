@@ -1,22 +1,22 @@
 import React from 'react';
 import { EXAMPLE_IMAGES } from '../../constants/anime.constants';
 
-const ExampleGallery = () => {
+const ExampleGallery = ({ examples }) => {
+  // Use passed examples prop or fall back to default EXAMPLE_IMAGES
+  const imagesToShow = examples || EXAMPLE_IMAGES;
+  
   return (
     <div className="bg-white rounded-2xl shadow-sm p-6">
       <h3 className="text-lg font-semibold mb-4">Example Results</h3>
-      <div className="grid md:grid-cols-3 gap-4">
-        {EXAMPLE_IMAGES.map((example) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {imagesToShow.map((example) => (
           <div key={example.id} className="relative group">
-            <div className="aspect-[3/4] rounded-lg overflow-hidden bg-gray-100">
+            <div className="rounded-lg overflow-hidden bg-gray-100">
               <img 
                 src={example.generated} 
-                alt={`${example.style} style`}
-                className="w-full h-full object-cover"
+                alt="Example result"
+                className="w-full h-auto object-contain"
               />
-            </div>
-            <div className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs">
-              {example.style}
             </div>
           </div>
         ))}

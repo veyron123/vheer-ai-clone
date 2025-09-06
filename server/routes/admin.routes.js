@@ -59,6 +59,7 @@ router.get('/users', authenticateUser, adminAuth, async (req, res) => {
       }
     });
 
+
     // Calculate stats
     const stats = await prisma.user.aggregate({
       _count: true,
@@ -73,7 +74,7 @@ router.get('/users', authenticateUser, adminAuth, async (req, res) => {
     });
 
     res.json({
-      users,
+      users: users,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),

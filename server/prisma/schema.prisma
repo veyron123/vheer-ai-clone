@@ -35,6 +35,10 @@ model User {
   cartOrders      CartOrder[]
   cartSessions    CartSession[]
   paymentIntents  PaymentIntent[]
+  
+  // Affiliate relations
+  affiliate       Affiliate?
+  referredBy      AffiliateReferral?
 
   // New indexes for performance
   @@index([createdAt(sort: Desc)]) // For sorting users by creation date
@@ -293,11 +297,198 @@ model CartSession {
   convertedToOrderId    String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
-  expiresAt             DateTime?
 
   // New indexes
   @@index([status, abandonedAt]) // For finding abandoned carts
   @@index([userId]) // User cart queries
-  @@index([expiresAt]) // For cleanup
   @@map("colibrrri_cart_sessions")
+}
+
+// ============================================
+// AFFILIATE PROGRAM MODELS
+// ============================================
+
+model Affiliate {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code            String    @unique // Unique affiliate code
+  commissionRate  Float     @default(20.0) // Commission percentage
+  totalEarnings   Float     @default(0.0)
+  pendingPayouts  Float     @default(0.0)
+  paidAmount      Float     @default(0.0)
+  payoutMethod    String?   // bank, paypal, crypto, etc
+  payoutDetails   Json?     // Encrypted payment details
+  status          String    @default("active") // active, suspended, pending
+  tier            String    @default("starter") // starter, bronze, silver, gold, platinum
+  
+  // Relations
+  links           AffiliateLink[]
+  clicks          AffiliateClick[]
+  referrals       AffiliateReferral[]
+  commissions     AffiliateCommission[]
+  payouts         AffiliatePayout[]
+  dailyStats      AffiliateStatDaily[]
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([code])
+  @@index([status])
+  @@map("colibrrri_affiliates")
+}
+
+model AffiliateLink {
+  id              String    @id @default(cuid())
+  affiliateId     String
+  affiliate       Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  alias           String?   @unique // Custom alias like 'ai-logo-maker'
+  url             String    // Full URL with parameters
+  clickCount      Int       @default(0)
+  conversionCount Int       @default(0)
+  isDefault       Boolean   @default(false)
+  isActive        Boolean   @default(true)
+  
+  // Relations
+  clicks          AffiliateClick[]
+  referrals       AffiliateReferral[]
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([affiliateId])
+  @@index([isActive])
+  @@map("colibrrri_affiliate_links")
+}
+
+model AffiliateClick {
+  id              String    @id @default(cuid())
+  linkId          String?
+  link            AffiliateLink? @relation(fields: [linkId], references: [id], onDelete: SetNull)
+  affiliateId     String
+  affiliate       Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  sessionId       String?   // For tracking unique visitors
+  ipAddress       String?
+  userAgent       String?
+  referer         String?
+  landingPage     String?
+  utmSource       String?
+  utmMedium       String?
+  utmCampaign     String?
+  utmTerm         String?
+  utmContent      String?
+  country         String?
+  city            String?
+  deviceType      String?   // mobile, desktop, tablet
+  subId           String?   // Sub ID for campaign tracking (fp_sid parameter)
+  
+  // Relations
+  referral        AffiliateReferral?
+  
+  createdAt       DateTime  @default(now())
+  
+  @@index([affiliateId])
+  @@index([createdAt])
+  @@index([sessionId])
+  @@map("colibrrri_affiliate_clicks")
+}
+
+model AffiliateReferral {
+  id              String    @id @default(cuid())
+  affiliateId     String
+  affiliate       Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  userId          String    @unique // The referred user
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  linkId          String?
+  link            AffiliateLink? @relation(fields: [linkId], references: [id], onDelete: SetNull)
+  clickId         String?   @unique
+  click           AffiliateClick? @relation(fields: [clickId], references: [id], onDelete: SetNull)
+  status          String    @default("signup") // signup, trial, customer, churned
+  lifetimeValue   Float     @default(0.0)
+  firstPaymentDate DateTime?
+  lastPaymentDate DateTime?
+  conversionDate  DateTime? // When became paying customer
+  
+  // Relations
+  commissions     AffiliateCommission[]
+  
+  createdAt       DateTime  @default(now())
+  
+  @@index([affiliateId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("colibrrri_affiliate_referrals")
+}
+
+model AffiliateCommission {
+  id              String    @id @default(cuid())
+  affiliateId     String
+  affiliate       Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  referralId      String
+  referral        AffiliateReferral @relation(fields: [referralId], references: [id], onDelete: Cascade)
+  orderId         String?   // Link to payment/subscription
+  type            String    @default("sale") // sale, recurring, bonus
+  amount          Float     // Commission amount
+  baseAmount      Float     // Original sale amount
+  commissionRate  Float
+  currency        String    @default("USD")
+  status          String    @default("pending") // pending, approved, paid, cancelled
+  approvedAt      DateTime?
+  paidAt          DateTime?
+  payoutId        String?
+  payout          AffiliatePayout? @relation(fields: [payoutId], references: [id], onDelete: SetNull)
+  notes           String?
+  
+  createdAt       DateTime  @default(now())
+  
+  @@index([affiliateId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([payoutId])
+  @@map("colibrrri_affiliate_commissions")
+}
+
+model AffiliatePayout {
+  id              String    @id @default(cuid())
+  affiliateId     String
+  affiliate       Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  amount          Float
+  currency        String    @default("USD")
+  method          String    // bank, paypal, wise, crypto
+  transactionId   String?   // External transaction ID
+  status          String    @default("pending") // pending, processing, completed, failed
+  notes           String?
+  invoiceNumber   String?
+  processedAt     DateTime?
+  completedAt     DateTime?
+  
+  // Relations
+  commissions     AffiliateCommission[]
+  
+  createdAt       DateTime  @default(now())
+  
+  @@index([affiliateId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("colibrrri_affiliate_payouts")
+}
+
+model AffiliateStatDaily {
+  id              String    @id @default(cuid())
+  affiliateId     String
+  affiliate       Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  date            DateTime  @db.Date
+  clicks          Int       @default(0)
+  uniqueClicks    Int       @default(0)
+  signups         Int       @default(0)
+  customers       Int       @default(0)
+  revenue         Float     @default(0.0)
+  commissions     Float     @default(0.0)
+  
+  createdAt       DateTime  @default(now())
+  
+  @@unique([affiliateId, date])
+  @@index([date])
+  @@index([affiliateId])
+  @@map("colibrrri_affiliate_stats_daily")
 }

@@ -788,3 +788,272 @@ export async function uploadImage(file) {
     throw error;
   }
 }
+
+/**
+ * Generate Pet Portrait with style image replacement
+ * @param {string} userImageUrl - User's pet image URL
+ * @param {string} styleImageUrl - Selected style image URL  
+ * @param {string} styleName - Name of selected style
+ * @param {string} aiModel - AI model to use
+ * @param {string} aspectRatio - Aspect ratio for generation
+ * @param {AbortSignal} abortSignal - Signal to abort the request
+ * @returns {Promise} Generated pet portrait data
+ */
+export async function generatePetPortrait(userImageUrl, styleImageUrl, styleName, aiModel = 'flux-pro', aspectRatio = '1:1', abortSignal = null) {
+  try {
+    // Create specialized prompt for pet portrait style transfer
+    const petPortraitPrompt = `Replace the animal in the style reference image with the pet from the user's photo. Keep all the costume, background, pose, lighting, and artistic style exactly the same. Only change the animal/pet while maintaining the ${styleName} aesthetic and all visual elements like clothing, accessories, setting, and composition.`;
+    
+    console.log('Generating Pet Portrait:', {
+      userImageUrl,
+      styleImageUrl,
+      styleName,
+      aiModel,
+      prompt: petPortraitPrompt
+    });
+
+    // Use appropriate AI model for generation
+    if (aiModel === 'flux-pro') {
+      return await generateWithFluxPetPortrait(userImageUrl, styleImageUrl, petPortraitPrompt, aiModel, aspectRatio, abortSignal);
+    }
+    
+    if (aiModel === 'gpt-image') {
+      return await generateWithGPTImagePetPortrait(userImageUrl, styleImageUrl, petPortraitPrompt, aspectRatio, abortSignal);
+    }
+    
+    if (aiModel === 'qwen-image') {
+      return await generateWithQwenPetPortrait(userImageUrl, styleImageUrl, petPortraitPrompt, aspectRatio, abortSignal);
+    }
+    
+    if (aiModel === 'nano-banana') {
+      return await generateWithNanoBananaPetPortrait(userImageUrl, styleImageUrl, petPortraitPrompt, abortSignal);
+    }
+    
+    throw new Error(`Unsupported AI model for Pet Portrait: ${aiModel}`);
+    
+  } catch (error) {
+    console.error("Error generating pet portrait:", error);
+    throw error;
+  }
+}
+
+/**
+ * Generate Pet Portrait using Flux Pro with dual image input
+ */
+async function generateWithFluxPetPortrait(userImageUrl, styleImageUrl, prompt, aiModel, aspectRatio, abortSignal) {
+  const token = useAuthStore.getState().token;
+  
+  if (!token) {
+    throw new Error('Please sign in to generate pet portraits');
+  }
+  
+  // Calculate dimensions based on aspect ratio
+  let width = 1024, height = 1024;
+  if (aspectRatio && aspectRatio !== '1:1') {
+    if (aspectRatio === '16:9') {
+      width = 1344;
+      height = 768;
+    } else if (aspectRatio === '4:5') {
+      width = 832;
+      height = 1024;
+    } else if (aspectRatio === '3:4') {
+      width = 896;
+      height = 1152;
+    }
+  }
+  
+  const requestBody = {
+    userImageUrl: userImageUrl,
+    styleImageUrl: styleImageUrl,
+    styleName: prompt.includes('aesthetic') ? prompt.match(/maintaining the (.+?) aesthetic/)?.[1] || 'custom' : 'custom',
+    aiModel: aiModel,
+    aspectRatio: aspectRatio,
+    width: width,
+    height: height
+  };
+  
+  const response = await fetch(getApiUrl('/generate/pet-portrait'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    },
+    body: JSON.stringify(requestBody),
+    signal: abortSignal
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    
+    // Handle specific error types
+    if (response.status === 400 && errorData.error === 'Insufficient credits') {
+      throw new Error('Insufficient credits');
+    }
+    
+    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+  }
+  
+  const result = await response.json();
+  
+  // Return in expected format
+  return {
+    imageUrl: result.imageUrl,
+    generation: result.generation,
+    remainingCredits: result.remainingCredits
+  };
+}
+
+// GPT Image Pet Portrait generation
+async function generateWithGPTImagePetPortrait(userImageUrl, styleImageUrl, prompt, aspectRatio, abortSignal) {
+  const token = useAuthStore.getState().token;
+  
+  if (!token) {
+    throw new Error('Please sign in to generate pet portraits');
+  }
+  
+  // Calculate dimensions for GPT Image
+  let width = 1024, height = 1024;
+  if (aspectRatio && aspectRatio !== '1:1') {
+    if (aspectRatio === '16:9') {
+      width = 1344; height = 768;
+    } else if (aspectRatio === '4:5') {
+      width = 832; height = 1024;
+    } else if (aspectRatio === '3:4') {
+      width = 896; height = 1152;
+    }
+  }
+
+  const requestBody = {
+    userImageUrl: userImageUrl,
+    styleImageUrl: styleImageUrl,
+    styleName: prompt.includes('aesthetic') ? prompt.match(/maintaining the (.+?) aesthetic/)?.[1] || 'custom' : 'custom',
+    aiModel: 'gpt-image',
+    aspectRatio: aspectRatio,
+    width: width,
+    height: height
+  };
+
+  const response = await fetch(getApiUrl('/generate/pet-portrait'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    },
+    body: JSON.stringify(requestBody),
+    signal: abortSignal
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    if (response.status === 400 && errorData.error === 'Insufficient credits') {
+      throw new Error('Insufficient credits');
+    }
+    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+  }
+
+  const result = await response.json();
+  return {
+    imageUrl: result.imageUrl,
+    generation: result.generation,
+    remainingCredits: result.remainingCredits
+  };
+}
+
+// Qwen Pet Portrait generation
+async function generateWithQwenPetPortrait(userImageUrl, styleImageUrl, prompt, aspectRatio, abortSignal) {
+  const token = useAuthStore.getState().token;
+  
+  if (!token) {
+    throw new Error('Please sign in to generate pet portraits');
+  }
+  
+  let width = 1024, height = 1024;
+  if (aspectRatio && aspectRatio !== '1:1') {
+    if (aspectRatio === '16:9') {
+      width = 1344; height = 768;
+    } else if (aspectRatio === '4:5') {
+      width = 832; height = 1024;
+    } else if (aspectRatio === '3:4') {
+      width = 896; height = 1152;
+    }
+  }
+
+  const requestBody = {
+    userImageUrl: userImageUrl,
+    styleImageUrl: styleImageUrl,
+    styleName: prompt.includes('aesthetic') ? prompt.match(/maintaining the (.+?) aesthetic/)?.[1] || 'custom' : 'custom',
+    aiModel: 'qwen-image',
+    aspectRatio: aspectRatio,
+    width: width,
+    height: height
+  };
+
+  const response = await fetch(getApiUrl('/generate/pet-portrait'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    },
+    body: JSON.stringify(requestBody),
+    signal: abortSignal
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    if (response.status === 400 && errorData.error === 'Insufficient credits') {
+      throw new Error('Insufficient credits');
+    }
+    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+  }
+
+  const result = await response.json();
+  return {
+    imageUrl: result.imageUrl,
+    generation: result.generation,
+    remainingCredits: result.remainingCredits
+  };
+}
+
+// Nano-Banana Pet Portrait generation
+async function generateWithNanoBananaPetPortrait(userImageUrl, styleImageUrl, prompt, abortSignal) {
+  const token = useAuthStore.getState().token;
+
+  if (!token) {
+    throw new Error('Please sign in to generate pet portraits');
+  }
+
+  const requestBody = {
+    userImageUrl: userImageUrl,
+    styleImageUrl: styleImageUrl,
+    styleName: prompt.includes('aesthetic') ? prompt.match(/maintaining the (.+?) aesthetic/)?.[1] || 'custom' : 'custom',
+    aiModel: 'nano-banana',
+    aspectRatio: '1:1', // Nano-Banana always uses 1:1
+    width: 1024,
+    height: 1024
+  };
+
+  const response = await fetch(getApiUrl('/generate/pet-portrait'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    },
+    body: JSON.stringify(requestBody),
+    signal: abortSignal
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    if (response.status === 400 && errorData.error === 'Insufficient credits') {
+      throw new Error('Insufficient credits');
+    }
+    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+  }
+
+  const result = await response.json();
+  return {
+    imageUrl: result.imageUrl,
+    generation: result.generation,
+    remainingCredits: result.remainingCredits
+  };
+}

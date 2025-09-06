@@ -7,7 +7,8 @@ const StyleSelector = ({
   selectedStyle, 
   onStyleChange, 
   customStyle, 
-  onCustomStyleChange 
+  onCustomStyleChange,
+  isPetPortrait = false
 }) => {
   return (
     <>
@@ -19,7 +20,7 @@ const StyleSelector = ({
       </h3>
       
       <div className="max-h-[320px] overflow-y-auto overflow-x-hidden mb-4">
-        <div className="grid grid-cols-4 gap-1.5">
+        <div className={`grid ${isPetPortrait ? 'grid-cols-3' : 'grid-cols-4'} gap-1.5`}>
           {styles.map((style) => (
             <button
               key={style.id}
@@ -32,7 +33,7 @@ const StyleSelector = ({
                 selectedStyle === style.id 
                   ? 'border-primary-500 shadow-md scale-[1.02]' 
                   : 'border-gray-200 hover:border-gray-300'
-              }`}
+              } ${isPetPortrait ? 'hover:scale-105' : ''}`}
             >
               <img 
                 src={style.image} 
@@ -40,8 +41,8 @@ const StyleSelector = ({
                 className="w-full h-full object-cover"
                 loading="lazy"
               />
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-0.5">
-                <p className="text-white text-[9px] leading-tight font-medium">{style.name}</p>
+              <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent ${isPetPortrait ? 'p-1' : 'p-0.5'}`}>
+                <p className={`text-white leading-tight font-medium ${isPetPortrait ? 'text-[10px]' : 'text-[9px]'}`}>{style.name}</p>
               </div>
             </button>
           ))}

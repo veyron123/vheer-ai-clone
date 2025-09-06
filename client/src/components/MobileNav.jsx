@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import useScrollToTop from '../hooks/useScrollToTop';
 import { 
   Menu, 
   X, 
@@ -27,6 +28,19 @@ const MobileNav = () => {
   const { user, isAuthenticated, logout } = useAuthStore();
   const { openCart, getItemCount } = useCartStore();
   const itemCount = getItemCount();
+
+  // Use scroll to top hook
+  useScrollToTop();
+
+  // Function to handle menu link clicks with scroll to top
+  const handleMenuLinkClick = () => {
+    setIsOpen(false);
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
+  };
 
   // Close menu on route change
   useEffect(() => {

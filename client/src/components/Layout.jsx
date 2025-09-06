@@ -8,6 +8,7 @@ import '../styles/dropdown.css';
 import ColorfulLogo from './ColorfulLogo';
 import AnimatedLogo from './AnimatedLogo';
 import MobileNav from './MobileNav';
+import useScrollToTop from '../hooks/useScrollToTop';
 import { 
   Menu, 
   X, 
@@ -20,7 +21,8 @@ import {
   Settings,
   Frame,
   Shield,
-  ShoppingCart
+  ShoppingCart,
+  DollarSign
 } from 'lucide-react';
 import Cart from './Cart';
 import useCartStore from '../stores/cartStore';
@@ -34,12 +36,24 @@ const Layout = ({ children }) => {
   const location = useLocation();
   const itemCount = getItemCount();
 
+  // Use scroll to top hook
+  useScrollToTop();
+
   // Get current language from path
   const currentLang = getLanguageFromPath(location.pathname) || 'en';
 
   // Helper function to create localized links
   const createLocalizedLink = (path) => {
     return `/${currentLang}${path}`;
+  };
+
+  // Function to handle footer link clicks with scroll to top
+  const handleFooterLinkClick = () => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
+    });
   };
 
   const handleLogout = () => {
@@ -139,6 +153,13 @@ const Layout = ({ children }) => {
                         <Settings className="w-4 h-4" />
                         <span>{t('navigation.settings')}</span>
                       </button>
+                      <button
+                        onClick={() => navigate(createLocalizedLink('/affiliate'))}
+                        className="dropdown-item"
+                      >
+                        <DollarSign className="w-4 h-4" />
+                        <span>{t('navigation.affiliate') || 'Партнерская программа'}</span>
+                      </button>
                       {user?.email === 'unitradecargo@gmail.com' && (
                         <button 
                           onClick={() => {
@@ -229,10 +250,10 @@ const Layout = ({ children }) => {
             <div>
               <h3 className="font-semibold text-gray-900 mb-4 uppercase text-sm">{t('footer.company.title')}</h3>
               <ul className="space-y-2 text-gray-600 text-sm">
-                <li><Link to={createLocalizedLink('/terms')} className="hover:text-gray-900 transition">{t('footer.company.terms')}</Link></li>
-                <li><Link to={createLocalizedLink('/privacy')} className="hover:text-gray-900 transition">{t('footer.company.privacy')}</Link></li>
-                <li><Link to={createLocalizedLink('/cookies')} className="hover:text-gray-900 transition">{t('footer.company.cookies')}</Link></li>
-                <li><Link to={createLocalizedLink('/contact')} className="hover:text-gray-900 transition">{t('footer.company.contact')}</Link></li>
+                <li><Link to={createLocalizedLink('/terms')} onClick={handleFooterLinkClick} className="hover:text-gray-900 transition">{t('footer.company.terms')}</Link></li>
+                <li><Link to={createLocalizedLink('/privacy')} onClick={handleFooterLinkClick} className="hover:text-gray-900 transition">{t('footer.company.privacy')}</Link></li>
+                <li><Link to={createLocalizedLink('/cookies')} onClick={handleFooterLinkClick} className="hover:text-gray-900 transition">{t('footer.company.cookies')}</Link></li>
+                <li><Link to={createLocalizedLink('/contact')} onClick={handleFooterLinkClick} className="hover:text-gray-900 transition">{t('footer.company.contact')}</Link></li>
               </ul>
             </div>
             
@@ -240,11 +261,11 @@ const Layout = ({ children }) => {
             <div>
               <h3 className="font-semibold text-gray-900 mb-4 uppercase text-sm">Image Generators</h3>
               <ul className="space-y-2 text-gray-600 text-sm">
-                <li><Link to={createLocalizedLink('/anime-generator')} className="hover:text-gray-900 transition">{t('footer.tools.anime_portrait')}</Link></li>
-                <li><Link to={createLocalizedLink('/image-to-image-generator')} className="hover:text-gray-900 transition">{t('footer.tools.image_to_image')}</Link></li>
-                <li><Link to={createLocalizedLink('/image-style-transfer')} className="hover:text-gray-900 transition">{t('footer.tools.style_transfer')}</Link></li>
-                <li><Link to={createLocalizedLink('/pet-portrait-generator')} className="hover:text-gray-900 transition">AI Pet Portrait Generator</Link></li>
-                <li><Link to={createLocalizedLink('/text-to-image-generator')} className="hover:text-gray-900 transition">AI Text To Image Generator</Link></li>
+                <li><Link to={createLocalizedLink('/anime-generator')} onClick={handleFooterLinkClick} className="hover:text-gray-900 transition">{t('footer.tools.anime_portrait')}</Link></li>
+                <li><Link to={createLocalizedLink('/image-to-image-generator')} onClick={handleFooterLinkClick} className="hover:text-gray-900 transition">{t('footer.tools.image_to_image')}</Link></li>
+                <li><Link to={createLocalizedLink('/image-style-transfer')} onClick={handleFooterLinkClick} className="hover:text-gray-900 transition">{t('footer.tools.style_transfer')}</Link></li>
+                <li><Link to={createLocalizedLink('/pet-portrait-generator')} onClick={handleFooterLinkClick} className="hover:text-gray-900 transition">AI Pet Portrait Generator</Link></li>
+                <li><Link to={createLocalizedLink('/text-to-image-generator')} onClick={handleFooterLinkClick} className="hover:text-gray-900 transition">AI Text To Image Generator</Link></li>
               </ul>
             </div>
 
@@ -252,8 +273,8 @@ const Layout = ({ children }) => {
             <div>
               <h3 className="font-semibold text-gray-900 mb-4 uppercase text-sm">Video Generators</h3>
               <ul className="space-y-2 text-gray-600 text-sm">
-                <li><Link to={createLocalizedLink('/ai-video-generator')} className="hover:text-gray-900 transition">AI Video Generator</Link></li>
-                <li><Link to={createLocalizedLink('/video-modification-generator')} className="hover:text-gray-900 transition">AI Video Modification Generator</Link></li>
+                <li><Link to={createLocalizedLink('/ai-video-generator')} onClick={handleFooterLinkClick} className="hover:text-gray-900 transition">AI Video Generator</Link></li>
+                <li><Link to={createLocalizedLink('/video-modification-generator')} onClick={handleFooterLinkClick} className="hover:text-gray-900 transition">AI Video Modification Generator</Link></li>
               </ul>
             </div>
           </div>

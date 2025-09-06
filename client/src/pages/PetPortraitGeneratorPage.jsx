@@ -5,23 +5,25 @@ import { ChevronRight } from 'lucide-react';
 // Components
 import ImageUploader from '../components/anime/ImageUploader';
 import StyleSelector from '../components/anime/StyleSelector';
-import ModelSelector from '../components/anime/ModelSelector';
 import AspectRatioSelector from '../components/anime/AspectRatioSelector';
 import GenerateButton from '../components/anime/GenerateButton';
 import ExampleGallery from '../components/anime/ExampleGallery';
 import SEO from '../components/SEO';
 import MockupSection from '../components/common/MockupSection';
+import PetPortraitReviewsSection from '../components/common/PetPortraitReviewsSection';
+import TextReviewsSection from '../components/common/TextReviewsSection';
 
 // Constants
 import { PET_PORTRAIT_STYLES } from '../constants/petPortrait.constants';
 
 // Hooks
-import { useImageGeneration } from '../hooks/useImageGeneration';
+import { usePetPortraitGeneration } from '../hooks/usePetPortraitGeneration';
 
 const PetPortraitGeneratorPage = () => {
-  const [selectedStyle, setSelectedStyle] = useState('regal');
+  const [selectedStyle, setSelectedStyle] = useState('baroque-duchess');
   const [customStyle, setCustomStyle] = useState('');
-  const [aiModel, setAiModel] = useState('flux-pro');
+  // Using only Nano-Banana model for Pet Portraits (best for style transfer with dual images)
+  const aiModel = 'nano-banana';
   const [aspectRatio, setAspectRatio] = useState('match');
   
   const {
@@ -32,14 +34,26 @@ const PetPortraitGeneratorPage = () => {
     fileInputRef,
     handleImageUpload,
     handleImageRemove,
-    generateImage,
+    generatePetPortraitImage,
     cancelGeneration
-  } = useImageGeneration();
+  } = usePetPortraitGeneration();
 
   const handleGenerate = () => {
-    // Use custom style if provided, otherwise use selected style
-    const finalStyle = customStyle.trim() ? 'custom' : selectedStyle;
-    generateImage(finalStyle, aiModel, aspectRatio, customStyle.trim());
+    if (customStyle.trim()) {
+      // For custom style, use traditional approach
+      alert('Custom styles not supported yet for Pet Portrait. Please select a predefined style.');
+      return;
+    }
+    
+    // Find the selected style data
+    const styleData = PET_PORTRAIT_STYLES.find(style => style.id === selectedStyle);
+    if (!styleData) {
+      alert('Please select a valid pet portrait style');
+      return;
+    }
+    
+    // Generate pet portrait with style image
+    generatePetPortraitImage(selectedStyle, styleData, aiModel, aspectRatio);
   };
 
 
@@ -48,20 +62,14 @@ const PetPortraitGeneratorPage = () => {
     {
       id: 1,
       original: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=300&h=400&fit=crop',
-      generated: '/pet-examples/regal-dog.jpg',
-      style: 'Regal'
+      generated: '/il_794xN.6780188538_a2xv.webp?v=1',
+      style: 'Pet Portrait'
     },
     {
       id: 2,
       original: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?w=300&h=400&fit=crop',
-      generated: '/pet-examples/astronaut-cat.jpg',
-      style: 'Astronaut'
-    },
-    {
-      id: 3,
-      original: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=300&h=400&fit=crop',
-      generated: '/pet-examples/wizard-dog.jpg',
-      style: 'Wizard'
+      generated: '/il_794xN.6699236308_5urd.webp?v=1',
+      style: 'Royal Cat'
     }
   ];
 
@@ -100,7 +108,7 @@ const PetPortraitGeneratorPage = () => {
                 fileInputRef={fileInputRef}
                 isGenerating={isGenerating}
                 aspectRatio={aspectRatio}
-                aiModel={aiModel}
+                aiModel={'nano-banana'}
                 autoShowMockup={true}
               />
             </div>
@@ -113,7 +121,7 @@ const PetPortraitGeneratorPage = () => {
               <MockupSection
                 imageUrl={generatedImage || uploadedImage}
                 aspectRatio={aspectRatio}
-                aiModel={aiModel}
+                aiModel={'nano-banana'}
                 autoShow={true}
               />
             )}
@@ -127,25 +135,21 @@ const PetPortraitGeneratorPage = () => {
               onStyleChange={setSelectedStyle}
               customStyle={customStyle}
               onCustomStyleChange={setCustomStyle}
-            />
-            
-            <ModelSelector
-              selectedModel={aiModel}
-              onModelChange={setAiModel}
+              isPetPortrait={true}
             />
             
             <AspectRatioSelector
               selectedRatio={aspectRatio}
               onRatioChange={setAspectRatio}
-              disabled={aiModel === 'nano-banana'}
-              aiModel={aiModel}
+              disabled={true}
+              aiModel={'nano-banana'}
             />
             
             <GenerateButton
               onClick={handleGenerate}
               disabled={!uploadedImage}
               isGenerating={isGenerating}
-              aiModel={aiModel}
+              aiModel={'nano-banana'}
             />
             
             
@@ -154,6 +158,19 @@ const PetPortraitGeneratorPage = () => {
       </div>
 
     </div>
+
+    {/* Reviews Section */}
+    <div className="bg-gray-50 py-12">
+      <div className="container mx-auto px-4">
+        <PetPortraitReviewsSection />
+      </div>
+    </div>
+    
+    {/* Detailed Text Reviews */}
+    <div className="container mx-auto px-4 pb-12">
+      <TextReviewsSection />
+    </div>
+
     </>
   );
 };

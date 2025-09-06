@@ -4,7 +4,7 @@ import {
   ShoppingCart, Search, Eye, X, Clock, TrendingUp, 
   AlertCircle, DollarSign, Package, User, Calendar,
   RefreshCw, ShoppingBag, XCircle, CheckCircle,
-  BarChart, Activity, Hash, MapPin
+  BarChart, Activity, Hash, MapPin, Download, Image
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -109,12 +109,12 @@ const AdminCarts = () => {
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('ru-RU', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'UAH',
+      currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(amount).replace('UAH', '₴');
+    }).format(amount);
   };
 
   const CartModal = ({ cart, onClose }) => {
@@ -212,29 +212,100 @@ const AdminCarts = () => {
                 <ShoppingBag className="w-4 h-4" />
                 Товары в корзине ({cart.itemCount} шт.)
               </h3>
-              <div className="space-y-2">
-                {cart.items && cart.items.map((item, index) => (
-                  <div key={index} className="flex justify-between items-center bg-white rounded p-3">
-                    <div className="flex-1">
-                      <p className="font-medium">Frame Poster</p>
-                      <div className="text-sm text-gray-500 mt-1">
-                        <span>Цвет: {item.frameColorName || item.frameColor}</span>
-                        <span className="mx-2">•</span>
-                        <span>Размер: {item.sizeName || item.size}</span>
-                        <span className="mx-2">•</span>
-                        <span>Кол-во: {item.quantity}</span>
+              <div className="space-y-3">
+                {cart.items && cart.items.map((item, index) => {
+                  const imageUrl = item.image || item.imageUrl;
+                  
+                  const handleViewImage = () => {
+                    if (!imageUrl) return;
+                    
+                    if (imageUrl.startsWith('data:')) {
+                      try {
+                        const base64Data = imageUrl.split(',')[1];
+                        const mimeMatch = imageUrl.match(/data:([^;]+);/);
+                        const mimeType = mimeMatch ? mimeMatch[1] : 'image/png';
+                        
+                        const byteCharacters = atob(base64Data);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        for (let i = 0; i < byteCharacters.length; i++) {
+                          byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        }
+                        const byteArray = new Uint8Array(byteNumbers);
+                        const blob = new Blob([byteArray], { type: mimeType });
+                        const url = window.URL.createObjectURL(blob);
+                        window.open(url, '_blank');
+                      } catch (err) {
+                        console.error('Failed to open base64 image:', err);
+                      }
+                    } else {
+                      window.open(imageUrl, '_blank');
+                    }
+                  };
+
+                  return (
+                    <div key={index} className="flex gap-3 items-center bg-white rounded-lg p-3">
+                      {/* Превью изображения */}
+                      <div className="flex-shrink-0">
+                        {imageUrl ? (
+                          <img
+                            src={imageUrl}
+                            alt={`Item ${index + 1}`}
+                            className="w-16 h-16 rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity border"
+                            onClick={handleViewImage}
+                            title="Нажмите для просмотра в полном размере"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2IiByeD0iOCIvPgo8cGF0aCBkPSJNMjAgMjBMMzIgMzJNMzIgMjBMMjAgMzIiIHN0cm9rZT0iIzlCOUNBNCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center border">
+                            <Image className="w-6 h-6 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Информация о товаре */}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 truncate">
+                          Frame Poster #{index + 1}
+                        </p>
+                        <div className="text-sm text-gray-500 mt-1 space-y-1">
+                          <div className="flex flex-wrap gap-x-3 gap-y-1">
+                            <span className="flex items-center gap-1">
+                              <div className="w-3 h-3 rounded-full border" style={{backgroundColor: item.frameColor || '#ccc'}}></div>
+                              Цвет: {item.frameColorName || item.frameColor}
+                            </span>
+                            <span>Размер: {item.sizeName || item.size}</span>
+                            <span>Кол-во: {item.quantity}</span>
+                          </div>
+                          {item.description && (
+                            <p className="text-xs text-gray-400 truncate">{item.description}</p>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Цена */}
+                      <div className="flex-shrink-0 text-right">
+                        <p className="font-semibold text-gray-900">
+                          {formatCurrency(item.price * item.quantity)}
+                        </p>
+                        {item.quantity > 1 && (
+                          <p className="text-xs text-gray-500">
+                            {formatCurrency(item.price)} × {item.quantity}
+                          </p>
+                        )}
                       </div>
                     </div>
-                    <p className="font-semibold">
-                      {formatCurrency(item.price * item.quantity)}
-                    </p>
-                  </div>
-                ))}
-                <div className="border-t pt-3 mt-3">
+                  );
+                })}
+                
+                {/* Итоговая сумма */}
+                <div className="border-t pt-3 mt-3 bg-white rounded-lg p-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold">Итого:</span>
+                    <span className="text-lg font-semibold text-gray-900">Итого:</span>
                     <span className="text-xl font-bold text-primary-600">
-                      {formatCurrency(cart.totalAmount)}
+                      {formatCurrency(cart.totalAmount)} {cart.currency || 'UAH'}
                     </span>
                   </div>
                 </div>
@@ -502,13 +573,146 @@ const AdminCarts = () => {
                         {formatDistanceToNow(new Date(cart.lastActivityAt), { addSuffix: true, locale: ru })}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <button
-                          onClick={() => fetchCartDetails(cart.id)}
-                          className="text-primary-600 hover:text-primary-700"
-                          title="Просмотр деталей"
-                        >
-                          <Eye className="w-5 h-5" />
-                        </button>
+                        <div className="flex items-center space-x-2">
+                          {/* Image Preview and Download */}
+                          {cart.items && cart.items.length > 0 && (() => {
+                            const item = cart.items[0];
+                            const imageUrl = item.image || item.imageUrl;
+                            
+                            const handleDownloadImage = (e) => {
+                              e.stopPropagation();
+                              if (!imageUrl) return;
+                              
+                              const fileName = `cart_${cart.sessionId || 'unknown'}_item_1`;
+                              
+                              // Check if it's a base64 data URL
+                              if (imageUrl.startsWith('data:')) {
+                                try {
+                                  const base64Data = imageUrl.split(',')[1];
+                                  const mimeMatch = imageUrl.match(/data:([^;]+);/);
+                                  const mimeType = mimeMatch ? mimeMatch[1] : 'image/png';
+                                  const extension = mimeType.split('/')[1] || 'png';
+                                  
+                                  const byteCharacters = atob(base64Data);
+                                  const byteNumbers = new Array(byteCharacters.length);
+                                  for (let i = 0; i < byteCharacters.length; i++) {
+                                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                                  }
+                                  const byteArray = new Uint8Array(byteNumbers);
+                                  const blob = new Blob([byteArray], { type: mimeType });
+                                  
+                                  const url = window.URL.createObjectURL(blob);
+                                  const a = document.createElement('a');
+                                  a.style.display = 'none';
+                                  a.href = url;
+                                  a.download = `${fileName}.${extension}`;
+                                  document.body.appendChild(a);
+                                  a.click();
+                                  window.URL.revokeObjectURL(url);
+                                  document.body.removeChild(a);
+                                } catch (err) {
+                                  console.error('Failed to download base64 image:', err);
+                                  toast.error('Failed to download image');
+                                }
+                              } else if (imageUrl.includes('cloudinary.com')) {
+                                const downloadUrl = imageUrl.replace('/upload/', `/upload/fl_attachment:${fileName}/`);
+                                window.open(downloadUrl, '_blank');
+                              } else {
+                                const a = document.createElement('a');
+                                a.href = imageUrl;
+                                a.download = `${fileName}.png`;
+                                a.target = '_blank';
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                              }
+                            };
+
+                            const handleViewFullSize = (e) => {
+                              e.stopPropagation();
+                              if (!imageUrl) return;
+                              
+                              if (imageUrl.startsWith('data:')) {
+                                try {
+                                  const base64Data = imageUrl.split(',')[1];
+                                  const mimeMatch = imageUrl.match(/data:([^;]+);/);
+                                  const mimeType = mimeMatch ? mimeMatch[1] : 'image/png';
+                                  
+                                  const byteCharacters = atob(base64Data);
+                                  const byteNumbers = new Array(byteCharacters.length);
+                                  for (let i = 0; i < byteCharacters.length; i++) {
+                                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                                  }
+                                  const byteArray = new Uint8Array(byteNumbers);
+                                  const blob = new Blob([byteArray], { type: mimeType });
+                                  const url = window.URL.createObjectURL(blob);
+                                  window.open(url, '_blank');
+                                } catch (err) {
+                                  console.error('Failed to open base64 image:', err);
+                                  toast.error('Failed to open image');
+                                }
+                              } else if (imageUrl.includes('cloudinary.com')) {
+                                const parts = imageUrl.split('/upload/');
+                                if (parts.length === 2) {
+                                  const highQualityUrl = parts[0] + '/upload/q_auto:best,f_auto/' + parts[1].split('/').slice(-2).join('/');
+                                  window.open(highQualityUrl, '_blank');
+                                } else {
+                                  window.open(imageUrl, '_blank');
+                                }
+                              } else {
+                                window.open(imageUrl, '_blank');
+                              }
+                            };
+
+                            return imageUrl ? (
+                              <div className="flex items-center gap-1">
+                                <div className="flex -space-x-1">
+                                  {cart.items.slice(0, 3).map((item, idx) => {
+                                    const itemImage = item.image || item.imageUrl;
+                                    return itemImage ? (
+                                      <img
+                                        key={idx}
+                                        src={itemImage}
+                                        alt="Cart item"
+                                        className="w-8 h-8 rounded-full border-2 border-white object-cover cursor-pointer hover:scale-105 transition-transform"
+                                        onClick={handleViewFullSize}
+                                        title={`${item.frameColor || item.frameColorName || 'Frame'} - ${item.size || item.sizeName || 'Size'}`}
+                                        onError={(e) => {
+                                          e.target.onerror = null;
+                                          e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNCAxMEwxOCAxNE0xOCAxMEwxNCAxNCIgc3Ryb2tlPSIjOUI5Q0E0IiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4=';
+                                        }}
+                                      />
+                                    ) : null;
+                                  })}
+                                  {cart.items.length > 3 && (
+                                    <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-xs font-medium">
+                                      +{cart.items.length - 3}
+                                    </div>
+                                  )}
+                                </div>
+                                <button
+                                  onClick={handleDownloadImage}
+                                  className="p-1 text-gray-400 hover:text-primary-600 transition-colors"
+                                  title="Скачать первое изображение"
+                                >
+                                  <Download className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                                <Image className="w-4 h-4 text-gray-400" />
+                              </div>
+                            );
+                          })()}
+                          
+                          <button
+                            onClick={() => fetchCartDetails(cart.id)}
+                            className="text-primary-600 hover:text-primary-700"
+                            title="Просмотр деталей"
+                          >
+                            <Eye className="w-5 h-5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

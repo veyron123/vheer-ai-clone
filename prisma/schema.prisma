@@ -23,6 +23,9 @@ model User {
   emailVerified   Boolean   @default(false)
   googleId        String?   @unique
   facebookId      String?   @unique
+  lastLoginIP     String?   // IP адрес последнего входа
+  registrationIP  String?   // IP адрес регистрации
+  lastLoginAt     DateTime? // Время последнего входа
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   
@@ -33,6 +36,7 @@ model User {
   payments        Payment[]
   favorites       Favorite[]
   cartOrders      CartOrder[]
+  cartSessions    CartSession[]
 
   @@map("colibrrri_users")
 }
@@ -211,4 +215,43 @@ model Tag {
   createdAt       DateTime  @default(now())
 
   @@map("colibrrri_tags")
+}
+
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String   
+  expiresAt DateTime
+  
+  @@map("colibrrri_sessions")
+}
+
+model CartSession {
+  id                      String    @id @default(cuid())
+  sessionId               String    @unique
+  userId                  String?
+  user                    User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // Cart content
+  items                   Json      // Array of cart items
+  totalAmount             Float     @default(0)
+  itemCount               Int       @default(0)
+  currency                String    @default("USD")
+  
+  // Customer info
+  customerEmail           String?
+  
+  // Cart status and tracking
+  status                  String    @default("active") // active, abandoned, converted
+  userIp                  String?
+  userAgent               String?
+  
+  // Timestamps
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  lastActivityAt          DateTime?
+  abandonedAt             DateTime?
+  convertedToOrderId      String?
+  
+  @@map("colibrrri_cart_sessions")
 }

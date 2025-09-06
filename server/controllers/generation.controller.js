@@ -4,6 +4,8 @@ import { v2 as cloudinary } from 'cloudinary';
 import { getStorageProvider } from '../utils/storageProvider.js';
 import { shouldSaveImageForUser } from '../utils/imageStorage.js';
 import { AppError } from '../middleware/error.middleware.js';
+import { checkAndDeductCredits, refundCredits } from '../services/creditService.js';
+import axios from 'axios';
 
 const prisma = new PrismaClient();
 
@@ -453,6 +455,297 @@ export const deleteGeneration = async (req, res, next) => {
   }
 };
 
+// Pet Portrait Generation with dual images
+export const generatePetPortrait = async (req, res, next) => {
+  try {
+    const {
+      userImageUrl,
+      styleImageUrl,
+      styleName,
+      aiModel = 'flux-pro',
+      aspectRatio = '1:1',
+      width = 1024,
+      height = 1024
+    } = req.body;
+
+    if (!userImageUrl || !styleImageUrl) {
+      throw new AppError('Both user image and style image URLs are required', 400);
+    }
+
+    // Check and deduct credits using unified service
+    const { user, creditsUsed } = await checkAndDeductCredits(req.user.id, aiModel);
+
+    // Create the pet portrait prompt for AI
+    const petPortraitPrompt = `Replace the animal in the style reference image with the pet from the user's photo. Keep all the costume, background, pose, lighting, and artistic style exactly the same. Only change the animal/pet while maintaining the ${styleName} aesthetic and all visual elements like clothing, accessories, setting, and composition.`;
+
+    // Create generation record
+    const generation = await prisma.generation.create({
+      data: {
+        userId: req.user.id,
+        prompt: petPortraitPrompt,
+        model: aiModel,
+        style: styleName,
+        batchSize: 1,
+        status: 'PROCESSING',
+        creditsUsed: creditsUsed
+      }
+    });
+
+    try {
+      let imageUrl = null;
+
+      // Call the appropriate AI service based on aiModel
+      if (aiModel === 'flux-pro' || aiModel === 'flux-max') {
+        // Use working Flux API with dual-image Pet Portrait support
+        const FLUX_API_KEY = process.env.FLUX_API_KEY;
+        
+        if (!FLUX_API_KEY) {
+          throw new AppError('Flux API key not configured', 500);
+        }
+
+        // Enhanced prompt that includes style reference instruction
+        const enhancedPrompt = `${petPortraitPrompt}. Transform the uploaded pet photo to match the artistic style shown in the reference style image. Maintain the pet's features while applying the thematic elements, colors, and artistic style from the reference.`;
+
+        const apiUrl = aiModel === 'flux-max' 
+          ? 'https://api.bfl.ai/v1/flux-kontext-max' 
+          : 'https://api.bfl.ai/v1/flux-kontext-pro';
+        
+        const requestBody = {
+          prompt: enhancedPrompt,
+          input_image: userImageUrl.replace(/^data:image\/[a-z]+;base64,/, ''),
+          aspect_ratio: aspectRatio === 'match' ? '1:1' : (aspectRatio || '1:1'),
+          output_format: 'jpeg'
+        };
+
+        console.log('🎨 Pet Portrait Flux API request:', {
+          url: apiUrl,
+          prompt: enhancedPrompt.substring(0, 100) + '...',
+          style: styleName,
+          aspectRatio: requestBody.aspect_ratio
+        });
+
+        const response = await axios.post(apiUrl, requestBody, {
+          headers: {
+            'accept': 'application/json',
+            'x-key': FLUX_API_KEY,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        console.log('🎨 Flux Pet Portrait API response:', JSON.stringify(response.data, null, 2));
+
+        if (!response.data.id) {
+          throw new AppError('No request ID received from Flux API', 500);
+        }
+
+        // Poll for result using the same logic as working Flux controller
+        const pollResult = await pollForFluxResult(response.data.id, req);
+        
+        if (pollResult.success) {
+          imageUrl = pollResult.image;
+        } else {
+          throw new AppError(pollResult.error || 'Pet Portrait generation failed', 500);
+        }
+      } 
+      else if (aiModel === 'nano-banana') {
+        // Use nano-banana Pet Portrait endpoint with dual-image support
+        console.log('🍌 Using nano-banana for Pet Portrait dual-image generation...');
+        
+        // Prepare request data
+        const nanoRequestData = {
+          userImageUrl,
+          styleImageUrl,
+          styleName,
+          prompt: petPortraitPrompt,
+          aspectRatio
+        };
+        
+        const nanoRequestHeaders = {
+          'Authorization': req.headers.authorization,
+          'Content-Type': 'application/json'
+        };
+        
+        // Log detailed request information
+        console.log('🍌 Nano-banana request details:', {
+          url: 'http://localhost:5000/api/nano-banana/pet-portrait',
+          method: 'POST',
+          headers: {
+            ...nanoRequestHeaders,
+            Authorization: req.headers.authorization ? '[PRESENT]' : '[MISSING]'
+          },
+          data: {
+            userImageUrl: userImageUrl ? `${userImageUrl.substring(0, 50)}...` : '[MISSING]',
+            styleImageUrl: styleImageUrl ? `${styleImageUrl.substring(0, 50)}...` : '[MISSING]',
+            styleName: styleName || '[MISSING]',
+            prompt: petPortraitPrompt ? `${petPortraitPrompt.substring(0, 100)}...` : '[MISSING]',
+            aspectRatio: aspectRatio || '[MISSING]'
+          }
+        });
+        
+        try {
+          console.log('🍌 Sending nano-banana API request...');
+          
+          const nanoResponse = await axios.post('http://localhost:5000/api/nano-banana/pet-portrait', nanoRequestData, {
+            headers: nanoRequestHeaders,
+            timeout: 300000, // 5 minute timeout
+            validateStatus: function (status) {
+              return status < 600; // Don't throw for any status less than 600
+            }
+          });
+          
+          console.log('🍌 Nano-banana response received:', {
+            status: nanoResponse.status,
+            statusText: nanoResponse.statusText,
+            headers: {
+              'content-type': nanoResponse.headers['content-type'],
+              'content-length': nanoResponse.headers['content-length']
+            }
+          });
+          
+          // Log full response data
+          console.log('🍌 Full nano-banana response data:', JSON.stringify(nanoResponse.data, null, 2));
+          
+          // Check response status
+          if (nanoResponse.status !== 200) {
+            console.error('🍌 Nano-banana API returned non-200 status:', {
+              status: nanoResponse.status,
+              statusText: nanoResponse.statusText,
+              data: nanoResponse.data
+            });
+            throw new AppError(`Nano-banana API error: ${nanoResponse.status} ${nanoResponse.statusText}`, 500);
+          }
+          
+          // Validate response structure
+          if (!nanoResponse.data) {
+            console.error('🍌 Nano-banana API returned no data');
+            throw new AppError('Nano-banana Pet Portrait generation failed: No response data', 500);
+          }
+          
+          if (nanoResponse.data.success && nanoResponse.data.data && nanoResponse.data.data.image) {
+            imageUrl = nanoResponse.data.data.image;
+            console.log('🍌 Nano-banana Pet Portrait success!', {
+              success: nanoResponse.data.success,
+              imageUrl: imageUrl.substring(0, 50) + '...',
+              imageType: typeof imageUrl,
+              imageLength: imageUrl.length
+            });
+          } else {
+            console.error('🍌 Nano-banana Pet Portrait generation failed - invalid response:', {
+              success: nanoResponse.data.success,
+              hasImage: !!(nanoResponse.data.data && nanoResponse.data.data.image),
+              error: nanoResponse.data.error || 'No error message provided',
+              fullResponse: nanoResponse.data
+            });
+            
+            const errorMessage = nanoResponse.data.error || 'Nano-banana Pet Portrait generation failed';
+            throw new AppError(errorMessage, 500);
+          }
+        } catch (error) {
+          console.error('🍌 Nano-banana API request failed:', {
+            message: error.message,
+            code: error.code,
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+            stack: error.stack
+          });
+          
+          // Re-throw with more specific error message
+          if (error.code === 'ECONNREFUSED') {
+            throw new AppError('Nano-banana service is not available (connection refused)', 503);
+          } else if (error.code === 'TIMEOUT' || error.code === 'ECONNABORTED') {
+            throw new AppError('Nano-banana service timed out', 504);
+          } else if (error.response) {
+            // Server responded with error status
+            const errorMsg = error.response.data?.error || error.response.data?.message || error.message;
+            throw new AppError(`Nano-banana service error: ${errorMsg}`, error.response.status);
+          } else {
+            // Network error or other issue
+            throw new AppError(`Nano-banana service error: ${error.message}`, 500);
+          }
+        }
+      }
+      else {
+        throw new AppError(`Pet Portrait generation not yet supported for ${aiModel}. Currently supports: flux-pro, flux-max, nano-banana`, 400);
+      }
+
+      if (!imageUrl) {
+        throw new AppError('No image generated', 500);
+      }
+
+      // Upload and save the generated image
+      const storageProvider = getStorageProvider();
+      const shouldSaveToGallery = shouldSaveImageForUser(req.user);
+      
+      let uploadResult = null;
+      let thumbnailResult = null;
+      let cloudPath = null;
+      
+      if (shouldSaveToGallery) {
+        uploadResult = await storageProvider.uploadImage(imageUrl, 'pet-portrait');
+        thumbnailResult = await storageProvider.generateThumbnail(uploadResult.url);
+        cloudPath = uploadResult.path;
+      }
+
+      // Save to database
+      const image = await prisma.image.create({
+        data: {
+          userId: req.user.id,
+          generationId: generation.id,
+          url: shouldSaveToGallery ? uploadResult.url : imageUrl,
+          thumbnailUrl: shouldSaveToGallery ? thumbnailResult.url : null,
+          prompt: petPortraitPrompt,
+          model: aiModel,
+          style: styleName,
+          width: parseInt(width),
+          height: parseInt(height),
+          isPublic: false,
+          cloudPath: cloudPath
+        }
+      });
+
+      // Update generation status
+      await prisma.generation.update({
+        where: { id: generation.id },
+        data: {
+          status: 'COMPLETED',
+          completedAt: new Date()
+        }
+      });
+
+      res.json({
+        message: 'Pet portrait generated successfully',
+        imageUrl: image.url,
+        generation: {
+          id: generation.id,
+          status: 'COMPLETED',
+          creditsUsed: creditsUsed
+        },
+        remainingCredits: user.totalCredits - creditsUsed
+      });
+
+    } catch (error) {
+      // Update generation status to failed
+      await prisma.generation.update({
+        where: { id: generation.id },
+        data: {
+          status: 'FAILED',
+          error: error.message
+        }
+      });
+
+      // Refund credits on failure
+      await refundCredits(req.user.id, creditsUsed, `Pet Portrait generation failed: ${error.message}`);
+
+      console.error('Pet Portrait generation error:', error);
+      throw new AppError('Failed to generate pet portrait', 500);
+    }
+
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Get generation details by ID
 export const getGenerationById = async (req, res, next) => {
   try {
@@ -489,3 +782,69 @@ export const getGenerationById = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Poll for generation result from bfl.ai (Flux API)
+ * Used for Pet Portrait generation with Flux models
+ */
+async function pollForFluxResult(requestId, req = null) {
+  const FLUX_API_KEY = process.env.FLUX_API_KEY;
+  const FLUX_STATUS_URL = 'https://api.bfl.ai/v1/get_result';
+  const maxAttempts = 60;
+  const baseInterval = 2000;
+  
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    // Check if request was cancelled
+    if (req && req.aborted) {
+      throw new Error('Request was cancelled during polling');
+    }
+    
+    try {
+      // Use adaptive polling intervals
+      const interval = attempt < 5 ? baseInterval : 
+                      attempt < 15 ? baseInterval * 1.5 : 
+                      baseInterval * 2;
+      
+      await new Promise(resolve => setTimeout(resolve, interval));
+      
+      const statusResponse = await axios.get(FLUX_STATUS_URL, {
+        params: { id: requestId },
+        headers: {
+          'accept': 'application/json',
+          'x-key': FLUX_API_KEY
+        }
+      });
+      
+      console.log(`🎨 Pet Portrait Flux polling attempt ${attempt}: ${statusResponse.data.status}`);
+      console.log('Full status response:', JSON.stringify(statusResponse.data, null, 2));
+      
+      if (statusResponse.data.status === 'Ready') {
+        const imageUrl = statusResponse.data.result?.sample;
+        
+        if (!imageUrl) {
+          console.error('No image URL in result:', statusResponse.data);
+          throw new Error('No image generated');
+        }
+        
+        console.log('✅ Pet Portrait Flux generation successful, image URL:', imageUrl);
+        
+        return {
+          success: true,
+          image: imageUrl,
+          thumbnailUrl: imageUrl
+        };
+      } else if (statusResponse.data.status === 'Error') {
+        console.error('❌ Pet Portrait Flux generation failed:', statusResponse.data.error);
+        throw new Error(`Generation failed: ${statusResponse.data.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      if (error.response?.status === 404) {
+        console.log(`Request ${requestId} not found yet, continuing...`);
+      } else {
+        throw error;
+      }
+    }
+  }
+  
+  throw new Error('Pet Portrait generation timed out after maximum attempts');
+}

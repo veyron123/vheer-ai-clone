@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
 import WayForPayRecurringService from '../services/wayforpayRecurringService.js';
+import { trackAffiliateConversion } from '../middleware/affiliateTracking.js';
 
 const prisma = new PrismaClient();
 const recurringService = new WayForPayRecurringService();
@@ -654,6 +655,23 @@ export const handleCallback = async (req, res) => {
       });
       
       console.log(`🎉 Successfully added ${credits} credits to user ${user.email}`);
+      
+      // Track affiliate conversion for successful subscription payment
+      try {
+        const commission = await trackAffiliateConversion(user.id, orderReference, parseFloat(amount));
+        if (commission) {
+          console.log('💰 Affiliate conversion tracked:', {
+            userId: user.id,
+            orderReference,
+            amount: parseFloat(amount),
+            commissionAmount: commission.amount
+          });
+        }
+      } catch (affiliateError) {
+        console.error('Failed to track affiliate conversion:', affiliateError);
+        // Don't fail the payment if affiliate tracking fails
+      }
+      
       console.log('=== Payment Processing Complete ===');
     }
     
@@ -1333,6 +1351,24 @@ export const handleCartCallback = async (req, res) => {
           console.log('📢 Admin notification created');
         } catch (notifError) {
           console.error('Failed to create notification:', notifError);
+        }
+        
+        // Track affiliate conversion for successful cart order
+        try {
+          if (payment.userId) {
+            const commission = await trackAffiliateConversion(payment.userId, orderReference, parseFloat(amount));
+            if (commission) {
+              console.log('💰 Affiliate conversion tracked for cart order:', {
+                userId: payment.userId,
+                orderReference,
+                amount: parseFloat(amount),
+                commissionAmount: commission.amount
+              });
+            }
+          }
+        } catch (affiliateError) {
+          console.error('Failed to track affiliate conversion:', affiliateError);
+          // Don't fail the order if affiliate tracking fails
         }
         
       } catch (orderError) {

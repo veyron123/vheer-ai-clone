@@ -2,10 +2,13 @@ import express from 'express';
 import {
   saveCartSession,
   markCartAsConverted,
-  getActiveCarts,
-  getCartDetails,
-  getCartStats
+  getCartDetails as getCartDetailsFromTracking
 } from '../controllers/cart-tracking.controller.js';
+import {
+  getCarts,
+  getCartStats,
+  getCartById
+} from '../controllers/cart-stats.controller.js';
 import { authenticate, adminAuth } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -18,8 +21,8 @@ router.post('/convert', markCartAsConverted);
 router.use(authenticate);
 router.use(adminAuth);
 
-router.get('/', getActiveCarts);
+router.get('/', getCarts);
 router.get('/stats', getCartStats);
-router.get('/:id', getCartDetails);
+router.get('/:id', getCartById);
 
 export default router;

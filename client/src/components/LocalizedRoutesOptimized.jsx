@@ -33,6 +33,7 @@ const MockupLibraryPage = lazy(() => import('../pages/MockupLibraryPage'));
 const PaymentSuccess = lazy(() => import('../pages/PaymentSuccess'));
 const PaymentFailure = lazy(() => import('../pages/PaymentFailure'));
 const AdminDashboard = lazy(() => import('../pages/AdminDashboard'));
+const AffiliateDashboard = lazy(() => import('../pages/AffiliateDashboard'));
 
 const LocalizedRoutes = () => {
   const location = useLocation();
@@ -136,6 +137,13 @@ const LanguageRoutes = () => {
       <Route path="/admin" element={
         <ProtectedRoute>
           <AdminDashboard />
+        </ProtectedRoute>
+      } />
+      
+      {/* Affiliate route - for partners */}
+      <Route path="/affiliate" element={
+        <ProtectedRoute>
+          <AffiliateDashboard />
         </ProtectedRoute>
       } />
       

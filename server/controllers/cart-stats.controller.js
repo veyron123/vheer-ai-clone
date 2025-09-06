@@ -3,26 +3,26 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 /**
- * Get cart statistics from CartOrder data
+ * Get cart statistics from CartSession data
  */
 export const getCartStats = async (req, res) => {
   try {
-    // Get total cart orders statistics
-    const totalStats = await prisma.cartOrder.aggregate({
+    // Get total cart sessions statistics
+    const totalStats = await prisma.cartSession.aggregate({
       _count: true,
       _sum: {
-        amount: true
+        totalAmount: true
       }
     });
 
-    // Get paid orders statistics
-    const paidStats = await prisma.cartOrder.aggregate({
+    // Get active carts statistics
+    const activeStats = await prisma.cartSession.aggregate({
       _count: true,
       _sum: {
-        amount: true
+        totalAmount: true
       },
       where: {
-        paymentStatus: 'PAID'
+        status: 'active'
       }
     });
 
@@ -30,10 +30,10 @@ export const getCartStats = async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const todayStats = await prisma.cartOrder.aggregate({
+    const todayStats = await prisma.cartSession.aggregate({
       _count: true,
       _sum: {
-        amount: true
+        totalAmount: true
       },
       where: {
         createdAt: {
@@ -47,10 +47,10 @@ export const getCartStats = async (req, res) => {
     thisMonth.setDate(1);
     thisMonth.setHours(0, 0, 0, 0);
 
-    const monthStats = await prisma.cartOrder.aggregate({
+    const monthStats = await prisma.cartSession.aggregate({
       _count: true,
       _sum: {
-        amount: true
+        totalAmount: true
       },
       where: {
         createdAt: {
@@ -60,36 +60,36 @@ export const getCartStats = async (req, res) => {
     });
 
     // Get status breakdown
-    const statusBreakdown = await prisma.cartOrder.groupBy({
-      by: ['orderStatus'],
-      _count: true,
-      where: {
-        paymentStatus: 'PAID'
-      }
+    const statusBreakdown = await prisma.cartSession.groupBy({
+      by: ['status'],
+      _count: true
     });
 
     const statusMap = statusBreakdown.reduce((acc, curr) => {
-      acc[curr.orderStatus.toLowerCase()] = curr._count;
+      acc[curr.status] = curr._count;
       return acc;
     }, {});
 
-    // Get recent orders for activity
-    const recentOrders = await prisma.cartOrder.findMany({
-      where: {
-        paymentStatus: 'PAID'
-      },
+    // Get recent cart activity
+    const recentActivity = await prisma.cartSession.findMany({
       orderBy: {
         createdAt: 'desc'
       },
       take: 10,
       select: {
         id: true,
-        orderReference: true,
+        sessionId: true,
         customerEmail: true,
-        customerFirstName: true,
-        amount: true,
+        totalAmount: true,
         currency: true,
-        createdAt: true
+        status: true,
+        createdAt: true,
+        user: {
+          select: {
+            email: true,
+            fullName: true
+          }
+        }
       }
     });
 
@@ -97,23 +97,23 @@ export const getCartStats = async (req, res) => {
       success: true,
       stats: {
         total: {
-          orders: totalStats._count,
-          revenue: totalStats._sum.amount || 0
+          carts: totalStats._count,
+          value: totalStats._sum.totalAmount || 0
         },
-        paid: {
-          orders: paidStats._count,
-          revenue: paidStats._sum.amount || 0
+        active: {
+          carts: activeStats._count,
+          value: activeStats._sum.totalAmount || 0
         },
         today: {
-          orders: todayStats._count,
-          revenue: todayStats._sum.amount || 0
+          carts: todayStats._count,
+          value: todayStats._sum.totalAmount || 0
         },
         thisMonth: {
-          orders: monthStats._count,
-          revenue: monthStats._sum.amount || 0
+          carts: monthStats._count,
+          value: monthStats._sum.totalAmount || 0
         },
         statusBreakdown: statusMap,
-        recentActivity: recentOrders
+        recentActivity
       }
     });
   } catch (error) {
@@ -127,7 +127,7 @@ export const getCartStats = async (req, res) => {
 };
 
 /**
- * Get list of carts (using CartOrder data for now)
+ * Get list of carts (using CartSession data)
  */
 export const getCarts = async (req, res) => {
   try {
@@ -145,19 +145,19 @@ export const getCarts = async (req, res) => {
     const where = {};
     
     if (status) {
-      where.orderStatus = status;
+      where.status = status;
     }
 
     // Get total count
-    const totalCarts = await prisma.cartOrder.count({ where });
+    const totalCarts = await prisma.cartSession.count({ where });
 
-    // Get cart orders
-    const carts = await prisma.cartOrder.findMany({
+    // Get cart sessions
+    const carts = await prisma.cartSession.findMany({
       where,
       skip,
       take: parseInt(limit),
       orderBy: {
-        [sortBy === 'lastActivityAt' ? 'updatedAt' : sortBy]: sortOrder
+        [sortBy === 'lastActivityAt' ? 'lastActivityAt' : sortBy]: sortOrder
       },
       include: {
         user: {
@@ -172,24 +172,25 @@ export const getCarts = async (req, res) => {
     });
 
     // Transform to match expected cart format
-    const transformedCarts = carts.map(cart => ({
-      id: cart.id,
-      sessionId: cart.orderReference,
-      userId: cart.userId,
-      user: cart.user,
-      items: cart.items,
-      totalAmount: cart.amount,
-      itemCount: Array.isArray(cart.items) ? cart.items.length : 0,
-      currency: cart.currency,
-      customerEmail: cart.customerEmail || cart.user?.email,
-      status: cart.orderStatus,
-      paymentStatus: cart.paymentStatus,
-      createdAt: cart.createdAt,
-      updatedAt: cart.updatedAt,
-      lastActivityAt: cart.updatedAt,
-      isAbandoned: cart.paymentStatus !== 'PAID',
-      isConverted: cart.paymentStatus === 'PAID'
-    }));
+    const transformedCarts = carts.map((cart) => {
+      return {
+        id: cart.id,
+        sessionId: cart.sessionId,
+        userId: cart.userId,
+        user: cart.user,
+        items: cart.items,
+        totalAmount: cart.totalAmount,
+        itemCount: cart.itemCount || 0,
+        currency: cart.currency,
+        customerEmail: cart.customerEmail || cart.user?.email,
+        status: cart.status,
+        createdAt: cart.createdAt,
+        updatedAt: cart.updatedAt,
+        lastActivityAt: cart.lastActivityAt || cart.updatedAt,
+        isAbandoned: cart.status === 'abandoned',
+        isConverted: cart.status === 'converted'
+      };
+    });
 
     res.json({
       success: true,
@@ -218,7 +219,7 @@ export const getCartById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const cart = await prisma.cartOrder.findUnique({
+    const cart = await prisma.cartSession.findUnique({
       where: { id },
       include: {
         user: {
@@ -242,41 +243,24 @@ export const getCartById = async (req, res) => {
     // Transform to match expected cart format
     const transformedCart = {
       id: cart.id,
-      sessionId: cart.orderReference,
+      sessionId: cart.sessionId,
       userId: cart.userId,
       user: cart.user,
       items: cart.items,
-      totalAmount: cart.amount,
-      itemCount: Array.isArray(cart.items) ? cart.items.length : 0,
+      totalAmount: cart.totalAmount,
+      itemCount: cart.itemCount || 0,
       currency: cart.currency,
       customerEmail: cart.customerEmail || cart.user?.email,
-      customerFirstName: cart.customerFirstName,
-      customerLastName: cart.customerLastName,
-      customerPhone: cart.customerPhone,
-      customerAddress: cart.customerAddress,
-      customerCity: cart.customerCity,
-      customerCountry: cart.customerCountry,
-      shippingFirstName: cart.shippingFirstName,
-      shippingLastName: cart.shippingLastName,
-      shippingPhone: cart.shippingPhone,
-      shippingAddress: cart.shippingAddress,
-      shippingCity: cart.shippingCity,
-      shippingCountry: cart.shippingCountry,
-      shippingPostalCode: cart.shippingPostalCode,
-      status: cart.orderStatus,
-      paymentStatus: cart.paymentStatus,
-      orderStatus: cart.orderStatus,
-      adminNotes: cart.adminNotes,
-      trackingNumber: cart.trackingNumber,
-      trackingCarrier: cart.trackingCarrier,
+      status: cart.status,
+      userIp: cart.userIp,
+      userAgent: cart.userAgent,
       createdAt: cart.createdAt,
       updatedAt: cart.updatedAt,
-      paidAt: cart.paidAt,
-      shippedAt: cart.shippedAt,
-      deliveredAt: cart.deliveredAt,
-      lastActivityAt: cart.updatedAt,
-      isAbandoned: cart.paymentStatus !== 'PAID',
-      isConverted: cart.paymentStatus === 'PAID'
+      lastActivityAt: cart.lastActivityAt || cart.updatedAt,
+      abandonedAt: cart.abandonedAt,
+      convertedToOrderId: cart.convertedToOrderId,
+      isAbandoned: cart.status === 'abandoned',
+      isConverted: cart.status === 'converted'
     };
 
     res.json({
@@ -294,47 +278,35 @@ export const getCartById = async (req, res) => {
 };
 
 /**
- * Update cart (order) by ID
+ * Update cart session by ID
  */
 export const updateCartById = async (req, res) => {
   try {
     const { id } = req.params;
     const {
-      orderStatus,
-      trackingNumber,
-      trackingCarrier,
-      adminNotes
+      status,
+      customerEmail
     } = req.body;
 
     const data = {
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      lastActivityAt: new Date()
     };
 
-    if (orderStatus) {
-      data.orderStatus = orderStatus;
+    if (status) {
+      data.status = status;
       
       // Update timestamps based on status
-      if (orderStatus === 'SHIPPED' && !data.shippedAt) {
-        data.shippedAt = new Date();
-      }
-      if (orderStatus === 'DELIVERED' && !data.deliveredAt) {
-        data.deliveredAt = new Date();
+      if (status === 'abandoned' && !data.abandonedAt) {
+        data.abandonedAt = new Date();
       }
     }
 
-    if (trackingNumber !== undefined) {
-      data.trackingNumber = trackingNumber;
+    if (customerEmail !== undefined) {
+      data.customerEmail = customerEmail;
     }
 
-    if (trackingCarrier !== undefined) {
-      data.trackingCarrier = trackingCarrier;
-    }
-
-    if (adminNotes !== undefined) {
-      data.adminNotes = adminNotes;
-    }
-
-    const cart = await prisma.cartOrder.update({
+    const cart = await prisma.cartSession.update({
       where: { id },
       data,
       include: {
@@ -352,28 +324,24 @@ export const updateCartById = async (req, res) => {
     // Transform to match expected cart format
     const transformedCart = {
       id: cart.id,
-      sessionId: cart.orderReference,
+      sessionId: cart.sessionId,
       userId: cart.userId,
       user: cart.user,
       items: cart.items,
-      totalAmount: cart.amount,
-      itemCount: Array.isArray(cart.items) ? cart.items.length : 0,
+      totalAmount: cart.totalAmount,
+      itemCount: cart.itemCount || 0,
       currency: cart.currency,
       customerEmail: cart.customerEmail || cart.user?.email,
-      status: cart.orderStatus,
-      paymentStatus: cart.paymentStatus,
-      orderStatus: cart.orderStatus,
-      adminNotes: cart.adminNotes,
-      trackingNumber: cart.trackingNumber,
-      trackingCarrier: cart.trackingCarrier,
+      status: cart.status,
+      userIp: cart.userIp,
+      userAgent: cart.userAgent,
       createdAt: cart.createdAt,
       updatedAt: cart.updatedAt,
-      paidAt: cart.paidAt,
-      shippedAt: cart.shippedAt,
-      deliveredAt: cart.deliveredAt,
-      lastActivityAt: cart.updatedAt,
-      isAbandoned: cart.paymentStatus !== 'PAID',
-      isConverted: cart.paymentStatus === 'PAID'
+      lastActivityAt: cart.lastActivityAt || cart.updatedAt,
+      abandonedAt: cart.abandonedAt,
+      convertedToOrderId: cart.convertedToOrderId,
+      isAbandoned: cart.status === 'abandoned',
+      isConverted: cart.status === 'converted'
     };
 
     res.json({

@@ -5,6 +5,14 @@ import { saveGeneratedImage } from './images.controller.js';
 import { getUserFriendlyAIError, logAIServiceError } from '../utils/aiServiceErrors.js';
 import fetch from 'node-fetch';
 import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// ES Module compatible __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // KIE API Configuration
 const KIE_API_KEY = process.env.NANO_BANANA_API_KEY || process.env.KIE_API_KEY;
@@ -56,6 +64,62 @@ async function uploadBase64ToImgbb(base64Data) {
     }
   } catch (error) {
     console.error('❌ [IMGBB] Upload error:', error.message);
+    if (error.response?.data) {
+      console.error('❌ [IMGBB] Error details:', error.response.data);
+    }
+    throw error;
+  }
+}
+
+/**
+ * Upload local file to IMGBB for public URL access
+ * Reads file from filesystem and converts to public URL
+ */
+async function uploadLocalFileToImgbb(filePath) {
+  const IMGBB_API_KEY = process.env.IMGBB_API_KEY;
+  
+  if (!IMGBB_API_KEY) {
+    throw new Error('IMGBB_API_KEY not configured - cannot upload local file');
+  }
+
+  try {
+    console.log('📂 [IMGBB] Reading local file:', filePath);
+    
+    // Check if file exists before reading
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`File does not exist at path: ${filePath}`);
+    }
+    
+    // Read file as base64
+    const fileBuffer = fs.readFileSync(filePath);
+    const base64Content = fileBuffer.toString('base64');
+    
+    console.log('📤 [IMGBB] Uploading local file to IMGBB...');
+    
+    // Upload to IMGBB
+    const formData = new URLSearchParams();
+    formData.append('key', IMGBB_API_KEY);
+    formData.append('image', base64Content);
+    
+    const response = await axios.post('https://api.imgbb.com/1/upload', formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      timeout: 30000
+    });
+    
+    if (response.data?.success && response.data?.data?.url) {
+      const publicUrl = response.data.data.url;
+      console.log('✅ [IMGBB] Local file uploaded successfully:', publicUrl);
+      return publicUrl;
+    } else {
+      throw new Error('IMGBB upload failed - no URL in response');
+    }
+  } catch (error) {
+    console.error('❌ [IMGBB] Local file upload error:', error.message);
+    if (error.code === 'ENOENT') {
+      throw new Error(`File not found: ${filePath}`);
+    }
     if (error.response?.data) {
       console.error('❌ [IMGBB] Error details:', error.response.data);
     }
@@ -301,6 +365,225 @@ export const generateImage = asyncHandler(async (req, res) => {
  * Note: KIE API's nano-banana-edit requires an input image
  * We'll create a white base image for text-to-image generation
  */
+/**
+ * Generate Pet Portrait with dual images using Nano-Banana
+ * Supports both user pet image and style reference image
+ */
+export const generatePetPortrait = asyncHandler(async (req, res) => {
+  const { userImageUrl, styleImageUrl, styleName, prompt, aspectRatio = '1:1' } = req.body;
+  const userId = req.user?.id;
+
+  // Require authentication
+  if (!userId) {
+    return sendUnauthorized(res, 'Please sign in to generate pet portraits');
+  }
+
+  // Validate required fields
+  if (!prompt || !userImageUrl || !styleImageUrl) {
+    return sendBadRequest(res, 'Prompt, user image, and style image are required for pet portraits');
+  }
+
+  const modelId = 'nano-banana';
+  let generation = null;
+  let creditsUsed = 0;
+
+  try {
+    // Check and deduct credits using unified service
+    const { user, creditsUsed: credits } = await checkAndDeductCredits(userId, modelId);
+    creditsUsed = credits;
+
+    // Create generation record
+    generation = await createGeneration(userId, {
+      prompt,
+      model: modelId,
+      status: 'PENDING'
+    });
+
+    console.log('🎨 [NANO-BANANA] Pet Portrait generation request:', {
+      hasPrompt: !!prompt,
+      hasUserImage: !!userImageUrl,
+      hasStyleImage: !!styleImageUrl,
+      styleName,
+      aspectRatio
+    });
+
+    // Process both images - convert base64 to public URLs if needed
+    let processedUserImageUrl = userImageUrl;
+    let processedStyleImageUrl = styleImageUrl;
+    
+    // Process user image
+    if (userImageUrl.startsWith('data:') || (userImageUrl.length > 100 && !userImageUrl.startsWith('http'))) {
+      console.log('📷 [NANO-BANANA] Converting user image base64 to public URL...');
+      let base64WithPrefix = userImageUrl.startsWith('data:') ? userImageUrl : `data:image/png;base64,${userImageUrl}`;
+      processedUserImageUrl = await uploadBase64ToImgbb(base64WithPrefix);
+      console.log('✅ [NANO-BANANA] User image converted:', processedUserImageUrl.substring(0, 50) + '...');
+    }
+    
+    // Process style image - handle local file paths, base64, and URLs
+    if (styleImageUrl.startsWith('data:') || (styleImageUrl.length > 100 && !styleImageUrl.startsWith('http'))) {
+      // Handle base64 style images
+      console.log('🎨 [NANO-BANANA] Converting style image base64 to public URL...');
+      let base64WithPrefix = styleImageUrl.startsWith('data:') ? styleImageUrl : `data:image/png;base64,${styleImageUrl}`;
+      processedStyleImageUrl = await uploadBase64ToImgbb(base64WithPrefix);
+      console.log('✅ [NANO-BANANA] Style image converted:', processedStyleImageUrl.substring(0, 50) + '...');
+    } else if (styleImageUrl.startsWith('/')) {
+      // Handle local file paths (starts with /) - most common case for Pet Portrait styles
+      console.log('📁 [NANO-BANANA] Processing local style image file:', styleImageUrl);
+      
+      // Try multiple possible paths
+      const possiblePaths = [
+        path.join(process.cwd(), '..', 'client', 'public', styleImageUrl), // ../client/public/...
+        path.join(process.cwd(), 'client', 'public', styleImageUrl), // client/public/... (if server is in wrong dir)
+        path.join(__dirname, '..', '..', 'client', 'public', styleImageUrl), // from __dirname
+        path.join('C:', 'Users', 'Denis', 'Desktop', 'Colibrrri-clone', 'client', 'public', styleImageUrl) // absolute path
+      ];
+      
+      console.log('🔍 [NANO-BANANA] Trying paths:', possiblePaths.map(p => p.substring(0, 60) + '...'));
+      
+      let uploadedSuccessfully = false;
+      for (const tryPath of possiblePaths) {
+        try {
+          if (fs.existsSync(tryPath)) {
+            console.log('✅ [NANO-BANANA] Found file at:', tryPath);
+            processedStyleImageUrl = await uploadLocalFileToImgbb(tryPath);
+            console.log('✅ [NANO-BANANA] Local style image uploaded:', processedStyleImageUrl.substring(0, 50) + '...');
+            uploadedSuccessfully = true;
+            break;
+          } else {
+            console.log('❌ [NANO-BANANA] File not found at:', tryPath);
+          }
+        } catch (error) {
+          console.log('❌ [NANO-BANANA] Error trying path:', tryPath, error.message);
+          continue;
+        }
+      }
+      
+      if (!uploadedSuccessfully) {
+        throw new Error(`Style image file not found: ${styleImageUrl}. Tried ${possiblePaths.length} different paths.`);
+      }
+    } else {
+      console.log('🔗 [NANO-BANANA] Using style image as URL (no conversion needed):', styleImageUrl.substring(0, 50) + '...');
+    }
+
+    // Enhanced prompt for Pet Portrait with style transfer
+    const enhancedPrompt = `Transform the pet from the first image into a painted portrait masterpiece that completely matches the artistic style, brushwork, lighting, and aesthetic of the second reference image. The pet must be rendered in the same painterly, artistic style as the clothing and background - NOT photorealistic. CRITICAL: The pet must have a FULLY CLOSED MOUTH - no open mouth, no visible tongue, no teeth showing, lips completely sealed shut in a dignified manner like classical portrait subjects. The pet should have a calm, composed facial expression with mouth firmly closed, displaying regal nobility and aristocratic bearing. The pet's face should have the same painted, artistic quality as historical portraits with soft brushstrokes and classical painting techniques. Apply the elegant ${styleName} painting style to the pet's entire form, making it look like it was painted by the same artist who created classical royal portraits. Remember: mouth must be completely closed and sealed - this is essential for the noble portrait aesthetic. No photorealistic elements - everything should be unified in one cohesive painted artistic style. ${prompt}`;
+
+    // Create task with KIE API using dual images
+    const requestBody = {
+      model: 'google/nano-banana-edit',
+      input: {
+        prompt: enhancedPrompt,
+        image_urls: [processedUserImageUrl, processedStyleImageUrl] // Dual images!
+      }
+    };
+    
+    console.log('🚀 [NANO-BANANA] Pet Portrait request to KIE API:', {
+      url: `${KIE_API_URL}/createTask`,
+      model: requestBody.model,
+      prompt: enhancedPrompt.substring(0, 100) + '...',
+      userImageUrl: processedUserImageUrl.substring(0, 50) + '...',
+      styleImageUrl: processedStyleImageUrl.substring(0, 50) + '...',
+      imageCount: requestBody.input.image_urls.length
+    });
+    
+    const createTaskResponse = await fetch(`${KIE_API_URL}/createTask`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${KIE_API_KEY}`
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!createTaskResponse.ok) {
+      const errorData = await createTaskResponse.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${createTaskResponse.status}`);
+    }
+
+    const taskResult = await createTaskResponse.json();
+    
+    if (taskResult.code !== 200) {
+      throw new Error(taskResult.message || 'Failed to create pet portrait task');
+    }
+
+    const taskId = taskResult.data.taskId;
+    console.log('🎯 [NANO-BANANA] Created Pet Portrait task:', taskId);
+
+    // Poll for task completion
+    const result = await pollTaskStatus(taskId);
+
+    if (result.success && result.url) {
+      // Update generation status
+      await completeGeneration(generation.id);
+      
+      // Try to save the generated image
+      try {
+        await saveGeneratedImage(
+          { url: result.url, width: 1024, height: 1024 },
+          user,
+          generation
+        );
+        console.log('🖼️ Pet Portrait image saved to user gallery');
+      } catch (saveError) {
+        console.log('Pet Portrait image not saved:', saveError.message);
+      }
+      
+      // Send success response
+      return sendSuccess(res, {
+        image: result.url,
+        thumbnailUrl: result.url,
+        credits: {
+          used: creditsUsed,
+          remaining: user.totalCredits - creditsUsed
+        },
+        model: modelId,
+        metadata: {
+          provider: 'KIE API',
+          model: 'google/nano-banana-edit',
+          mode: 'pet-portrait-dual-image',
+          styleName,
+          taskId
+        }
+      }, 'Pet Portrait generated successfully');
+    } else {
+      throw new Error(result.error || 'Pet Portrait generation failed');
+    }
+
+  } catch (error) {
+    console.error('❌ [NANO-BANANA] Pet Portrait error:', error.message);
+    logAIServiceError(error, 'Nano-Banana', 'generatePetPortrait');
+    
+    // If generation was created but failed, update its status
+    if (generation) {
+      await failGeneration(generation.id, error.message);
+    }
+    
+    // If credits were deducted but generation failed, refund them
+    if (creditsUsed > 0 && userId) {
+      try {
+        await refundCredits(userId, creditsUsed, 'Nano-Banana Pet Portrait generation failed');
+      } catch (refundError) {
+        console.error('Failed to refund Pet Portrait credits:', refundError);
+      }
+    }
+    
+    // Check for specific error types
+    if (error.statusCode === 400) {
+      return sendBadRequest(res, error.message, error.details);
+    }
+    
+    if (error.statusCode === 401) {
+      return sendUnauthorized(res, error.message);
+    }
+    
+    // Send user-friendly error
+    const userFriendlyMessage = getUserFriendlyAIError(error, 'Nano-Banana');
+    return sendServerError(res, userFriendlyMessage, {
+      details: error.message
+    });
+  }
+});
+
 export const generateFromPrompt = asyncHandler(async (req, res) => {
   const { prompt, aspectRatio = '1:1' } = req.body;
   const userId = req.user?.id;

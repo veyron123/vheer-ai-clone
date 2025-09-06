@@ -1,5 +1,5 @@
 import express from 'express';
-import { generateImage, generateFromPrompt } from '../controllers/nanobanana.controller.js';
+import { generateImage, generateFromPrompt, generatePetPortrait } from '../controllers/nanobanana.controller.js';
 import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -9,5 +9,8 @@ router.post('/image-to-image', authenticate, generateImage);
 
 // Generate image from prompt with Nano-Banana (text-to-image)
 router.post('/generate', authenticate, generateFromPrompt);
+
+// Generate Pet Portrait with dual images (user + style reference)
+router.post('/pet-portrait', authenticate, generatePetPortrait);
 
 export default router;

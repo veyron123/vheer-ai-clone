@@ -1,87 +1,117 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Star, CheckCircle } from 'lucide-react';
 
 const TextReviewsSection = () => {
-  // Заглушки для отзывов с фото работ
+  const [showAll, setShowAll] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  // Sample reviews with customer AI artwork
   const reviews = [
     {
       id: 1,
-      name: 'Анна К.',
-      date: '21.08.2024',
+      name: 'Sarah Johnson',
+      date: '08.21.2024',
       rating: 5,
-      comment: 'Спасибо за потрясающую работу! Заказывала портрет из фотографии любимой собаки. Качество печати превосходное, цвета яркие. Рамка тоже отличная!',
+      comment: "Wow, this is so cool! My boyfriend and I got this anime poster made from our photo and we're both obsessed 😍 It looks just like us but in that romantic anime style. Honestly way better than I expected!",
       images: [
-        'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=500&fit=crop',
+        '/Images for second section review/1_f2bc78a6-a0b8-4298-a655-45aa09895cad.webp',
       ],
-      size: '12" × 18" / Unframed',
       verified: true
     },
     {
       id: 2,
-      name: 'Дмитрий П.',
-      date: '19.08.2024',
+      name: 'Michael Davis',
+      date: '08.19.2024',
       rating: 5,
-      comment: 'Отличное качество! Делал постер с семейной фотографии на годовщину. Жена в восторге. Доставка быстрая, упаковка надежная.',
+      comment: "Got this made for our 2nd anniversary since we got engaged at Golden Gate Bridge. My fiancée cried happy tears when she saw it! They really captured that special moment perfectly.",
       images: [
-        'https://images.unsplash.com/photo-1511732351157-1865efcb7b7b?w=400&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1606787366850-de6330128bfc?w=400&h=500&fit=crop',
+        '/Images for second section review/image_4_9_.jpg',
       ],
-      size: '8" × 10" / Unframed',
       verified: true
     },
     {
       id: 3,
-      name: 'Мария С.',
-      date: '15.08.2024',
+      name: 'Emily Rodriguez',
+      date: '08.15.2024',
       rating: 5,
-      comment: 'Заказывала несколько постеров для офиса. Все пришло в идеальном состоянии. Качество печати на высоте, цвета насыщенные. Рекомендую!',
+      comment: "Ordered this as a surprise for my bf's birthday and he LOVES it! He keeps showing it to everyone who comes over lol. The cartoon style is so cute and looks exactly like him.",
       images: [
-        'https://images.unsplash.com/photo-1494253109108-2e30c049369b?w=400&h=500&fit=crop',
+        '/Images for second section review/images (3).jpg',
       ],
-      size: '16" × 20" / Black Frame',
       verified: true
     },
     {
       id: 4,
-      name: 'Алексей В.',
-      date: '12.08.2024',
+      name: 'James Wilson',
+      date: '08.12.2024',
       rating: 5,
-      comment: 'Превосходно! Постер выглядит точно как на превью. Материал качественный, печать четкая. Буду заказывать еще.',
+      comment: "This turned out amazing! My girlfriend and I are planning a trip to Japan so we wanted something with that vibe. The artist nailed it - we look so cute in this style and the background is gorgeous.",
       images: [
-        'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=400&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=400&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=500&fit=crop',
+        '/Images for second section review/Screenshot_2024-11-04_at_10.00.04.webp',
       ],
-      size: '24" × 36" / White Frame',
       verified: true
     },
     {
       id: 5,
-      name: 'Елена М.',
+      name: 'Lisa Thompson',
       date: '08.08.2024',
       rating: 5,
-      comment: 'Очень довольна! Делала постеры для детской комнаты. Яркие, красочные, дети в восторге. Качество отличное.',
-      images: [
-        'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=400&h=500&fit=crop',
-      ],
-      size: '12" × 12" / Unframed',
+      comment: "Finally got some nice art for my apartment! I wasn't sure how it would turn out but this is perfect. The colors are so pretty and it makes my room feel more personal.",
       verified: true
     },
     {
       id: 6,
-      name: 'Виктор К.',
-      date: '05.08.2024',
+      name: 'Robert Miller',
+      date: '08.05.2024',
       rating: 5,
-      comment: 'Заказал серию постеров для гостиной. Все выполнено на высшем уровне. Цвета точные, качество печати превосходное. Спасибо!',
+      comment: "Haha my friends think this is hilarious! Got myself turned into an anime character and it actually looks pretty cool. Definitely gonna order one of my dog next 😂",
       images: [
-        'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=500&fit=crop',
+        '/Images for second section review/v8MtugJ4jB_mid.jpg',
       ],
-      size: '18" × 24" / Black Frame',
       verified: true
     }
   ];
 
-  // Функция для отрисовки звезд
+  // Additional reviews that appear when "Load More" is clicked
+  const additionalReviews = [
+    {
+      id: 7,
+      name: 'Jennifer Lee',
+      date: '08.02.2024',
+      rating: 5,
+      comment: "OMG I got my cat turned into anime style and it's the cutest thing ever! My friends keep asking where I got it done. Already thinking about getting one of my other pets too 🐱",
+      verified: true
+    },
+    {
+      id: 8,
+      name: 'David Anderson',
+      date: '07.30.2024',
+      rating: 5,
+      comment: "Did a whole family set for Christmas gifts and everyone was so excited! My kids especially love seeing themselves as anime characters. Might make this a yearly tradition tbh.",
+      verified: true
+    },
+    {
+      id: 9,
+      name: 'Amanda Clark',
+      date: '07.28.2024',
+      rating: 5,
+      comment: "My 8 year old daughter has been obsessed with Disney princesses lately so this was perfect! She literally squealed when she saw herself as one. Now she wants one for her room too 👸",
+      verified: true
+    }
+  ];
+
+  // Handle load more functionality
+  const handleLoadMore = async () => {
+    setIsLoading(true);
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setShowAll(true);
+    setIsLoading(false);
+  };
+
+  // Get reviews to display
+  const displayedReviews = showAll ? [...reviews, ...additionalReviews] : reviews;
+
+  // Function to render stars
   const renderStars = (rating) => {
     return (
       <div className="flex items-center gap-0.5">
@@ -120,45 +150,18 @@ const TextReviewsSection = () => {
       {/* Сетка отзывов */}
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {reviews.map((review) => (
+          {displayedReviews.map((review) => (
             <div key={review.id} className="border border-gray-200 rounded-lg overflow-hidden">
-              {/* Изображения работ */}
-              <div className="bg-gray-100">
-                {review.images.length === 1 ? (
+              {/* Customer artwork images - only show first image if images exist */}
+              {review.images && review.images.length > 0 && (
+                <div className="bg-gray-100">
                   <img
                     src={review.images[0]}
                     alt="Customer artwork"
                     className="w-full h-64 object-cover"
                   />
-                ) : review.images.length === 2 ? (
-                  <div className="grid grid-cols-2 gap-1">
-                    {review.images.map((img, idx) => (
-                      <img
-                        key={idx}
-                        src={img}
-                        alt="Customer artwork"
-                        className="w-full h-32 object-cover"
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-1">
-                    <img
-                      src={review.images[0]}
-                      alt="Customer artwork"
-                      className="col-span-2 w-full h-32 object-cover"
-                    />
-                    {review.images.slice(1, 3).map((img, idx) => (
-                      <img
-                        key={idx}
-                        src={img}
-                        alt="Customer artwork"
-                        className="w-full h-32 object-cover"
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Информация об отзыве */}
               <div className="p-4">
@@ -176,13 +179,6 @@ const TextReviewsSection = () => {
                 {/* Рейтинг */}
                 {renderStars(review.rating)}
 
-                {/* Размер */}
-                {review.size && (
-                  <p className="text-xs text-gray-500 mt-2">
-                    Size: {review.size}
-                  </p>
-                )}
-
                 {/* Текст отзыва */}
                 <p className="text-sm text-gray-700 mt-3 line-clamp-4">
                   {review.comment}
@@ -193,7 +189,7 @@ const TextReviewsSection = () => {
                   <div className="mt-3 pt-3 border-t border-gray-100">
                     <span className="text-xs text-green-600 font-medium flex items-center gap-1">
                       <CheckCircle className="w-3 h-3" />
-                      The General - Custom Pet Canvas
+                      AI Art Generator - Custom Creation
                     </span>
                   </div>
                 )}
@@ -202,12 +198,37 @@ const TextReviewsSection = () => {
           ))}
         </div>
 
-        {/* Кнопка загрузить еще */}
-        <div className="text-center mt-8">
-          <button className="px-8 py-3 border-2 border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">
-            Load More Reviews
-          </button>
-        </div>
+        {/* Load More Button */}
+        {!showAll && (
+          <div className="text-center mt-8">
+            <button 
+              onClick={handleLoadMore}
+              disabled={isLoading}
+              className="px-8 py-3 border-2 border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                  Loading...
+                </>
+              ) : (
+                'Load More Reviews'
+              )}
+            </button>
+          </div>
+        )}
+        
+        {/* Show less button when all reviews are displayed */}
+        {showAll && (
+          <div className="text-center mt-8">
+            <button 
+              onClick={() => setShowAll(false)}
+              className="px-8 py-3 border-2 border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+            >
+              Show Less Reviews
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

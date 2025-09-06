@@ -4,6 +4,8 @@ import { PrismaClient } from '@prisma/client';
 import { AppError } from '../middleware/error.middleware.js';
 import * as CreditService from '../services/creditService.js';
 import notificationService from '../services/NotificationService.js';
+import { getClientIP, normalizeIP } from '../utils/requestUtils.js';
+import affiliateService from '../services/affiliateService.js';
 
 const prisma = new PrismaClient();
 
@@ -34,6 +36,9 @@ export const register = async (req, res, next) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
     
+    // Get client IP address
+    const clientIP = normalizeIP(getClientIP(req));
+    
     // Create user with subscription and initial credits
     const user = await prisma.user.create({
       data: {
@@ -43,6 +48,9 @@ export const register = async (req, res, next) => {
         fullName,
         totalCredits: 100, // Initial daily credits
         lastCreditUpdate: new Date(), // Set current time for daily credits tracking
+        registrationIP: clientIP, // IP адрес регистрации
+        lastLoginIP: clientIP, // IP адрес первого входа
+        lastLoginAt: new Date(), // Время первого входа
         subscription: {
           create: {
             plan: 'FREE',
@@ -63,6 +71,26 @@ export const register = async (req, res, next) => {
     });
     
     const token = generateToken(user.id);
+    
+    // Track affiliate referral if cookie exists
+    try {
+      const affiliateCode = req.cookies?.affiliate_code;
+      const clickId = req.cookies?.affiliate_click;
+      
+      if (affiliateCode) {
+        await affiliateService.trackReferral(user.id, affiliateCode, clickId);
+        
+        // Clear affiliate cookies after successful tracking
+        res.clearCookie('affiliate_code');
+        res.clearCookie('affiliate_click');
+        res.clearCookie('affiliate_session');
+        
+        console.log(`Affiliate referral tracked for user ${user.id} via ${affiliateCode}`);
+      }
+    } catch (affiliateError) {
+      console.error('Failed to track affiliate referral:', affiliateError);
+      // Don't fail registration if affiliate tracking fails
+    }
     
     // Send notification for new user registration
     try {
@@ -109,6 +137,18 @@ export const login = async (req, res, next) => {
     if (!isPasswordValid) {
       throw new AppError('Invalid credentials', 401);
     }
+    
+    // Get client IP address and update last login info
+    const clientIP = normalizeIP(getClientIP(req));
+    
+    // Update user's last login info
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        lastLoginIP: clientIP,
+        lastLoginAt: new Date()
+      }
+    });
     
     const token = generateToken(user.id);
     

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   generateImage,
+  generatePetPortrait,
   getGenerationStatus,
   getUserGenerations,
   getAvailableModels,
@@ -19,6 +20,7 @@ router.get('/styles', getAvailableStyles);
 
 // Protected routes
 router.post('/', authenticate, generateImage);
+router.post('/pet-portrait', authenticate, generatePetPortrait);
 router.get('/status/:id', authenticate, getGenerationStatus);
 router.get('/history', authenticate, getUserGenerations);
 router.get('/:id', authenticate, getGenerationById);
