@@ -534,14 +534,13 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
         console.log('Pet Portrait image not saved:', saveError.message);
       }
       
-      // Send success response
-      return sendSuccess(res, {
-        image: result.url,
-        thumbnailUrl: result.url,
-        credits: {
-          used: creditsUsed,
-          remaining: user.totalCredits - creditsUsed
-        },
+      // Prepare response data in the format frontend expects
+      const responseData = {
+        success: true,
+        imageUrl: result.url,
+        generation: generation,
+        remainingCredits: user.totalCredits - creditsUsed,
+        message: 'Pet Portrait generated successfully',
         model: modelId,
         metadata: {
           provider: 'KIE API',
@@ -550,7 +549,26 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
           styleName,
           taskId
         }
-      }, 'Pet Portrait generated successfully');
+      };
+      
+      console.log('🍌 Nano-banana response received:', {
+        success: responseData.success,
+        hasImageUrl: !!responseData.imageUrl,
+        imageUrlPreview: responseData.imageUrl?.substring(0, 50) + '...',
+        remainingCredits: responseData.remainingCredits
+      });
+      
+      console.log('🍌 Full nano-banana response data:', JSON.stringify({
+        message: responseData.message,
+        success: responseData.success,
+        imageUrl: responseData.imageUrl?.substring(0, 80) + '...',
+        model: responseData.model
+      }, null, 2));
+      
+      console.log('🍌 Nano-banana Pet Portrait success! {');
+      
+      // Send success response
+      return res.status(200).json(responseData);
     } else {
       throw new Error(result.error || 'Pet Portrait generation failed');
     }
