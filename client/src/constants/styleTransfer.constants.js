@@ -15,11 +15,6 @@ export const STYLE_TRANSFER_AI_MODELS = {
     name: 'Qwen Image',
     badge: { text: 'NEW', color: 'bg-green-500 text-white' }
   },
-  NANO_BANANA: {
-    id: 'nano-banana',
-    name: 'Nano-Banana',
-    badge: { text: '🍌', color: 'bg-orange-600 text-white' }
-  }
 };
 
 // Style Transfer Configuration

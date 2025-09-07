@@ -118,7 +118,7 @@ const StyleTransferPage = () => {
                 <span className="text-sm font-medium">AI Model</span>
               </label>
               
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {Object.values(STYLE_TRANSFER_AI_MODELS).map((model) => (
                   <button
                     key={model.id}
@@ -141,7 +141,6 @@ const StyleTransferPage = () => {
             <AspectRatioSelector
               selectedRatio={aspectRatio}
               onRatioChange={setAspectRatio}
-              disabled={aiModel === 'nano-banana'}
               aiModel={aiModel}
             />
             

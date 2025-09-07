@@ -621,9 +621,8 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
         // Используем правильные пути к рамкам для каждого соотношения сторон в зависимости от размера
         let framePath;
         if (autoDetectedRatio === '3:4') {
-          // Для 3:4 используем размер в зависимости от selectedSize
-          const sizeFormatted = selectedSize.replace('x', '-');
-          framePath = `/Mockup images/Frames 3-4/${sizeFormatted}.png`;
+          // Для 3:4 всегда используем 6-8.png для левого мокапа (Preview)
+          framePath = `/Mockup images/Frames 3-4/6-8.png`;
         } else if (autoDetectedRatio === '4:3') {
           framePath = '/Mockup images/Frames 4-3/Front, 8_ x 6_ (Horizontal).png';
         } else {
@@ -1068,6 +1067,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
                       }`}
                     >
                       <div className="text-sm font-medium">{size.name}</div>
+                      <div className="text-xs text-gray-500">${size.price}</div>
                     </button>
                   ))}
                 </div>
@@ -1130,7 +1130,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
                   className="w-full px-4 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-lg hover:from-orange-700 hover:to-red-700 disabled:bg-gray-300 flex items-center justify-center gap-2 transition-colors font-semibold shadow-lg"
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  ADD TO CART
+                  ADD TO CART - ${currentFrameSizes.find(s => s.id === selectedSize)?.price || 70}
                 </button>
               </div>
             </div>

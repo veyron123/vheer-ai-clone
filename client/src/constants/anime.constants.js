@@ -46,12 +46,6 @@ export const AI_MODELS = {
     name: 'Qwen Image',
     badge: { text: 'NEW', color: 'bg-green-500 text-white' },
     credits: 20
-  },
-  NANO_BANANA: {
-    id: 'nano-banana',
-    name: 'Nano-Banana',
-    badge: { text: '🍌', color: 'bg-orange-600 text-white' },
-    credits: 20
   }
 };
 
@@ -60,7 +54,7 @@ export const EXAMPLE_IMAGES = [
   {
     id: 1,
     original: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&h=400&fit=crop',
-    generated: '/EXAMPLE RESULTS/e79e05027731.png',
+    generated: '/EXAMPLE RESULTS/il_794xN.6871147699_scuw.avif',
     style: 'Cartoon Style'
   },
   {

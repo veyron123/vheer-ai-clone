@@ -23,8 +23,7 @@ const AspectRatioSelector = ({ selectedRatio, onRatioChange, disabled = false, a
     if (disabled) setShowDropdown(false);
   }, [disabled]);
   
-  // All models (except nano-banana) use the same basic aspect ratios
-  // Nano-Banana is disabled via the disabled prop from parent components
+  // All models use the same basic aspect ratios
   const availableOptions = ASPECT_RATIOS;
   
   // If current selection is not available, switch to first available option

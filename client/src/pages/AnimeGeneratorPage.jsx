@@ -118,7 +118,6 @@ const AnimeGeneratorPage = () => {
             <AspectRatioSelector
               selectedRatio={aspectRatio}
               onRatioChange={setAspectRatio}
-              disabled={aiModel === 'nano-banana'}
               aiModel={aiModel}
             />
             
