@@ -900,18 +900,18 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
     <div className="relative">
       <div className="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* Заголовок с кнопкой показать/скрыть */}
-      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-200">
+      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-orange-50 to-red-50 border-b border-gray-200">
         <div className="flex items-center gap-3">
-          <Frame className="w-5 h-5 text-purple-600" />
+          <Frame className="w-5 h-5 text-orange-600" />
           <h3 className="text-lg font-semibold text-gray-900">
-            Mockup Generator
+            Wall Art
           </h3>
-          <span className="px-2 py-1 bg-purple-100 text-purple-700 text-sm rounded font-medium">
+          <span className="px-2 py-1 bg-orange-100 text-orange-700 text-sm rounded font-medium">
             {detectedAspectRatio}
           </span>
           {isVisible && (
-            <span className="px-2 py-1 bg-green-100 text-green-700 text-sm rounded font-medium">
-              {currentFrameSizes.find(s => s.id === selectedSize)?.name} - ₴{currentFrameSizes.find(s => s.id === selectedSize)?.price}
+            <span className="px-2 py-1 bg-orange-100 text-orange-700 text-sm rounded font-medium">
+              {currentFrameSizes.find(s => s.id === selectedSize)?.name}
             </span>
           )}
         </div>
@@ -920,7 +920,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
           {!isVisible && (
             <button
               onClick={() => setIsVisible(true)}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2"
             >
               <Frame className="w-4 h-4" />
               Create Mockup
@@ -958,7 +958,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
                 {isLoading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-gray-50 rounded-lg z-10">
                     <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-2"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-2"></div>
                       <p className="text-sm text-gray-500">Creating mockup...</p>
                     </div>
                   </div>
@@ -994,7 +994,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
                           onChange={(e) => setSelectedColor(e.target.value)}
                           className="sr-only"
                         />
-                        <div className={`relative ${selectedColor === color.id ? 'ring-2 ring-purple-500 ring-offset-2' : ''} rounded-lg transition-all`}>
+                        <div className={`relative ${selectedColor === color.id ? 'ring-2 ring-orange-500 ring-offset-2' : ''} rounded-lg transition-all`}>
                           <div 
                             className="w-12 h-12 rounded-lg border-2"
                             style={{ 
@@ -1004,7 +1004,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
                           >
                             {selectedColor === color.id && (
                               <div className="absolute inset-0 flex items-center justify-center">
-                                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                 </svg>
                               </div>
@@ -1063,12 +1063,11 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
                       onClick={() => setSelectedSize(size.id)}
                       className={`px-3 py-2 rounded-lg border-2 transition-all ${
                         selectedSize === size.id
-                          ? 'border-purple-500 bg-purple-50 text-purple-700 font-medium'
+                          ? 'border-orange-500 bg-orange-50 text-orange-700 font-medium'
                           : 'border-gray-200 hover:border-gray-300 text-gray-700'
                       }`}
                     >
                       <div className="text-sm font-medium">{size.name}</div>
-                      <div className="text-xs text-gray-500">${size.price}</div>
                     </button>
                   ))}
                 </div>
@@ -1088,7 +1087,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
                       type="number"
                       value={Math.round(getCurrentScale() * 100)}
                       onChange={(e) => setCurrentScale((parseInt(e.target.value) || 50) / 100)}
-                      className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       step="1"
                       min="10"
                       max="200"
@@ -1128,7 +1127,7 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
                 <button
                   onClick={addToCart}
                   disabled={isLoading}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 disabled:bg-gray-300 flex items-center justify-center gap-2 transition-colors font-semibold shadow-lg"
+                  className="w-full px-4 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-lg hover:from-orange-700 hover:to-red-700 disabled:bg-gray-300 flex items-center justify-center gap-2 transition-colors font-semibold shadow-lg"
                 >
                   <ShoppingCart className="w-5 h-5" />
                   ADD TO CART

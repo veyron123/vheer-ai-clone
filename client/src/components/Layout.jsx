@@ -66,8 +66,8 @@ const Layout = ({ children }) => {
       <MobileNav />
       
       {/* Desktop Header */}
-      <header className="hidden lg:block bg-white shadow-sm sticky top-0 z-50">
-        <nav className="container-custom">
+      <header className="hidden lg:block bg-white shadow-sm sticky top-0 z-50 w-full">
+        <nav className="w-full px-4 sm:px-6 lg:px-8 max-w-none">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link to={createLocalizedLink('/')} className="flex items-center space-x-2">
@@ -81,9 +81,41 @@ const Layout = ({ children }) => {
 
             {/* Desktop Navigation */}
             <div className="flex items-center space-x-8">
-              <Link to={createLocalizedLink('/image-style-transfer')} className="flex items-center space-x-1 text-gray-700 hover:text-blue-500 transition group">
+              {/* Text-to-Image */}
+              <Link to={createLocalizedLink('/text-to-image-generator')} className="flex items-center space-x-1 text-gray-700 hover:text-blue-500 transition group">
                 <Sparkles className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
-                <span>{t('navigation.generate')}</span>
+                <span>Text-to-Image</span>
+              </Link>
+              
+              {/* Image-to-Image with dropdown */}
+              <div className="relative dropdown-trigger">
+                <button className="flex items-center space-x-1 text-gray-700 hover:text-blue-500 transition group">
+                  <Image className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
+                  <span>Image-to-Image</span>
+                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <div className="dropdown-menu">
+                  <Link to={createLocalizedLink('/anime-generator')} className="dropdown-item">
+                    <span>Anime Portrait Generator</span>
+                  </Link>
+                  <Link to={createLocalizedLink('/image-to-image-generator')} className="dropdown-item">
+                    <span>AI Image to Image Generator</span>
+                  </Link>
+                  <Link to={createLocalizedLink('/image-style-transfer')} className="dropdown-item">
+                    <span>AI Style Transfer</span>
+                  </Link>
+                  <Link to={createLocalizedLink('/pet-portrait-generator')} className="dropdown-item">
+                    <span>AI Pet Portrait Generator</span>
+                  </Link>
+                </div>
+              </div>
+              
+              {/* Video Generator */}
+              <Link to={createLocalizedLink('/ai-video-generator')} className="flex items-center space-x-1 text-gray-700 hover:text-blue-500 transition group">
+                <Frame className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
+                <span>Video Generator</span>
               </Link>
 {/* Временно отключено
               <Link to="/gallery" className="flex items-center space-x-1 text-gray-700 hover:text-orange-500 transition group">

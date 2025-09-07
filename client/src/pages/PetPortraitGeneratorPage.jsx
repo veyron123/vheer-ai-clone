@@ -62,13 +62,13 @@ const PetPortraitGeneratorPage = () => {
     {
       id: 1,
       original: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=300&h=400&fit=crop',
-      generated: '/il_794xN.6780188538_a2xv.webp?v=1',
+      generated: '/028.webp',
       style: 'Pet Portrait'
     },
     {
       id: 2,
       original: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?w=300&h=400&fit=crop',
-      generated: '/il_794xN.6699236308_5urd.webp?v=1',
+      generated: '/c027.webp',
       style: 'Royal Cat'
     }
   ];
@@ -84,7 +84,7 @@ const PetPortraitGeneratorPage = () => {
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Breadcrumb */}
       <div className="container-custom py-4">
-        <div className="flex items-center text-sm text-gray-600">
+        <div className="flex items-center text-lg text-gray-600">
           <Link to="/" className="hover:text-primary-600">Home</Link>
           <ChevronRight className="w-4 h-4 mx-2" />
           <span className="text-gray-900 font-medium">AI Pet Portrait Generator</span>
