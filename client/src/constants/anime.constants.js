@@ -54,13 +54,13 @@ export const EXAMPLE_IMAGES = [
   {
     id: 1,
     original: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&h=400&fit=crop',
-    generated: '/EXAMPLE RESULTS/il_794xN.6871147699_scuw.avif',
+    generated: '/example-results/il_794xN.6871147699_scuw.avif',
     style: 'Cartoon Style'
   },
   {
     id: 2,
     original: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&h=400&fit=crop',
-    generated: '/EXAMPLE RESULTS/il_fullxfull.6889243426_7t7a.webp',
+    generated: '/example-results/il_fullxfull.6889243426_7t7a.webp',
     style: 'Anime Portrait'
   }
 ];

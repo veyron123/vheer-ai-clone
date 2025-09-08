@@ -20,7 +20,8 @@ const UniversalGenerateButton = ({
   generateText = 'Generate',
   clearText = 'Clear all',
   className = '',
-  fullWidth = true
+  fullWidth = true,
+  gothicStyle = false
 }) => {
   const { isAuthenticated, user } = useAuthStore();
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -59,10 +60,18 @@ const UniversalGenerateButton = ({
       <button
         onClick={handleGenerateClick}
         disabled={isButtonDisabled}
-        className={`${baseClassName} py-3 px-4 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 ${
-          isButtonActive
-            ? 'bg-yellow-400 hover:bg-yellow-500 text-black cursor-pointer'
-            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+        className={`${baseClassName} py-3 px-4 font-semibold transition-colors flex items-center justify-center gap-2 ${
+          gothicStyle 
+            ? `rounded-lg border-2 shadow-lg ${
+                isButtonActive
+                  ? 'bg-gradient-to-r from-purple-900 to-red-900 border-orange-600 hover:from-purple-800 hover:to-red-800 text-orange-100 cursor-pointer shadow-orange-900/50'
+                  : 'bg-gray-700 border-gray-600 text-gray-400 cursor-not-allowed shadow-gray-600/30'
+              }`
+            : `rounded-lg ${
+                isButtonActive
+                  ? 'bg-yellow-400 hover:bg-yellow-500 text-black cursor-pointer'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`
         }`}
       >
         {isGenerating ? (

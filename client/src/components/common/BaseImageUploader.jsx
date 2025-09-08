@@ -28,6 +28,7 @@ const BaseImageUploader = ({
   dropText = 'Or drop image here, paste image or URL',
   allowedFormats = 'jpeg, png, webp images allowed.',
   generatedLabel = 'Generated',
+  gothicFrame = false,
   
   // File input ref
   fileInputRef
@@ -251,10 +252,14 @@ const BaseImageUploader = ({
     );
   }
 
-  // Single layout render (anime style)
+  // Single layout render (anime/gothic style)
+  const frameClass = gothicFrame 
+    ? "border-4 border-double border-orange-600 rounded-lg bg-gradient-to-br from-purple-900/10 to-red-900/10 p-4 sm:p-8 text-center hover:border-orange-500 transition-colors cursor-pointer touch-manipulation shadow-lg shadow-purple-900/20"
+    : "border-2 border-dashed border-gray-300 rounded-xl p-4 sm:p-8 text-center hover:border-primary-400 transition-colors cursor-pointer touch-manipulation";
+  
   return (
     <div 
-      className="border-2 border-dashed border-gray-300 rounded-xl p-4 sm:p-8 text-center hover:border-primary-400 transition-colors cursor-pointer touch-manipulation"
+      className={frameClass}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onClick={handleClick}
@@ -339,7 +344,11 @@ const BaseImageUploader = ({
         </div>
       ) : (
         <>
-          <button className="bg-yellow-400 text-black font-medium px-4 sm:px-6 py-3 rounded-lg mb-4 hover:bg-yellow-500 transition-colors inline-flex items-center touch-manipulation">
+          <button className={`font-medium px-4 sm:px-6 py-3 rounded-lg mb-4 transition-colors inline-flex items-center touch-manipulation ${
+            gothicFrame 
+              ? "bg-gradient-to-r from-purple-900 to-red-900 border-2 border-orange-600 text-orange-100 hover:from-purple-800 hover:to-red-800 shadow-lg shadow-orange-900/30"
+              : "bg-yellow-400 text-black hover:bg-yellow-500"
+          }`}>
             <Upload className="w-5 h-5 mr-2" />
             {uploadText}
           </button>

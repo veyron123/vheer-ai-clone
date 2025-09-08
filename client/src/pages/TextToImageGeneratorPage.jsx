@@ -176,8 +176,8 @@ const TextToImageGeneratorPage = () => {
 
                 {/* Aspect Ratio */}
                 <AspectRatioSelector
-                  aspectRatio={aspectRatio}
-                  onAspectRatioChange={setAspectRatio}
+                  selectedRatio={aspectRatio}
+                  onRatioChange={setAspectRatio}
                   aspectRatios={TEXT_TO_IMAGE_ASPECT_RATIOS}
                 />
               </div>

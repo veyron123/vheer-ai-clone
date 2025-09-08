@@ -351,6 +351,62 @@ const animeStylePrompts = {
     prefix: "Microtopia miniature world style",
     suffix: "tiny detailed scenes, macro photography feel",
     negative: "large scale, simple, realistic"
+  },
+  // Halloween Portrait Styles
+  'corpse-bride': {
+    prefix: "Transform into Corpse Bride style: pale blue-grey corpse-like skin, large expressive white eyes with dark circles, gothic makeup with dark lipstick, flowing dark hair",
+    suffix: "Tim Burton aesthetic, gothic romantic style, dramatic shadows, ethereal and melancholic mood, vintage gothic clothing, dark romantic atmosphere",
+    negative: "realistic photo, bright colors, cheerful, modern"
+  },
+  'dark-gothic': {
+    prefix: "Transform into dark gothic style: pale skin with realistic textures, dark dramatic makeup, mysterious haunting expression, gothic clothing in black",
+    suffix: "dark forest background with bare twisted trees, misty foggy atmosphere, candlelit ambiance, dramatic lighting, gothic horror aesthetic, mysterious shadows",
+    negative: "bright, colorful, happy, modern style"
+  },
+  'addams-family': {
+    prefix: "Transform into Addams Family style: pale skin with gothic makeup, dark hair, elegant black gothic clothing, mysterious family portrait style",
+    suffix: "dark gothic castle in background with spires and towers, stormy atmosphere, classic gothic family aesthetic, Victorian gothic fashion, haunting family elegance",
+    negative: "bright, colorful, modern, casual style"
+  },
+  'burton-family': {
+    prefix: "Transform into Tim Burton family style: distinctive large round eyes, pale skin with slight blue-grey tones, exaggerated facial features, gothic family portrait composition",
+    suffix: "dark clothing with Victorian elements, candlelit gothic interior, Tim Burton's signature artistic style, whimsical yet dark atmosphere, vintage gothic aesthetic",
+    negative: "realistic proportions, bright colors, modern style"
+  },
+  'witch-portrait': {
+    prefix: "Transform into Halloween witch style: traditional black pointy witch hat with golden buckle, warm orange glowing background with harvest moon, friendly witch makeup with bright eyes",
+    suffix: "long wavy blonde hair, autumn Halloween atmosphere with flying bats, Jack-o-lanterns in background, cozy Halloween magic, traditional witch costume, warm golden lighting, spooky yet friendly appearance",
+    negative: "scary, dark, evil, realistic photo, modern"
+  },
+  'spooky-family': {
+    prefix: "Transform into spooky family portrait: extremely large white eyes with dark circles, pale grey-white skin, Tim Burton character style with elongated features",
+    suffix: "dark gothic clothing, haunting family group composition, bare twisted trees in misty background, melancholic expressions, gothic family bonding, whimsical dark aesthetic, vintage horror family portrait, ethereal spooky atmosphere",
+    negative: "bright colors, happy, realistic, modern style"
+  },
+  'gothic-manor': {
+    prefix: "Transform into gothic manor family: distinctive large white eyes, pale skin with gothic features, elegant Victorian black clothing",
+    suffix: "ornate gothic mansion interior with portraits and chandelier, formal family portrait composition, mysterious aristocratic atmosphere, vintage gothic elegance, dark romantic style, haunting family nobility, gothic refinement with spooky charm",
+    negative: "modern, casual, bright, simple, realistic photo"
+  },
+  'frankenstein-couple': {
+    prefix: "Transform into Frankenstein couple style: classic monster appearance with green skin, stitched features and scars, vintage horror movie aesthetic",
+    suffix: "cemetery background with tombstones and crosses, full moon lighting, 1930s Universal monster style, gothic horror romance, classic monster makeup with bolts and stitches, dramatic shadows, vintage horror couple portrait",
+    negative: "modern, colorful, happy, cute, realistic photo"
+  },
+  'victorian-gothic': {
+    prefix: "Transform into Victorian gothic family: pale skin with haunting large eyes, elegant Victorian era clothing in black, ornate gothic interior with candelabras and portraits",
+    suffix: "formal family portrait with gothic atmosphere, Victorian mourning dress style, candlelit ambient lighting, gothic mansion setting, mysterious family elegance, dark romantic Victorian aesthetic",
+    negative: "modern, bright, casual, colorful, realistic photo"
+  },
+  'modern-gothic-couple': {
+    prefix: "Transform into modern gothic couple: pale gothic makeup with dark eyes, contemporary gothic fashion, surrounded by multiple pets (cats and dogs)",
+    suffix: "cozy dark interior with candles, modern gothic lifestyle, alternative gothic aesthetic, pet-loving gothic family, contemporary dark romantic style, intimate gothic home atmosphere",
+    negative: "traditional, bright, colorful, realistic photo, old fashioned"
+  },
+  'morticia-gothic': {
+    prefix: "Transform into Morticia gothic style: long straight black hair, pale white skin, dramatic gothic makeup with dark eyes, elegant black Victorian dress with lace details",
+    suffix: "gothic castle interior with arched windows, flickering candlelight atmosphere, sophisticated gothic beauty, mysterious elegant pose, classic gothic glamour, dark romantic elegance, haunting aristocratic charm",
+    negative: "colorful, modern, casual, bright lighting, realistic photo"
   }
 };
 

@@ -11,68 +11,46 @@ NODE_ENV: development
 🟢 Cloudinary configured for production storage
 🗄️  Storage Provider: cloudinary
 🟢 Cloudinary initialized: df9joii9s
-Flux API configuration: {
-  FLUX_API_KEY: 'Set (2f58d1ef...)',
-  FLUX_API_URL: 'https://api.bfl.ai/v1/flux-kontext-pro',
-  NODE_ENV: 'development'
+🔑 FLUX_API_KEY loaded: YES (length: 36)
+🔑 GPT_IMAGE_API_KEY loaded: YES (length: 32)
+🔑 IMGBB_API_KEY loaded: YES (length: 32)
+🔑 KIE API configured for Qwen: {
+  hasKey: true,
+  keyLength: 32,
+  apiUrl: 'https://api.kie.ai/api/v1/playground'
 }
-GPT Image API configuration: {
-  GPT_IMAGE_API_KEY: 'Set',
-  GPT_IMAGE_API_URL: 'https://api.kie.ai/api/v1/gpt4o-image/generate',
-  IMGBB_API_KEY: 'Set',
-  NODE_ENV: 'development'
-}
-Qwen Image controller initialized
 GPT Image Text-to-Image controller initialized
+🎯 API Provider: Fal.ai
+🔑 KIE API configured: {
+  hasKey: true,
+  keyLength: 32,
+  apiUrl: 'https://api.kie.ai/api/v1/playground',
+  hasCloudinaryConfig: true,
+  cloudinaryCloudName: 'df9joii9s'
+}
 🎬 Runway Video Service initialized
 🔑 API Key configured: ✅ Yes
 ☁️ Storage Provider: cloudinary
+⚠️ VAPID keys not found - push notifications will be disabled
 🔧 Environment Configuration Check
 ===================================
-
-🚨 Missing Required Environment Variables:
-❌ CORS_ORIGIN: Allowed CORS origin
-
-⚠️  Running in development mode with missing variables. Some features may not work.
-
-📝 Optional environment variables not set:
-⚠️  GPTIMAGE_API_URL: GPT Image API endpoint
-⚠️  BASE_URL: Base URL of the application
+✅ All required environment variables are set
 ===================================
 
-✅ Credit cron jobs initialized successfully
-📅 Daily credits will be added at 00:00 UTC every day
-🔄 Additional checks every 6 hours
-[2025-08-23T17:22:48.906Z] [INFO] ✅ Subscription expiry cron jobs initialized
-[2025-08-23T17:22:48.906Z] [INFO]    - Expired subscriptions: Every hour
-[2025-08-23T17:22:48.906Z] [INFO]    - Expiring subscriptions: Daily at 9 AM
-[2025-08-23T17:22:48.910Z] [INFO] ✅ Automatic payment cron jobs initialized
-[2025-08-23T17:22:48.910Z] [INFO]    - Auto payments: Every hour
-[2025-08-23T17:22:48.910Z] [INFO]    - Expiry notifications: Daily at 10 AM
-node:events:496
-      throw er; // Unhandled 'error' event
-      ^
-
-Error: listen EADDRINUSE: address already in use :::5000
-    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
-    at listenInCluster (node:net:1997:12)
-    at Server.listen (node:net:2102:7)
-    at Function.listen (C:\Users\Denis\Desktop\Vheer\vheer-clone\server\node_modules\express\lib\application.js:635:24)
-    at file:///C:/Users/Denis/Desktop/Vheer/vheer-clone/server/index.js:195:20
-    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
-    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
-    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
-Emitted 'error' event on Server instance at:
-    at emitErrorNT (node:net:1976:8)
-    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
-  code: 'EADDRINUSE',
-  errno: -4091,
-  syscall: 'listen',
-  address: '::',
-  port: 5000
-}
-
-Node.js v22.17.1
+✅ Credit reset cron jobs initialized successfully
+📅 Daily credits: FREE users reset to 100, PREMIUM users get NO daily credits at 00:00 UTC
+🔄 Additional checks every 6 hours for missed updates
+[2025-09-07T16:21:30.860Z] [INFO] ✅ Subscription expiry cron jobs initialized
+[2025-09-07T16:21:30.860Z] [INFO]    - Expired subscriptions: Every hour
+[2025-09-07T16:21:30.860Z] [INFO]    - Expiring subscriptions: Daily at 9 AM
+[2025-09-07T16:21:30.864Z] [INFO] ✅ Automatic payment cron jobs initialized
+[2025-09-07T16:21:30.864Z] [INFO]    - Auto payments: Every hour
+[2025-09-07T16:21:30.864Z] [INFO]    - Expiry notifications: Daily at 10 AM
+✅ Задачи отслеживания корзин инициализированы
+   - Проверка брошенных корзин: каждые 30 минут
+   - Очистка старых корзин (>90 дней): ежедневно в 3:00
+UNCAUGHT EXCEPTION! 💥 Shutting down...
+Error listen EADDRINUSE: address already in use :::5000
 [31m[nodemon] app crashed - waiting for file changes before starting...[39m
 [32m[nodemon] restarting due to changes...[39m
 [32m[nodemon] starting `node index.js`[39m
@@ -80,68 +58,45 @@ NODE_ENV: development
 🟢 Cloudinary configured for production storage
 🗄️  Storage Provider: cloudinary
 🟢 Cloudinary initialized: df9joii9s
-Flux API configuration: {
-  FLUX_API_KEY: 'Set (2f58d1ef...)',
-  FLUX_API_URL: 'https://api.bfl.ai/v1/flux-kontext-pro',
-  NODE_ENV: 'development'
+🔑 FLUX_API_KEY loaded: YES (length: 36)
+🔑 GPT_IMAGE_API_KEY loaded: YES (length: 32)
+🔑 IMGBB_API_KEY loaded: YES (length: 32)
+🔑 KIE API configured for Qwen: {
+  hasKey: true,
+  keyLength: 32,
+  apiUrl: 'https://api.kie.ai/api/v1/playground'
 }
-GPT Image API configuration: {
-  GPT_IMAGE_API_KEY: 'Set',
-  GPT_IMAGE_API_URL: 'https://api.kie.ai/api/v1/gpt4o-image/generate',
-  IMGBB_API_KEY: 'Set',
-  NODE_ENV: 'development'
-}
-Qwen Image controller initialized
 GPT Image Text-to-Image controller initialized
+🎯 API Provider: Fal.ai
+🔑 KIE API configured: {
+  hasKey: true,
+  keyLength: 32,
+  apiUrl: 'https://api.kie.ai/api/v1/playground',
+  hasCloudinaryConfig: true,
+  cloudinaryCloudName: 'df9joii9s'
+}
 🎬 Runway Video Service initialized
 🔑 API Key configured: ✅ Yes
 ☁️ Storage Provider: cloudinary
+⚠️ VAPID keys not found - push notifications will be disabled
 🔧 Environment Configuration Check
 ===================================
-
-🚨 Missing Required Environment Variables:
-❌ CORS_ORIGIN: Allowed CORS origin
-
-⚠️  Running in development mode with missing variables. Some features may not work.
-
-📝 Optional environment variables not set:
-⚠️  GPTIMAGE_API_URL: GPT Image API endpoint
-⚠️  BASE_URL: Base URL of the application
+✅ All required environment variables are set
 ===================================
 
-✅ Credit cron jobs initialized successfully
-📅 Daily credits will be added at 00:00 UTC every day
-🔄 Additional checks every 6 hours
-[2025-08-23T17:25:59.672Z] [INFO] ✅ Subscription expiry cron jobs initialized
-[2025-08-23T17:25:59.672Z] [INFO]    - Expired subscriptions: Every hour
-[2025-08-23T17:25:59.672Z] [INFO]    - Expiring subscriptions: Daily at 9 AM
-[2025-08-23T17:25:59.676Z] [INFO] ✅ Automatic payment cron jobs initialized
-[2025-08-23T17:25:59.676Z] [INFO]    - Auto payments: Every hour
-[2025-08-23T17:25:59.676Z] [INFO]    - Expiry notifications: Daily at 10 AM
-node:events:496
-      throw er; // Unhandled 'error' event
-      ^
-
-Error: listen EADDRINUSE: address already in use :::5000
-    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
-    at listenInCluster (node:net:1997:12)
-    at Server.listen (node:net:2102:7)
-    at Function.listen (C:\Users\Denis\Desktop\Vheer\vheer-clone\server\node_modules\express\lib\application.js:635:24)
-    at file:///C:/Users/Denis/Desktop/Vheer/vheer-clone/server/index.js:195:20
-    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
-    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
-    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
-Emitted 'error' event on Server instance at:
-    at emitErrorNT (node:net:1976:8)
-    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
-  code: 'EADDRINUSE',
-  errno: -4091,
-  syscall: 'listen',
-  address: '::',
-  port: 5000
-}
-
-Node.js v22.17.1
+✅ Credit reset cron jobs initialized successfully
+📅 Daily credits: FREE users reset to 100, PREMIUM users get NO daily credits at 00:00 UTC
+🔄 Additional checks every 6 hours for missed updates
+[2025-09-07T16:23:13.832Z] [INFO] ✅ Subscription expiry cron jobs initialized
+[2025-09-07T16:23:13.833Z] [INFO]    - Expired subscriptions: Every hour
+[2025-09-07T16:23:13.833Z] [INFO]    - Expiring subscriptions: Daily at 9 AM
+[2025-09-07T16:23:13.838Z] [INFO] ✅ Automatic payment cron jobs initialized
+[2025-09-07T16:23:13.838Z] [INFO]    - Auto payments: Every hour
+[2025-09-07T16:23:13.839Z] [INFO]    - Expiry notifications: Daily at 10 AM
+✅ Задачи отслеживания корзин инициализированы
+   - Проверка брошенных корзин: каждые 30 минут
+   - Очистка старых корзин (>90 дней): ежедневно в 3:00
+[2025-09-07T16:23:13.922Z] [INFO] Server started {"port":"5000","environment":"development","nodeVersion":"v22.17.1"}
 [31m[nodemon] app crashed - waiting for file changes before starting...[39m
 [32m[nodemon] restarting due to changes...[39m
 [32m[nodemon] starting `node index.js`[39m
@@ -149,69 +104,1291 @@ NODE_ENV: development
 🟢 Cloudinary configured for production storage
 🗄️  Storage Provider: cloudinary
 🟢 Cloudinary initialized: df9joii9s
-Flux API configuration: {
-  FLUX_API_KEY: 'Set (2f58d1ef...)',
-  FLUX_API_URL: 'https://api.bfl.ai/v1/flux-kontext-pro',
-  NODE_ENV: 'development'
+🔑 FLUX_API_KEY loaded: YES (length: 36)
+🔑 GPT_IMAGE_API_KEY loaded: YES (length: 32)
+🔑 IMGBB_API_KEY loaded: YES (length: 32)
+🔑 KIE API configured for Qwen: {
+  hasKey: true,
+  keyLength: 32,
+  apiUrl: 'https://api.kie.ai/api/v1/playground'
 }
-GPT Image API configuration: {
-  GPT_IMAGE_API_KEY: 'Set',
-  GPT_IMAGE_API_URL: 'https://api.kie.ai/api/v1/gpt4o-image/generate',
-  IMGBB_API_KEY: 'Set',
-  NODE_ENV: 'development'
-}
-Qwen Image controller initialized
 GPT Image Text-to-Image controller initialized
+🎯 API Provider: Fal.ai
+🔑 KIE API configured: {
+  hasKey: true,
+  keyLength: 32,
+  apiUrl: 'https://api.kie.ai/api/v1/playground',
+  hasCloudinaryConfig: true,
+  cloudinaryCloudName: 'df9joii9s'
+}
 🎬 Runway Video Service initialized
 🔑 API Key configured: ✅ Yes
 ☁️ Storage Provider: cloudinary
+⚠️ VAPID keys not found - push notifications will be disabled
 🔧 Environment Configuration Check
 ===================================
-
-🚨 Missing Required Environment Variables:
-❌ CORS_ORIGIN: Allowed CORS origin
-
-⚠️  Running in development mode with missing variables. Some features may not work.
-
-📝 Optional environment variables not set:
-⚠️  GPTIMAGE_API_URL: GPT Image API endpoint
-⚠️  BASE_URL: Base URL of the application
+✅ All required environment variables are set
 ===================================
 
-✅ Credit cron jobs initialized successfully
-📅 Daily credits will be added at 00:00 UTC every day
-🔄 Additional checks every 6 hours
-[2025-08-23T17:26:10.975Z] [INFO] ✅ Subscription expiry cron jobs initialized
-[2025-08-23T17:26:10.975Z] [INFO]    - Expired subscriptions: Every hour
-[2025-08-23T17:26:10.975Z] [INFO]    - Expiring subscriptions: Daily at 9 AM
-[2025-08-23T17:26:10.979Z] [INFO] ✅ Automatic payment cron jobs initialized
-[2025-08-23T17:26:10.979Z] [INFO]    - Auto payments: Every hour
-[2025-08-23T17:26:10.980Z] [INFO]    - Expiry notifications: Daily at 10 AM
-node:events:496
-      throw er; // Unhandled 'error' event
-      ^
-
-Error: listen EADDRINUSE: address already in use :::5000
-    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
-    at listenInCluster (node:net:1997:12)
-    at Server.listen (node:net:2102:7)
-    at Function.listen (C:\Users\Denis\Desktop\Vheer\vheer-clone\server\node_modules\express\lib\application.js:635:24)
-    at file:///C:/Users/Denis/Desktop/Vheer/vheer-clone/server/index.js:195:20
-    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
-    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
-    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
-Emitted 'error' event on Server instance at:
-    at emitErrorNT (node:net:1976:8)
-    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
-  code: 'EADDRINUSE',
-  errno: -4091,
-  syscall: 'listen',
-  address: '::',
-  port: 5000
+✅ Credit reset cron jobs initialized successfully
+📅 Daily credits: FREE users reset to 100, PREMIUM users get NO daily credits at 00:00 UTC
+🔄 Additional checks every 6 hours for missed updates
+[2025-09-07T16:29:45.495Z] [INFO] ✅ Subscription expiry cron jobs initialized
+[2025-09-07T16:29:45.495Z] [INFO]    - Expired subscriptions: Every hour
+[2025-09-07T16:29:45.495Z] [INFO]    - Expiring subscriptions: Daily at 9 AM
+[2025-09-07T16:29:45.502Z] [INFO] ✅ Automatic payment cron jobs initialized
+[2025-09-07T16:29:45.502Z] [INFO]    - Auto payments: Every hour
+[2025-09-07T16:29:45.502Z] [INFO]    - Expiry notifications: Daily at 10 AM
+✅ Задачи отслеживания корзин инициализированы
+   - Проверка брошенных корзин: каждые 30 минут
+   - Очистка старых корзин (>90 дней): ежедневно в 3:00
+[2025-09-07T16:29:45.590Z] [INFO] Server started {"port":"5000","environment":"development","nodeVersion":"v22.17.1"}
+🔍 [AFFILIATE TRACKING] Request: /api/gptimage/generate
+🔍 [AFFILIATE TRACKING] Query params: {}
+🔐 [AUTH MIDDLEWARE] Starting authentication check...
+🔐 [AUTH MIDDLEWARE] Auth header: EXISTS
+🎨 [GPT IMAGE] Starting image editing generation...
+🎯 [GPT IMAGE] Prompt: Transform this photo into Transform into Corpse Bride style: pale blue-grey corpse-like skin, large expressive white eyes with dark circles, gothic makeup with dark lipstick, flowing dark hair anime style, Tim Burton aesthetic, gothic romantic style, dramatic shadows, ethereal and melancholic mood, vintage gothic clothing, dark romantic atmosphere, high quality anime portrait, masterpiece
+🎯 [GPT IMAGE] Aspect Ratio: 4:3
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."email", "public"."colibrrri_users"."username" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+⚠️ Slow query detected: User.findUnique took 1965ms
+prisma:query BEGIN
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query UPDATE "public"."colibrrri_users" SET "totalCredits" = ("public"."colibrrri_users"."totalCredits" - $1), "updatedAt" = $2 WHERE ("public"."colibrrri_users"."id" = $3 AND 1=1) RETURNING "public"."colibrrri_users"."id", "public"."colibrrri_users"."email", "public"."colibrrri_users"."username", "public"."colibrrri_users"."password", "public"."colibrrri_users"."fullName", "public"."colibrrri_users"."avatar", "public"."colibrrri_users"."bio", "public"."colibrrri_users"."website", "public"."colibrrri_users"."location", "public"."colibrrri_users"."role", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate", "public"."colibrrri_users"."emailVerified", "public"."colibrrri_users"."googleId", "public"."colibrrri_users"."facebookId", "public"."colibrrri_users"."createdAt", "public"."colibrrri_users"."updatedAt"
+prisma:query INSERT INTO "public"."colibrrri_credits" ("id","userId","amount","type","description","createdAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."colibrrri_credits"."id", "public"."colibrrri_credits"."userId", "public"."colibrrri_credits"."amount", "public"."colibrrri_credits"."type", "public"."colibrrri_credits"."description", "public"."colibrrri_credits"."createdAt"
+prisma:query COMMIT
+✅ Successfully processed 30 credits for model gpt-image
+📝 Created generation cmf9wry5y0004yhhkw4t28qfs for model gpt-image
+🎯 [GPT IMAGE] Converting base64 to public URL...
+📤 [IMGBB] Converting base64 to public URL...
+✅ [IMGBB] Base64 uploaded successfully: https://i.ibb.co/Kp4mySWk/e21202162b92.jpg
+✅ [GPT IMAGE] Image converted to public URL: https://i.ibb.co/Kp4mySWk/e21202162b92.jpg
+🎯 [GPT IMAGE] Request details: {
+  style: 'corpse-bride',
+  originalAspectRatio: '4:3',
+  mappedSize: '3:2',
+  hasPrompt: true,
+  hasPublicImageUrl: true
 }
-
-Node.js v22.17.1
-[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+🔍 [GPT IMAGE] API Request Body: {
+  "prompt": "Transform this photo into Transform into Corpse Bride style: pale blue-grey corpse-like skin, large expressive white eyes with dark circles, gothic makeup with dark lipstick, flowing dark hair anime style, Tim Burton aesthetic, gothic romantic style, dramatic shadows, ethereal and melancholic mood, vintage gothic clothing, dark romantic atmosphere, high quality anime portrait, masterpiece",
+  "filesUrl": [
+    "https://i.ibb.co/Kp4mySWk/e21202162b92.jpg"
+  ],
+  "size": "3:2",
+  "nVariants": 1,
+  "isEnhance": false,
+  "enableFallback": false
+}
+🔍 [GPT IMAGE] API Response: {
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "taskId": "eb3446b5e8380daabdb359a8679a0767"
+  }
+}
+🔄 [GPT IMAGE] Task created, ID: eb3446b5e8380daabdb359a8679a0767
+🔄 [GPT IMAGE POLL] Starting polling for task: eb3446b5e8380daabdb359a8679a0767
+📡 [GPT IMAGE POLL] Attempt 1/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 3000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 2/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 3000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 3/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 3000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 4/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 3000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 5/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 3000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 6/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 3000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 7/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 3000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 8/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 3000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 9/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 3000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 10/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 11/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 12/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 13/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 14/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 15/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 16/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 17/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 18/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 19/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 3,
+  status: 'GENERATE_FAILED',
+  progress: '1.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+📝 [GPT IMAGE POLL] Unknown success flag: 3
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 20/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 3,
+  status: 'GENERATE_FAILED',
+  progress: '1.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+📝 [GPT IMAGE POLL] Unknown success flag: 3
+⏳ [GPT IMAGE POLL] Waiting 8000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 21/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 3,
+  status: 'GENERATE_FAILED',
+  progress: '1.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+📝 [GPT IMAGE POLL] Unknown success flag: 3
+⏳ [GPT IMAGE POLL] Waiting 8000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 22/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 3,
+  status: 'GENERATE_FAILED',
+  progress: '1.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+📝 [GPT IMAGE POLL] Unknown success flag: 3
+⏳ [GPT IMAGE POLL] Waiting 8000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 23/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 3,
+  status: 'GENERATE_FAILED',
+  progress: '1.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+📝 [GPT IMAGE POLL] Unknown success flag: 3
+⏳ [GPT IMAGE POLL] Waiting 8000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 24/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 3,
+  status: 'GENERATE_FAILED',
+  progress: '1.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+📝 [GPT IMAGE POLL] Unknown success flag: 3
+⏳ [GPT IMAGE POLL] Waiting 8000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 25/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 3,
+  status: 'GENERATE_FAILED',
+  progress: '1.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+📝 [GPT IMAGE POLL] Unknown success flag: 3
+⏳ [GPT IMAGE POLL] Waiting 8000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 26/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 3,
+  status: 'GENERATE_FAILED',
+  progress: '1.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+📝 [GPT IMAGE POLL] Unknown success flag: 3
+⏳ [GPT IMAGE POLL] Waiting 8000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 27/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 3,
+  status: 'GENERATE_FAILED',
+  progress: '1.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+📝 [GPT IMAGE POLL] Unknown success flag: 3
+⏳ [GPT IMAGE POLL] Waiting 8000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 28/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 3,
+  status: 'GENERATE_FAILED',
+  progress: '1.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+📝 [GPT IMAGE POLL] Unknown success flag: 3
+⏳ [GPT IMAGE POLL] Waiting 8000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 29/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 3,
+  status: 'GENERATE_FAILED',
+  progress: '1.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+📝 [GPT IMAGE POLL] Unknown success flag: 3
+⏳ [GPT IMAGE POLL] Waiting 8000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 30/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 3,
+  status: 'GENERATE_FAILED',
+  progress: '1.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+📝 [GPT IMAGE POLL] Unknown success flag: 3
+⏳ [GPT IMAGE POLL] Waiting 8000ms before next attempt...
+❌ [GPT IMAGE] Generation error: Error: GPT Image polling timed out after maximum attempts
+    at pollGPTImageTask (file:///C:/Users/Denis/Desktop/Colibrrri-clone/server/controllers/gptimage.controller.js:449:9)
+    at async file:///C:/Users/Denis/Desktop/Colibrrri-clone/server/controllers/gptimage.controller.js:99:22
+    at async file:///C:/Users/Denis/Desktop/Colibrrri-clone/server/utils/responses.js:157:7
+[GPT IMAGE Error] generateImage: {
+  status: undefined,
+  message: 'GPT Image polling timed out after maximum attempts',
+  data: undefined,
+  isServerSide: false,
+  timestamp: '2025-09-07T16:32:49.345Z'
+}
+[GPT IMAGE Error] Full error details: Error: GPT Image polling timed out after maximum attempts
+    at pollGPTImageTask (file:///C:/Users/Denis/Desktop/Colibrrri-clone/server/controllers/gptimage.controller.js:449:9)
+    at async file:///C:/Users/Denis/Desktop/Colibrrri-clone/server/controllers/gptimage.controller.js:99:22
+    at async file:///C:/Users/Denis/Desktop/Colibrrri-clone/server/utils/responses.js:157:7
+✅ Updated generation cmf9wry5y0004yhhkw4t28qfs status to FAILED
+prisma:query SELECT 1
+prisma:query UPDATE "public"."colibrrri_users" SET "totalCredits" = ("public"."colibrrri_users"."totalCredits" + $1), "updatedAt" = $2 WHERE ("public"."colibrrri_users"."id" = $3 AND 1=1) RETURNING "public"."colibrrri_users"."id", "public"."colibrrri_users"."email", "public"."colibrrri_users"."username", "public"."colibrrri_users"."password", "public"."colibrrri_users"."fullName", "public"."colibrrri_users"."avatar", "public"."colibrrri_users"."bio", "public"."colibrrri_users"."website", "public"."colibrrri_users"."location", "public"."colibrrri_users"."role", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate", "public"."colibrrri_users"."emailVerified", "public"."colibrrri_users"."googleId", "public"."colibrrri_users"."facebookId", "public"."colibrrri_users"."createdAt", "public"."colibrrri_users"."updatedAt"
+prisma:query INSERT INTO "public"."colibrrri_credits" ("id","userId","amount","type","description","createdAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."colibrrri_credits"."id", "public"."colibrrri_credits"."userId", "public"."colibrrri_credits"."amount", "public"."colibrrri_credits"."type", "public"."colibrrri_credits"."description", "public"."colibrrri_credits"."createdAt"
+[Cache] Invalidated cache for user: cmeiiqjrb0000ef1lt2m3oarq
+💰 Refunded 30 credits to user cmeiiqjrb0000ef1lt2m3oarq. Total: 9500
+🔍 [AFFILIATE TRACKING] Request: /api/qwen/edit
+🔍 [AFFILIATE TRACKING] Query params: {}
+🚨 [QWEN ROUTES] Incoming request: {
+  method: 'POST',
+  url: '/edit',
+  path: '/edit',
+  hasAuth: true,
+  bodySize: 1249471
+}
+🔐 [AUTH MIDDLEWARE] Starting authentication check...
+🔐 [AUTH MIDDLEWARE] Auth header: EXISTS
+🎯 [QWEN ULTRA] Starting request processing...
+🎯 [QWEN ULTRA] Request body keys: [ 'prompt', 'input_image', 'style', 'aspectRatio', 'negativePrompt' ]
+🎯 [QWEN ULTRA] User object: EXISTS
+🎯 [QWEN ULTRA] Extracted data: {
+  hasPrompt: true,
+  hasImage: true,
+  userId: 'cmeiiqjrb0000ef1lt2m3oarq',
+  style: 'corpse-bride',
+  aspectRatio: '4:3',
+  imagePreview: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAgEASABIAAD/4gxYSUNDX1BST0ZJTEUAAQEAAAxITGlubwIQAABtbnRyUkdCI...',
+  imageType: 'BASE64'
+}
+🎯 [QWEN ULTRA] Basic validation passed, proceeding...
+🎯 [QWEN ULTRA] Checking credits for user: cmeiiqjrb0000ef1lt2m3oarq
+prisma:query SELECT 1
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."email", "public"."colibrrri_users"."username" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+prisma:query BEGIN
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query UPDATE "public"."colibrrri_users" SET "totalCredits" = ("public"."colibrrri_users"."totalCredits" - $1), "updatedAt" = $2 WHERE ("public"."colibrrri_users"."id" = $3 AND 1=1) RETURNING "public"."colibrrri_users"."id", "public"."colibrrri_users"."email", "public"."colibrrri_users"."username", "public"."colibrrri_users"."password", "public"."colibrrri_users"."fullName", "public"."colibrrri_users"."avatar", "public"."colibrrri_users"."bio", "public"."colibrrri_users"."website", "public"."colibrrri_users"."location", "public"."colibrrri_users"."role", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate", "public"."colibrrri_users"."emailVerified", "public"."colibrrri_users"."googleId", "public"."colibrrri_users"."facebookId", "public"."colibrrri_users"."createdAt", "public"."colibrrri_users"."updatedAt"
+prisma:query INSERT INTO "public"."colibrrri_credits" ("id","userId","amount","type","description","createdAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."colibrrri_credits"."id", "public"."colibrrri_credits"."userId", "public"."colibrrri_credits"."amount", "public"."colibrrri_credits"."type", "public"."colibrrri_credits"."description", "public"."colibrrri_credits"."createdAt"
+prisma:query COMMIT
+✅ Successfully processed 10 credits for model qwen-ultra
+🎯 [QWEN ULTRA] Credits check passed: { used: 10, remaining: 9480 }
+🎯 [QWEN ULTRA] Creating generation record...
+📝 Created generation cmf9wwrtq000byhhk330i0of6 for model qwen-ultra
+🎯 [QWEN ULTRA] Generation record created: cmf9wwrtq000byhhk330i0of6
+Qwen Ultra generation request: {
+  hasPrompt: true,
+  hasImage: true,
+  style: 'corpse-bride',
+  aspectRatio: '4:3'
+}
+🎯 [QWEN ULTRA] Processing image URL...
+🔍 [QWEN DEBUG] processImageUrl called with: {
+  type: 'string',
+  length: 1248983,
+  preview: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAgEASABIAAD/4gxYSUNDX1BST0ZJTEUAAQEAAAxITGlubwIQAABtbnRyUkdCI...',
+  isHttp: false,
+  isData: true,
+  fullUrl: 'data:image/jpeg;base64,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'... 1238983 more characters
+}
+📷 [QWEN DEBUG] Received base64 image data - converting to public URL
+📤 [IMGBB] Converting base64 to public URL...
+✅ [IMGBB] Base64 uploaded successfully: https://i.ibb.co/Kp4mySWk/e21202162b92.jpg
+✅ [QWEN DEBUG] Base64 converted to public URL: https://i.ibb.co/Kp4mySWk/e21202162b92.jpg
+🎯 [QWEN ULTRA] Image URL processed: SUCCESS
+Sending Ultra request to KIE API: {
+  url: 'https://api.kie.ai/api/v1/playground/createTask',
+  model: 'qwen/image-edit',
+  prompt: 'Transform this photo into Transform into Corpse Bride style: pale blue-grey corpse-like skin, large expressive white eyes with dark circles, gothic makeup with dark lipstick, flowing dark hair style, Tim Burton aesthetic, gothic romantic style, dramatic shadows, ethereal and melancholic mood, vintage gothic clothing, dark romantic atmosphere, high quality, masterpiece',
+  imageUrl: 'https://i.ibb.co/Kp4mySWk/e21202162b92.jpg',
+  fullRequestBody: '{\n' +
+    '  "model": "qwen/image-edit",\n' +
+    '  "input": {\n' +
+    '    "prompt": "Transform this photo into Transform into Corpse Bride style: pale blue-grey corpse-like skin, large expressive white eyes with dark circles, gothic makeup with dark lipstick, flowing dark hair style, Tim Burton aesthetic, gothic romantic style, dramatic shadows, ethereal and melancholic mood, vintage gothic clothing, dark romantic atmosphere, high quality, masterpiece",\n' +
+    '    "image_url": "https://i.ibb.co/Kp4mySWk/e21202162b92.jpg",\n' +
+    '    "image_size": "landscape_4_3",\n' +
+    '    "num_inference_steps": 40,\n' +
+    '    "guidance_scale": 6,\n' +
+    '    "enable_safety_checker": true,\n' +
+    '    "output_format": "png",\n' +
+    '    "sync_mode": false,\n' +
+    '    "acceleration": "regular"\n' +
+    '  }\n' +
+    '}'
+}
+✅ [QWEN DEBUG] Parsed KIE API Response: {
+  code: 200,
+  taskId: '4efdf80e0d8318f25241aecfccc14f2a',
+  success: true
+}
+Created KIE API Ultra task: 4efdf80e0d8318f25241aecfccc14f2a
+Task 4efdf80e0d8318f25241aecfccc14f2a status: { state: 'waiting', hasResult: false }
+Task 4efdf80e0d8318f25241aecfccc14f2a status: { state: 'generating', hasResult: false }
+Task 4efdf80e0d8318f25241aecfccc14f2a status: { state: 'generating', hasResult: false }
+Task 4efdf80e0d8318f25241aecfccc14f2a status: { state: 'success', hasResult: true }
+Task completed with results: {
+  hasResultUrls: true,
+  urlCount: 1,
+  firstUrl: 'https://tempfile.aiquickdraw.com/f/4efdf80e0d8318f...'
+}
+✅ Updated generation cmf9wwrtq000byhhk330i0of6 status to COMPLETED
+🔄 [QWEN] Attempting to save image to Cloudinary: {
+  originalUrl: 'https://tempfile.aiquickdraw.com/f/4efdf80e0d8318f25241aecfccc14f2a_1757262823_hvndd5t4.png',
+  userId: 'cmeiiqjrb0000ef1lt2m3oarq',
+  userCanSave: false
+}
+Starting to save generated image for user: unitradecargo_1755606425734
+✅ Admin user - image saving enabled
+🔄 [HTTPS FIX] Uploading to IMGBB for HTTPS compatibility...
+📤 [IMGBB] Downloading image from: https://tempfile.aiquickdraw.com/f/4efdf80e0d8318f25241aecfccc14f2a_1757262823_hvndd5t4.png
+✅ [IMGBB] Upload successful: https://i.ibb.co/DP0p020R/78ffac41cc4f.png
+✅ Upload complete: {
+  imageUrl: 'https://i.ibb.co/DP0p020R/78ffac41cc4f.png',
+  thumbnailUrl: 'https://i.ibb.co/DP0p020R/78ffac41cc4f.png',
+  cloudPath: 'imgbb/1757262831325'
+}
+✅ Image saved to database with cloudPath: cmf9wx3gn000dyhhkvw2h1flo cloudPath: imgbb/1757262831325
+✅ [QWEN] Image saved to Cloudinary successfully: {
+  cloudinaryUrl: 'https://i.ibb.co/DP0p020R/78ffac41cc4f.png',
+  thumbnailUrl: 'https://i.ibb.co/DP0p020R/78ffac41cc4f.png',
+  savedImageId: 'cmf9wx3gn000dyhhkvw2h1flo'
+}
+🔍 [AFFILIATE TRACKING] Request: /api/image-proxy/proxy?url=https%3A%2F%2Fi.ibb.co%2FDP0p020R%2F78ffac41cc4f.png
+🔍 [AFFILIATE TRACKING] Query params: { url: 'https://i.ibb.co/DP0p020R/78ffac41cc4f.png' }
+prisma:query SELECT 1
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+⏭️ Skipping premium user cmeiiqjrb0000ef1lt2m3oarq - no daily credits for paid plans
+🖼️ Proxying image: https://i.ibb.co/DP0p020R/78ffac41cc4f.png
+🔍 [AFFILIATE TRACKING] Request: /api/qwen/edit
+🔍 [AFFILIATE TRACKING] Query params: {}
+🚨 [QWEN ROUTES] Incoming request: {
+  method: 'POST',
+  url: '/edit',
+  path: '/edit',
+  hasAuth: true,
+  bodySize: 1249495
+}
+🔐 [AUTH MIDDLEWARE] Starting authentication check...
+🔐 [AUTH MIDDLEWARE] Auth header: EXISTS
+🎯 [QWEN ULTRA] Starting request processing...
+🎯 [QWEN ULTRA] Request body keys: [ 'prompt', 'input_image', 'style', 'aspectRatio', 'negativePrompt' ]
+🎯 [QWEN ULTRA] User object: EXISTS
+🎯 [QWEN ULTRA] Extracted data: {
+  hasPrompt: true,
+  hasImage: true,
+  userId: 'cmeiiqjrb0000ef1lt2m3oarq',
+  style: 'burton-family',
+  aspectRatio: '4:3',
+  imagePreview: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAgEASABIAAD/4gxYSUNDX1BST0ZJTEUAAQEAAAxITGlubwIQAABtbnRyUkdCI...',
+  imageType: 'BASE64'
+}
+🎯 [QWEN ULTRA] Basic validation passed, proceeding...
+🎯 [QWEN ULTRA] Checking credits for user: cmeiiqjrb0000ef1lt2m3oarq
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."email", "public"."colibrrri_users"."username" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+⚠️ Slow query detected: User.findUnique took 1984ms
+prisma:query BEGIN
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query UPDATE "public"."colibrrri_users" SET "totalCredits" = ("public"."colibrrri_users"."totalCredits" - $1), "updatedAt" = $2 WHERE ("public"."colibrrri_users"."id" = $3 AND 1=1) RETURNING "public"."colibrrri_users"."id", "public"."colibrrri_users"."email", "public"."colibrrri_users"."username", "public"."colibrrri_users"."password", "public"."colibrrri_users"."fullName", "public"."colibrrri_users"."avatar", "public"."colibrrri_users"."bio", "public"."colibrrri_users"."website", "public"."colibrrri_users"."location", "public"."colibrrri_users"."role", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate", "public"."colibrrri_users"."emailVerified", "public"."colibrrri_users"."googleId", "public"."colibrrri_users"."facebookId", "public"."colibrrri_users"."createdAt", "public"."colibrrri_users"."updatedAt"
+prisma:query INSERT INTO "public"."colibrrri_credits" ("id","userId","amount","type","description","createdAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."colibrrri_credits"."id", "public"."colibrrri_credits"."userId", "public"."colibrrri_credits"."amount", "public"."colibrrri_credits"."type", "public"."colibrrri_credits"."description", "public"."colibrrri_credits"."createdAt"
+prisma:query COMMIT
+✅ Successfully processed 10 credits for model qwen-ultra
+🎯 [QWEN ULTRA] Credits check passed: { used: 10, remaining: 9470 }
+🎯 [QWEN ULTRA] Creating generation record...
+📝 Created generation cmf9wz37n000iyhhkjjsyb252 for model qwen-ultra
+🎯 [QWEN ULTRA] Generation record created: cmf9wz37n000iyhhkjjsyb252
+Qwen Ultra generation request: {
+  hasPrompt: true,
+  hasImage: true,
+  style: 'burton-family',
+  aspectRatio: '4:3'
+}
+🎯 [QWEN ULTRA] Processing image URL...
+🔍 [QWEN DEBUG] processImageUrl called with: {
+  type: 'string',
+  length: 1248983,
+  preview: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAgEASABIAAD/4gxYSUNDX1BST0ZJTEUAAQEAAAxITGlubwIQAABtbnRyUkdCI...',
+  isHttp: false,
+  isData: true,
+  fullUrl: 'data:image/jpeg;base64,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'... 1238983 more characters
+}
+📷 [QWEN DEBUG] Received base64 image data - converting to public URL
+📤 [IMGBB] Converting base64 to public URL...
+✅ [IMGBB] Base64 uploaded successfully: https://i.ibb.co/Kp4mySWk/e21202162b92.jpg
+✅ [QWEN DEBUG] Base64 converted to public URL: https://i.ibb.co/Kp4mySWk/e21202162b92.jpg
+🎯 [QWEN ULTRA] Image URL processed: SUCCESS
+Sending Ultra request to KIE API: {
+  url: 'https://api.kie.ai/api/v1/playground/createTask',
+  model: 'qwen/image-edit',
+  prompt: "Transform this photo into Transform into Tim Burton family style: distinctive large round eyes, pale skin with slight blue-grey tones, exaggerated facial features, gothic family portrait composition style, dark clothing with Victorian elements, candlelit gothic interior, Tim Burton's signature artistic style, whimsical yet dark atmosphere, vintage gothic aesthetic, high quality, masterpiece",
+  imageUrl: 'https://i.ibb.co/Kp4mySWk/e21202162b92.jpg',
+  fullRequestBody: '{\n' +
+    '  "model": "qwen/image-edit",\n' +
+    '  "input": {\n' +
+    `    "prompt": "Transform this photo into Transform into Tim Burton family style: distinctive large round eyes, pale skin with slight blue-grey tones, exaggerated facial features, gothic family portrait composition style, dark clothing with Victorian elements, candlelit gothic interior, Tim Burton's signature artistic style, whimsical yet dark atmosphere, vintage gothic aesthetic, high quality, masterpiece",\n` +
+    '    "image_url": "https://i.ibb.co/Kp4mySWk/e21202162b92.jpg",\n' +
+    '    "image_size": "landscape_4_3",\n' +
+    '    "num_inference_steps": 40,\n' +
+    '    "guidance_scale": 6,\n' +
+    '    "enable_safety_checker": true,\n' +
+    '    "output_format": "png",\n' +
+    '    "sync_mode": false,\n' +
+    '    "acceleration": "regular"\n' +
+    '  }\n' +
+    '}'
+}
+✅ [QWEN DEBUG] Parsed KIE API Response: {
+  code: 200,
+  taskId: 'e32e1429be193922e891cbb364ae9161',
+  success: true
+}
+Created KIE API Ultra task: e32e1429be193922e891cbb364ae9161
+Task e32e1429be193922e891cbb364ae9161 status: { state: 'generating', hasResult: false }
+Task e32e1429be193922e891cbb364ae9161 status: { state: 'generating', hasResult: false }
+Task e32e1429be193922e891cbb364ae9161 status: { state: 'generating', hasResult: false }
+Task e32e1429be193922e891cbb364ae9161 status: { state: 'success', hasResult: true }
+Task completed with results: {
+  hasResultUrls: true,
+  urlCount: 1,
+  firstUrl: 'https://tempfile.aiquickdraw.com/f/e32e1429be19392...'
+}
+✅ Updated generation cmf9wz37n000iyhhkjjsyb252 status to COMPLETED
+🔄 [QWEN] Attempting to save image to Cloudinary: {
+  originalUrl: 'https://tempfile.aiquickdraw.com/f/e32e1429be193922e891cbb364ae9161_1757262933_844ief7t.png',
+  userId: 'cmeiiqjrb0000ef1lt2m3oarq',
+  userCanSave: false
+}
+Starting to save generated image for user: unitradecargo_1755606425734
+✅ Admin user - image saving enabled
+🔄 [HTTPS FIX] Uploading to IMGBB for HTTPS compatibility...
+📤 [IMGBB] Downloading image from: https://tempfile.aiquickdraw.com/f/e32e1429be193922e891cbb364ae9161_1757262933_844ief7t.png
+✅ [IMGBB] Upload successful: https://i.ibb.co/yncgdRY7/a24dedd61a22.png
+✅ Upload complete: {
+  imageUrl: 'https://i.ibb.co/yncgdRY7/a24dedd61a22.png',
+  thumbnailUrl: 'https://i.ibb.co/yncgdRY7/a24dedd61a22.png',
+  cloudPath: 'imgbb/1757262941722'
+}
+✅ Image saved to database with cloudPath: cmf9wzftk000kyhhkh06jrqic cloudPath: imgbb/1757262941722
+✅ [QWEN] Image saved to Cloudinary successfully: {
+  cloudinaryUrl: 'https://i.ibb.co/yncgdRY7/a24dedd61a22.png',
+  thumbnailUrl: 'https://i.ibb.co/yncgdRY7/a24dedd61a22.png',
+  savedImageId: 'cmf9wzftk000kyhhkh06jrqic'
+}
+🔍 [AFFILIATE TRACKING] Request: /api/image-proxy/proxy?url=https%3A%2F%2Fi.ibb.co%2FyncgdRY7%2Fa24dedd61a22.png
+🔍 [AFFILIATE TRACKING] Query params: { url: 'https://i.ibb.co/yncgdRY7/a24dedd61a22.png' }
+prisma:query SELECT 1
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+⏭️ Skipping premium user cmeiiqjrb0000ef1lt2m3oarq - no daily credits for paid plans
+🖼️ Proxying image: https://i.ibb.co/yncgdRY7/a24dedd61a22.png
+🔍 [AFFILIATE TRACKING] Request: /api/qwen/edit
+🔍 [AFFILIATE TRACKING] Query params: {}
+🚨 [QWEN ROUTES] Incoming request: {
+  method: 'POST',
+  url: '/edit',
+  path: '/edit',
+  hasAuth: true,
+  bodySize: 1249462
+}
+🔐 [AUTH MIDDLEWARE] Starting authentication check...
+🔐 [AUTH MIDDLEWARE] Auth header: EXISTS
+🎯 [QWEN ULTRA] Starting request processing...
+🎯 [QWEN ULTRA] Request body keys: [ 'prompt', 'input_image', 'style', 'aspectRatio', 'negativePrompt' ]
+🎯 [QWEN ULTRA] User object: EXISTS
+🎯 [QWEN ULTRA] Extracted data: {
+  hasPrompt: true,
+  hasImage: true,
+  userId: 'cmeiiqjrb0000ef1lt2m3oarq',
+  style: 'addams-family',
+  aspectRatio: '4:3',
+  imagePreview: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAgEASABIAAD/4gxYSUNDX1BST0ZJTEUAAQEAAAxITGlubwIQAABtbnRyUkdCI...',
+  imageType: 'BASE64'
+}
+🎯 [QWEN ULTRA] Basic validation passed, proceeding...
+🎯 [QWEN ULTRA] Checking credits for user: cmeiiqjrb0000ef1lt2m3oarq
+prisma:query SELECT 1
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."email", "public"."colibrrri_users"."username" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+prisma:query BEGIN
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query UPDATE "public"."colibrrri_users" SET "totalCredits" = ("public"."colibrrri_users"."totalCredits" - $1), "updatedAt" = $2 WHERE ("public"."colibrrri_users"."id" = $3 AND 1=1) RETURNING "public"."colibrrri_users"."id", "public"."colibrrri_users"."email", "public"."colibrrri_users"."username", "public"."colibrrri_users"."password", "public"."colibrrri_users"."fullName", "public"."colibrrri_users"."avatar", "public"."colibrrri_users"."bio", "public"."colibrrri_users"."website", "public"."colibrrri_users"."location", "public"."colibrrri_users"."role", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate", "public"."colibrrri_users"."emailVerified", "public"."colibrrri_users"."googleId", "public"."colibrrri_users"."facebookId", "public"."colibrrri_users"."createdAt", "public"."colibrrri_users"."updatedAt"
+prisma:query INSERT INTO "public"."colibrrri_credits" ("id","userId","amount","type","description","createdAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."colibrrri_credits"."id", "public"."colibrrri_credits"."userId", "public"."colibrrri_credits"."amount", "public"."colibrrri_credits"."type", "public"."colibrrri_credits"."description", "public"."colibrrri_credits"."createdAt"
+prisma:query COMMIT
+✅ Successfully processed 10 credits for model qwen-ultra
+🎯 [QWEN ULTRA] Credits check passed: { used: 10, remaining: 9460 }
+🎯 [QWEN ULTRA] Creating generation record...
+📝 Created generation cmf9x1fba000pyhhkb8d53jxl for model qwen-ultra
+🎯 [QWEN ULTRA] Generation record created: cmf9x1fba000pyhhkb8d53jxl
+Qwen Ultra generation request: {
+  hasPrompt: true,
+  hasImage: true,
+  style: 'addams-family',
+  aspectRatio: '4:3'
+}
+🎯 [QWEN ULTRA] Processing image URL...
+🔍 [QWEN DEBUG] processImageUrl called with: {
+  type: 'string',
+  length: 1248983,
+  preview: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAgEASABIAAD/4gxYSUNDX1BST0ZJTEUAAQEAAAxITGlubwIQAABtbnRyUkdCI...',
+  isHttp: false,
+  isData: true,
+  fullUrl: 'data:image/jpeg;base64,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'... 1238983 more characters
+}
+📷 [QWEN DEBUG] Received base64 image data - converting to public URL
+📤 [IMGBB] Converting base64 to public URL...
+✅ [IMGBB] Base64 uploaded successfully: https://i.ibb.co/Kp4mySWk/e21202162b92.jpg
+✅ [QWEN DEBUG] Base64 converted to public URL: https://i.ibb.co/Kp4mySWk/e21202162b92.jpg
+🎯 [QWEN ULTRA] Image URL processed: SUCCESS
+Sending Ultra request to KIE API: {
+  url: 'https://api.kie.ai/api/v1/playground/createTask',
+  model: 'qwen/image-edit',
+  prompt: 'Transform this photo into Transform into Addams Family style: pale skin with gothic makeup, dark hair, elegant black gothic clothing, mysterious family portrait style style, dark gothic castle in background with spires and towers, stormy atmosphere, classic gothic family aesthetic, Victorian gothic fashion, haunting family elegance, high quality, masterpiece',
+  imageUrl: 'https://i.ibb.co/Kp4mySWk/e21202162b92.jpg',
+  fullRequestBody: '{\n' +
+    '  "model": "qwen/image-edit",\n' +
+    '  "input": {\n' +
+    '    "prompt": "Transform this photo into Transform into Addams Family style: pale skin with gothic makeup, dark hair, elegant black gothic clothing, mysterious family portrait style style, dark gothic castle in background with spires and towers, stormy atmosphere, classic gothic family aesthetic, Victorian gothic fashion, haunting family elegance, high quality, masterpiece",\n' +
+    '    "image_url": "https://i.ibb.co/Kp4mySWk/e21202162b92.jpg",\n' +
+    '    "image_size": "landscape_4_3",\n' +
+    '    "num_inference_steps": 40,\n' +
+    '    "guidance_scale": 6,\n' +
+    '    "enable_safety_checker": true,\n' +
+    '    "output_format": "png",\n' +
+    '    "sync_mode": false,\n' +
+    '    "acceleration": "regular"\n' +
+    '  }\n' +
+    '}'
+}
+✅ [QWEN DEBUG] Parsed KIE API Response: {
+  code: 200,
+  taskId: '4aa9923614680b0085cf9ec910240f33',
+  success: true
+}
+Created KIE API Ultra task: 4aa9923614680b0085cf9ec910240f33
+Task 4aa9923614680b0085cf9ec910240f33 status: { state: 'generating', hasResult: false }
+Task 4aa9923614680b0085cf9ec910240f33 status: { state: 'generating', hasResult: false }
+Task 4aa9923614680b0085cf9ec910240f33 status: { state: 'generating', hasResult: false }
+Task 4aa9923614680b0085cf9ec910240f33 status: { state: 'success', hasResult: true }
+Task completed with results: {
+  hasResultUrls: true,
+  urlCount: 1,
+  firstUrl: 'https://tempfile.aiquickdraw.com/f/4aa9923614680b0...'
+}
+✅ Updated generation cmf9x1fba000pyhhkb8d53jxl status to COMPLETED
+🔄 [QWEN] Attempting to save image to Cloudinary: {
+  originalUrl: 'https://tempfile.aiquickdraw.com/f/4aa9923614680b0085cf9ec910240f33_1757263045_r2aiff9b.png',
+  userId: 'cmeiiqjrb0000ef1lt2m3oarq',
+  userCanSave: false
+}
+Starting to save generated image for user: unitradecargo_1755606425734
+✅ Admin user - image saving enabled
+🔄 [HTTPS FIX] Uploading to IMGBB for HTTPS compatibility...
+📤 [IMGBB] Downloading image from: https://tempfile.aiquickdraw.com/f/4aa9923614680b0085cf9ec910240f33_1757263045_r2aiff9b.png
+✅ [IMGBB] Upload successful: https://i.ibb.co/ccWHYR00/7e13141d0740.png
+✅ Upload complete: {
+  imageUrl: 'https://i.ibb.co/ccWHYR00/7e13141d0740.png',
+  thumbnailUrl: 'https://i.ibb.co/ccWHYR00/7e13141d0740.png',
+  cloudPath: 'imgbb/1757263055894'
+}
+✅ Image saved to database with cloudPath: cmf9x1vxb000ryhhkz7o4ytt4 cloudPath: imgbb/1757263055894
+✅ [QWEN] Image saved to Cloudinary successfully: {
+  cloudinaryUrl: 'https://i.ibb.co/ccWHYR00/7e13141d0740.png',
+  thumbnailUrl: 'https://i.ibb.co/ccWHYR00/7e13141d0740.png',
+  savedImageId: 'cmf9x1vxb000ryhhkz7o4ytt4'
+}
+🔍 [AFFILIATE TRACKING] Request: /api/image-proxy/proxy?url=https%3A%2F%2Fi.ibb.co%2FccWHYR00%2F7e13141d0740.png
+🔍 [AFFILIATE TRACKING] Query params: { url: 'https://i.ibb.co/ccWHYR00/7e13141d0740.png' }
+prisma:query SELECT 1
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+⏭️ Skipping premium user cmeiiqjrb0000ef1lt2m3oarq - no daily credits for paid plans
+🖼️ Proxying image: https://i.ibb.co/ccWHYR00/7e13141d0740.png
+🔍 [AFFILIATE TRACKING] Request: /api/qwen/edit
+🔍 [AFFILIATE TRACKING] Query params: {}
+🚨 [QWEN ROUTES] Incoming request: {
+  method: 'POST',
+  url: '/edit',
+  path: '/edit',
+  hasAuth: true,
+  bodySize: 1249462
+}
+🔐 [AUTH MIDDLEWARE] Starting authentication check...
+🔐 [AUTH MIDDLEWARE] Auth header: EXISTS
+🎯 [QWEN ULTRA] Starting request processing...
+🎯 [QWEN ULTRA] Request body keys: [ 'prompt', 'input_image', 'style', 'aspectRatio', 'negativePrompt' ]
+🎯 [QWEN ULTRA] User object: EXISTS
+🎯 [QWEN ULTRA] Extracted data: {
+  hasPrompt: true,
+  hasImage: true,
+  userId: 'cmeiiqjrb0000ef1lt2m3oarq',
+  style: 'dark-gothic',
+  aspectRatio: '4:3',
+  imagePreview: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAgEASABIAAD/4gxYSUNDX1BST0ZJTEUAAQEAAAxITGlubwIQAABtbnRyUkdCI...',
+  imageType: 'BASE64'
+}
+🎯 [QWEN ULTRA] Basic validation passed, proceeding...
+🎯 [QWEN ULTRA] Checking credits for user: cmeiiqjrb0000ef1lt2m3oarq
+prisma:query SELECT 1
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."email", "public"."colibrrri_users"."username" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+prisma:query BEGIN
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query UPDATE "public"."colibrrri_users" SET "totalCredits" = ("public"."colibrrri_users"."totalCredits" - $1), "updatedAt" = $2 WHERE ("public"."colibrrri_users"."id" = $3 AND 1=1) RETURNING "public"."colibrrri_users"."id", "public"."colibrrri_users"."email", "public"."colibrrri_users"."username", "public"."colibrrri_users"."password", "public"."colibrrri_users"."fullName", "public"."colibrrri_users"."avatar", "public"."colibrrri_users"."bio", "public"."colibrrri_users"."website", "public"."colibrrri_users"."location", "public"."colibrrri_users"."role", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate", "public"."colibrrri_users"."emailVerified", "public"."colibrrri_users"."googleId", "public"."colibrrri_users"."facebookId", "public"."colibrrri_users"."createdAt", "public"."colibrrri_users"."updatedAt"
+prisma:query INSERT INTO "public"."colibrrri_credits" ("id","userId","amount","type","description","createdAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."colibrrri_credits"."id", "public"."colibrrri_credits"."userId", "public"."colibrrri_credits"."amount", "public"."colibrrri_credits"."type", "public"."colibrrri_credits"."description", "public"."colibrrri_credits"."createdAt"
+prisma:query COMMIT
+✅ Successfully processed 10 credits for model qwen-ultra
+🎯 [QWEN ULTRA] Credits check passed: { used: 10, remaining: 9450 }
+🎯 [QWEN ULTRA] Creating generation record...
+📝 Created generation cmf9x2e0u000wyhhk638nfou1 for model qwen-ultra
+🎯 [QWEN ULTRA] Generation record created: cmf9x2e0u000wyhhk638nfou1
+Qwen Ultra generation request: {
+  hasPrompt: true,
+  hasImage: true,
+  style: 'dark-gothic',
+  aspectRatio: '4:3'
+}
+🎯 [QWEN ULTRA] Processing image URL...
+🔍 [QWEN DEBUG] processImageUrl called with: {
+  type: 'string',
+  length: 1248983,
+  preview: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAgEASABIAAD/4gxYSUNDX1BST0ZJTEUAAQEAAAxITGlubwIQAABtbnRyUkdCI...',
+  isHttp: false,
+  isData: true,
+  fullUrl: 'data:image/jpeg;base64,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'... 1238983 more characters
+}
+📷 [QWEN DEBUG] Received base64 image data - converting to public URL
+📤 [IMGBB] Converting base64 to public URL...
+✅ [IMGBB] Base64 uploaded successfully: https://i.ibb.co/Kp4mySWk/e21202162b92.jpg
+✅ [QWEN DEBUG] Base64 converted to public URL: https://i.ibb.co/Kp4mySWk/e21202162b92.jpg
+🎯 [QWEN ULTRA] Image URL processed: SUCCESS
+Sending Ultra request to KIE API: {
+  url: 'https://api.kie.ai/api/v1/playground/createTask',
+  model: 'qwen/image-edit',
+  prompt: 'Transform this photo into Transform into dark gothic style: pale skin with realistic textures, dark dramatic makeup, mysterious haunting expression, gothic clothing in black style, dark forest background with bare twisted trees, misty foggy atmosphere, candlelit ambiance, dramatic lighting, gothic horror aesthetic, mysterious shadows, high quality, masterpiece',
+  imageUrl: 'https://i.ibb.co/Kp4mySWk/e21202162b92.jpg',
+  fullRequestBody: '{\n' +
+    '  "model": "qwen/image-edit",\n' +
+    '  "input": {\n' +
+    '    "prompt": "Transform this photo into Transform into dark gothic style: pale skin with realistic textures, dark dramatic makeup, mysterious haunting expression, gothic clothing in black style, dark forest background with bare twisted trees, misty foggy atmosphere, candlelit ambiance, dramatic lighting, gothic horror aesthetic, mysterious shadows, high quality, masterpiece",\n' +
+    '    "image_url": "https://i.ibb.co/Kp4mySWk/e21202162b92.jpg",\n' +
+    '    "image_size": "landscape_4_3",\n' +
+    '    "num_inference_steps": 40,\n' +
+    '    "guidance_scale": 6,\n' +
+    '    "enable_safety_checker": true,\n' +
+    '    "output_format": "png",\n' +
+    '    "sync_mode": false,\n' +
+    '    "acceleration": "regular"\n' +
+    '  }\n' +
+    '}'
+}
+✅ [QWEN DEBUG] Parsed KIE API Response: {
+  code: 200,
+  taskId: '39ccfe32e946345361e77d7047f057db',
+  success: true
+}
+Created KIE API Ultra task: 39ccfe32e946345361e77d7047f057db
+Task 39ccfe32e946345361e77d7047f057db status: { state: 'generating', hasResult: false }
+Task 39ccfe32e946345361e77d7047f057db status: { state: 'generating', hasResult: false }
+Task 39ccfe32e946345361e77d7047f057db status: { state: 'generating', hasResult: false }
+Task 39ccfe32e946345361e77d7047f057db status: { state: 'success', hasResult: true }
+Task completed with results: {
+  hasResultUrls: true,
+  urlCount: 1,
+  firstUrl: 'https://tempfile.aiquickdraw.com/f/39ccfe32e946345...'
+}
+✅ Updated generation cmf9x2e0u000wyhhk638nfou1 status to COMPLETED
+🔄 [QWEN] Attempting to save image to Cloudinary: {
+  originalUrl: 'https://tempfile.aiquickdraw.com/f/39ccfe32e946345361e77d7047f057db_1757263088_nwede64x.png',
+  userId: 'cmeiiqjrb0000ef1lt2m3oarq',
+  userCanSave: false
+}
+Starting to save generated image for user: unitradecargo_1755606425734
+✅ Admin user - image saving enabled
+🔄 [HTTPS FIX] Uploading to IMGBB for HTTPS compatibility...
+📤 [IMGBB] Downloading image from: https://tempfile.aiquickdraw.com/f/39ccfe32e946345361e77d7047f057db_1757263088_nwede64x.png
+✅ [IMGBB] Upload successful: https://i.ibb.co/s984C5Gv/88708fd0a3a4.png
+✅ Upload complete: {
+  imageUrl: 'https://i.ibb.co/s984C5Gv/88708fd0a3a4.png',
+  thumbnailUrl: 'https://i.ibb.co/s984C5Gv/88708fd0a3a4.png',
+  cloudPath: 'imgbb/1757263096664'
+}
+✅ Image saved to database with cloudPath: cmf9x2rdi000yyhhkxem8x0hj cloudPath: imgbb/1757263096664
+✅ [QWEN] Image saved to Cloudinary successfully: {
+  cloudinaryUrl: 'https://i.ibb.co/s984C5Gv/88708fd0a3a4.png',
+  thumbnailUrl: 'https://i.ibb.co/s984C5Gv/88708fd0a3a4.png',
+  savedImageId: 'cmf9x2rdi000yyhhkxem8x0hj'
+}
+🔍 [AFFILIATE TRACKING] Request: /api/image-proxy/proxy?url=https%3A%2F%2Fi.ibb.co%2Fs984C5Gv%2F88708fd0a3a4.png
+🔍 [AFFILIATE TRACKING] Query params: { url: 'https://i.ibb.co/s984C5Gv/88708fd0a3a4.png' }
+prisma:query SELECT 1
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+⏭️ Skipping premium user cmeiiqjrb0000ef1lt2m3oarq - no daily credits for paid plans
+🖼️ Proxying image: https://i.ibb.co/s984C5Gv/88708fd0a3a4.png
+🔍 [AFFILIATE TRACKING] Request: /api/qwen/edit
+🔍 [AFFILIATE TRACKING] Query params: {}
+🚨 [QWEN ROUTES] Incoming request: {
+  method: 'POST',
+  url: '/edit',
+  path: '/edit',
+  hasAuth: true,
+  bodySize: 1249471
+}
+🔐 [AUTH MIDDLEWARE] Starting authentication check...
+🔐 [AUTH MIDDLEWARE] Auth header: EXISTS
+🎯 [QWEN ULTRA] Starting request processing...
+🎯 [QWEN ULTRA] Request body keys: [ 'prompt', 'input_image', 'style', 'aspectRatio', 'negativePrompt' ]
+🎯 [QWEN ULTRA] User object: EXISTS
+🎯 [QWEN ULTRA] Extracted data: {
+  hasPrompt: true,
+  hasImage: true,
+  userId: 'cmeiiqjrb0000ef1lt2m3oarq',
+  style: 'corpse-bride',
+  aspectRatio: '4:3',
+  imagePreview: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAgEASABIAAD/4gxYSUNDX1BST0ZJTEUAAQEAAAxITGlubwIQAABtbnRyUkdCI...',
+  imageType: 'BASE64'
+}
+🎯 [QWEN ULTRA] Basic validation passed, proceeding...
+🎯 [QWEN ULTRA] Checking credits for user: cmeiiqjrb0000ef1lt2m3oarq
+prisma:query SELECT 1
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."email", "public"."colibrrri_users"."username" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+prisma:query BEGIN
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query UPDATE "public"."colibrrri_users" SET "totalCredits" = ("public"."colibrrri_users"."totalCredits" - $1), "updatedAt" = $2 WHERE ("public"."colibrrri_users"."id" = $3 AND 1=1) RETURNING "public"."colibrrri_users"."id", "public"."colibrrri_users"."email", "public"."colibrrri_users"."username", "public"."colibrrri_users"."password", "public"."colibrrri_users"."fullName", "public"."colibrrri_users"."avatar", "public"."colibrrri_users"."bio", "public"."colibrrri_users"."website", "public"."colibrrri_users"."location", "public"."colibrrri_users"."role", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate", "public"."colibrrri_users"."emailVerified", "public"."colibrrri_users"."googleId", "public"."colibrrri_users"."facebookId", "public"."colibrrri_users"."createdAt", "public"."colibrrri_users"."updatedAt"
+prisma:query INSERT INTO "public"."colibrrri_credits" ("id","userId","amount","type","description","createdAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."colibrrri_credits"."id", "public"."colibrrri_credits"."userId", "public"."colibrrri_credits"."amount", "public"."colibrrri_credits"."type", "public"."colibrrri_credits"."description", "public"."colibrrri_credits"."createdAt"
+prisma:query COMMIT
+✅ Successfully processed 10 credits for model qwen-ultra
+🎯 [QWEN ULTRA] Credits check passed: { used: 10, remaining: 9440 }
+🎯 [QWEN ULTRA] Creating generation record...
+📝 Created generation cmf9x3p570013yhhk2tqz8jpz for model qwen-ultra
+🎯 [QWEN ULTRA] Generation record created: cmf9x3p570013yhhk2tqz8jpz
+Qwen Ultra generation request: {
+  hasPrompt: true,
+  hasImage: true,
+  style: 'corpse-bride',
+  aspectRatio: '4:3'
+}
+🎯 [QWEN ULTRA] Processing image URL...
+🔍 [QWEN DEBUG] processImageUrl called with: {
+  type: 'string',
+  length: 1248983,
+  preview: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAgEASABIAAD/4gxYSUNDX1BST0ZJTEUAAQEAAAxITGlubwIQAABtbnRyUkdCI...',
+  isHttp: false,
+  isData: true,
+  fullUrl: 'data:image/jpeg;base64,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'... 1238983 more characters
+}
+📷 [QWEN DEBUG] Received base64 image data - converting to public URL
+📤 [IMGBB] Converting base64 to public URL...
+✅ [IMGBB] Base64 uploaded successfully: https://i.ibb.co/Kp4mySWk/e21202162b92.jpg
+✅ [QWEN DEBUG] Base64 converted to public URL: https://i.ibb.co/Kp4mySWk/e21202162b92.jpg
+🎯 [QWEN ULTRA] Image URL processed: SUCCESS
+Sending Ultra request to KIE API: {
+  url: 'https://api.kie.ai/api/v1/playground/createTask',
+  model: 'qwen/image-edit',
+  prompt: 'Transform this photo into Transform into Corpse Bride style: pale blue-grey corpse-like skin, large expressive white eyes with dark circles, gothic makeup with dark lipstick, flowing dark hair style, Tim Burton aesthetic, gothic romantic style, dramatic shadows, ethereal and melancholic mood, vintage gothic clothing, dark romantic atmosphere, high quality, masterpiece',
+  imageUrl: 'https://i.ibb.co/Kp4mySWk/e21202162b92.jpg',
+  fullRequestBody: '{\n' +
+    '  "model": "qwen/image-edit",\n' +
+    '  "input": {\n' +
+    '    "prompt": "Transform this photo into Transform into Corpse Bride style: pale blue-grey corpse-like skin, large expressive white eyes with dark circles, gothic makeup with dark lipstick, flowing dark hair style, Tim Burton aesthetic, gothic romantic style, dramatic shadows, ethereal and melancholic mood, vintage gothic clothing, dark romantic atmosphere, high quality, masterpiece",\n' +
+    '    "image_url": "https://i.ibb.co/Kp4mySWk/e21202162b92.jpg",\n' +
+    '    "image_size": "landscape_4_3",\n' +
+    '    "num_inference_steps": 40,\n' +
+    '    "guidance_scale": 6,\n' +
+    '    "enable_safety_checker": true,\n' +
+    '    "output_format": "png",\n' +
+    '    "sync_mode": false,\n' +
+    '    "acceleration": "regular"\n' +
+    '  }\n' +
+    '}'
+}
+✅ [QWEN DEBUG] Parsed KIE API Response: {
+  code: 200,
+  taskId: '48c141ab00e17965a39181384c0f7431',
+  success: true
+}
+Created KIE API Ultra task: 48c141ab00e17965a39181384c0f7431
+Task 48c141ab00e17965a39181384c0f7431 status: { state: 'generating', hasResult: false }
+Task 48c141ab00e17965a39181384c0f7431 status: { state: 'generating', hasResult: false }
+Task 48c141ab00e17965a39181384c0f7431 status: { state: 'generating', hasResult: false }
+Task 48c141ab00e17965a39181384c0f7431 status: { state: 'success', hasResult: true }
+Task completed with results: {
+  hasResultUrls: true,
+  urlCount: 1,
+  firstUrl: 'https://tempfile.aiquickdraw.com/f/48c141ab00e1796...'
+}
+✅ Updated generation cmf9x3p570013yhhk2tqz8jpz status to COMPLETED
+🔄 [QWEN] Attempting to save image to Cloudinary: {
+  originalUrl: 'https://tempfile.aiquickdraw.com/f/48c141ab00e17965a39181384c0f7431_1757263145_wb29das0.png',
+  userId: 'cmeiiqjrb0000ef1lt2m3oarq',
+  userCanSave: false
+}
+Starting to save generated image for user: unitradecargo_1755606425734
+✅ Admin user - image saving enabled
+🔄 [HTTPS FIX] Uploading to IMGBB for HTTPS compatibility...
+📤 [IMGBB] Downloading image from: https://tempfile.aiquickdraw.com/f/48c141ab00e17965a39181384c0f7431_1757263145_wb29das0.png
+✅ [IMGBB] Upload successful: https://i.ibb.co/BVwg043Q/085e4b24002a.png
+✅ Upload complete: {
+  imageUrl: 'https://i.ibb.co/BVwg043Q/085e4b24002a.png',
+  thumbnailUrl: 'https://i.ibb.co/BVwg043Q/085e4b24002a.png',
+  cloudPath: 'imgbb/1757263153815'
+}
+✅ Image saved to database with cloudPath: cmf9x40b20015yhhkpw1n8uhy cloudPath: imgbb/1757263153815
+✅ [QWEN] Image saved to Cloudinary successfully: {
+  cloudinaryUrl: 'https://i.ibb.co/BVwg043Q/085e4b24002a.png',
+  thumbnailUrl: 'https://i.ibb.co/BVwg043Q/085e4b24002a.png',
+  savedImageId: 'cmf9x40b20015yhhkpw1n8uhy'
+}
+🔍 [AFFILIATE TRACKING] Request: /api/image-proxy/proxy?url=https%3A%2F%2Fi.ibb.co%2FBVwg043Q%2F085e4b24002a.png
+🔍 [AFFILIATE TRACKING] Query params: { url: 'https://i.ibb.co/BVwg043Q/085e4b24002a.png' }
+prisma:query SELECT 1
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+⏭️ Skipping premium user cmeiiqjrb0000ef1lt2m3oarq - no daily credits for paid plans
+🖼️ Proxying image: https://i.ibb.co/BVwg043Q/085e4b24002a.png
+🔍 [AFFILIATE TRACKING] Request: /api/qwen/edit
+🔍 [AFFILIATE TRACKING] Query params: {}
+🚨 [QWEN ROUTES] Incoming request: {
+  method: 'POST',
+  url: '/edit',
+  path: '/edit',
+  hasAuth: true,
+  bodySize: 1249495
+}
+🔐 [AUTH MIDDLEWARE] Starting authentication check...
+🔐 [AUTH MIDDLEWARE] Auth header: EXISTS
+🎯 [QWEN ULTRA] Starting request processing...
+🎯 [QWEN ULTRA] Request body keys: [ 'prompt', 'input_image', 'style', 'aspectRatio', 'negativePrompt' ]
+🎯 [QWEN ULTRA] User object: EXISTS
+🎯 [QWEN ULTRA] Extracted data: {
+  hasPrompt: true,
+  hasImage: true,
+  userId: 'cmeiiqjrb0000ef1lt2m3oarq',
+  style: 'burton-family',
+  aspectRatio: '4:3',
+  imagePreview: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAgEASABIAAD/4gxYSUNDX1BST0ZJTEUAAQEAAAxITGlubwIQAABtbnRyUkdCI...',
+  imageType: 'BASE64'
+}
+🎯 [QWEN ULTRA] Basic validation passed, proceeding...
+🎯 [QWEN ULTRA] Checking credits for user: cmeiiqjrb0000ef1lt2m3oarq
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."email", "public"."colibrrri_users"."username" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+prisma:query BEGIN
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query UPDATE "public"."colibrrri_users" SET "totalCredits" = ("public"."colibrrri_users"."totalCredits" - $1), "updatedAt" = $2 WHERE ("public"."colibrrri_users"."id" = $3 AND 1=1) RETURNING "public"."colibrrri_users"."id", "public"."colibrrri_users"."email", "public"."colibrrri_users"."username", "public"."colibrrri_users"."password", "public"."colibrrri_users"."fullName", "public"."colibrrri_users"."avatar", "public"."colibrrri_users"."bio", "public"."colibrrri_users"."website", "public"."colibrrri_users"."location", "public"."colibrrri_users"."role", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate", "public"."colibrrri_users"."emailVerified", "public"."colibrrri_users"."googleId", "public"."colibrrri_users"."facebookId", "public"."colibrrri_users"."createdAt", "public"."colibrrri_users"."updatedAt"
+prisma:query INSERT INTO "public"."colibrrri_credits" ("id","userId","amount","type","description","createdAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."colibrrri_credits"."id", "public"."colibrrri_credits"."userId", "public"."colibrrri_credits"."amount", "public"."colibrrri_credits"."type", "public"."colibrrri_credits"."description", "public"."colibrrri_credits"."createdAt"
+prisma:query COMMIT
+✅ Successfully processed 10 credits for model qwen-ultra
+🎯 [QWEN ULTRA] Credits check passed: { used: 10, remaining: 9430 }
+🎯 [QWEN ULTRA] Creating generation record...
+📝 Created generation cmf9x4a7u001ayhhkte2958ht for model qwen-ultra
+🎯 [QWEN ULTRA] Generation record created: cmf9x4a7u001ayhhkte2958ht
+Qwen Ultra generation request: {
+  hasPrompt: true,
+  hasImage: true,
+  style: 'burton-family',
+  aspectRatio: '4:3'
+}
+🎯 [QWEN ULTRA] Processing image URL...
+🔍 [QWEN DEBUG] processImageUrl called with: {
+  type: 'string',
+  length: 1248983,
+  preview: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAgEASABIAAD/4gxYSUNDX1BST0ZJTEUAAQEAAAxITGlubwIQAABtbnRyUkdCI...',
+  isHttp: false,
+  isData: true,
+  fullUrl: 'data:image/jpeg;base64,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'... 1238983 more characters
+}
+📷 [QWEN DEBUG] Received base64 image data - converting to public URL
+📤 [IMGBB] Converting base64 to public URL...
+✅ [IMGBB] Base64 uploaded successfully: https://i.ibb.co/Kp4mySWk/e21202162b92.jpg
+✅ [QWEN DEBUG] Base64 converted to public URL: https://i.ibb.co/Kp4mySWk/e21202162b92.jpg
+🎯 [QWEN ULTRA] Image URL processed: SUCCESS
+Sending Ultra request to KIE API: {
+  url: 'https://api.kie.ai/api/v1/playground/createTask',
+  model: 'qwen/image-edit',
+  prompt: "Transform this photo into Transform into Tim Burton family style: distinctive large round eyes, pale skin with slight blue-grey tones, exaggerated facial features, gothic family portrait composition style, dark clothing with Victorian elements, candlelit gothic interior, Tim Burton's signature artistic style, whimsical yet dark atmosphere, vintage gothic aesthetic, high quality, masterpiece",
+  imageUrl: 'https://i.ibb.co/Kp4mySWk/e21202162b92.jpg',
+  fullRequestBody: '{\n' +
+    '  "model": "qwen/image-edit",\n' +
+    '  "input": {\n' +
+    `    "prompt": "Transform this photo into Transform into Tim Burton family style: distinctive large round eyes, pale skin with slight blue-grey tones, exaggerated facial features, gothic family portrait composition style, dark clothing with Victorian elements, candlelit gothic interior, Tim Burton's signature artistic style, whimsical yet dark atmosphere, vintage gothic aesthetic, high quality, masterpiece",\n` +
+    '    "image_url": "https://i.ibb.co/Kp4mySWk/e21202162b92.jpg",\n' +
+    '    "image_size": "landscape_4_3",\n' +
+    '    "num_inference_steps": 40,\n' +
+    '    "guidance_scale": 6,\n' +
+    '    "enable_safety_checker": true,\n' +
+    '    "output_format": "png",\n' +
+    '    "sync_mode": false,\n' +
+    '    "acceleration": "regular"\n' +
+    '  }\n' +
+    '}'
+}
+✅ [QWEN DEBUG] Parsed KIE API Response: {
+  code: 200,
+  taskId: 'f3edad3e7a7b1a20fcfff418cb1204d4',
+  success: true
+}
+Created KIE API Ultra task: f3edad3e7a7b1a20fcfff418cb1204d4
+Task f3edad3e7a7b1a20fcfff418cb1204d4 status: { state: 'generating', hasResult: false }
+Task f3edad3e7a7b1a20fcfff418cb1204d4 status: { state: 'generating', hasResult: false }
+Task f3edad3e7a7b1a20fcfff418cb1204d4 status: { state: 'success', hasResult: true }
+Task completed with results: {
+  hasResultUrls: true,
+  urlCount: 1,
+  firstUrl: 'https://tempfile.aiquickdraw.com/f/f3edad3e7a7b1a2...'
+}
+✅ Updated generation cmf9x4a7u001ayhhkte2958ht status to COMPLETED
+🔄 [QWEN] Attempting to save image to Cloudinary: {
+  originalUrl: 'https://tempfile.aiquickdraw.com/f/f3edad3e7a7b1a20fcfff418cb1204d4_1757263172_c6faejmi.png',
+  userId: 'cmeiiqjrb0000ef1lt2m3oarq',
+  userCanSave: false
+}
+Starting to save generated image for user: unitradecargo_1755606425734
+✅ Admin user - image saving enabled
+🔄 [HTTPS FIX] Uploading to IMGBB for HTTPS compatibility...
+📤 [IMGBB] Downloading image from: https://tempfile.aiquickdraw.com/f/f3edad3e7a7b1a20fcfff418cb1204d4_1757263172_c6faejmi.png
+✅ [IMGBB] Upload successful: https://i.ibb.co/DHPX0c5w/5802da183dd1.png
+✅ Upload complete: {
+  imageUrl: 'https://i.ibb.co/DHPX0c5w/5802da183dd1.png',
+  thumbnailUrl: 'https://i.ibb.co/DHPX0c5w/5802da183dd1.png',
+  cloudPath: 'imgbb/1757263177652'
+}
+✅ Image saved to database with cloudPath: cmf9x4hw8001cyhhkn2mm1e3a cloudPath: imgbb/1757263177652
+✅ [QWEN] Image saved to Cloudinary successfully: {
+  cloudinaryUrl: 'https://i.ibb.co/DHPX0c5w/5802da183dd1.png',
+  thumbnailUrl: 'https://i.ibb.co/DHPX0c5w/5802da183dd1.png',
+  savedImageId: 'cmf9x4hw8001cyhhkn2mm1e3a'
+}
+🔍 [AFFILIATE TRACKING] Request: /api/image-proxy/proxy?url=https%3A%2F%2Fi.ibb.co%2FDHPX0c5w%2F5802da183dd1.png
+🔍 [AFFILIATE TRACKING] Query params: { url: 'https://i.ibb.co/DHPX0c5w/5802da183dd1.png' }
+prisma:query SELECT 1
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+⏭️ Skipping premium user cmeiiqjrb0000ef1lt2m3oarq - no daily credits for paid plans
+🖼️ Proxying image: https://i.ibb.co/DHPX0c5w/5802da183dd1.png
+[2025-09-07T17:00:00.086Z] [INFO] 🔄 Running automatic payment processing...
+[2025-09-07T17:00:00.087Z] [INFO] 🔄 Running expired subscription check...
+[2025-09-07T17:00:01.678Z] [INFO] 🔄 Found 0 subscriptions requiring automatic payment
+[2025-09-07T17:00:01.692Z] [INFO] 🔍 Found 0 expired subscriptions to process
+🔍 [AFFILIATE TRACKING] Request: /api/image-proxy/proxy?url=https%3A%2F%2Fi.ibb.co%2FDHPX0c5w%2F5802da183dd1.png
+🔍 [AFFILIATE TRACKING] Query params: { url: 'https://i.ibb.co/DHPX0c5w/5802da183dd1.png' }
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+⚠️ Slow query detected: User.findUnique took 1958ms
+⏭️ Skipping premium user cmeiiqjrb0000ef1lt2m3oarq - no daily credits for paid plans
+🖼️ Proxying image: https://i.ibb.co/DHPX0c5w/5802da183dd1.png
+🔍 [AFFILIATE TRACKING] Request: /api/auth/me
+🔍 [AFFILIATE TRACKING] Query params: {}
+🔐 [AUTH MIDDLEWARE] Starting authentication check...
+🔐 [AUTH MIDDLEWARE] Auth header: EXISTS
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+⚠️ Slow query detected: User.findUnique took 2022ms
+⏭️ Skipping premium user cmeiiqjrb0000ef1lt2m3oarq - no daily credits for paid plans
+🔍 [AFFILIATE TRACKING] Request: /api/auth/me
+🔍 [AFFILIATE TRACKING] Query params: {}
+🔐 [AUTH MIDDLEWARE] Starting authentication check...
+🔐 [AUTH MIDDLEWARE] Auth header: EXISTS
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+⏭️ Skipping premium user cmeiiqjrb0000ef1lt2m3oarq - no daily credits for paid plans
+🔍 [AFFILIATE TRACKING] Request: /api/auth/me
+🔍 [AFFILIATE TRACKING] Query params: {}
+🔐 [AUTH MIDDLEWARE] Starting authentication check...
+🔐 [AUTH MIDDLEWARE] Auth header: EXISTS
+prisma:query SELECT 1
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+⏭️ Skipping premium user cmeiiqjrb0000ef1lt2m3oarq - no daily credits for paid plans
+🔍 [AFFILIATE TRACKING] Request: /api/auth/me
+🔍 [AFFILIATE TRACKING] Query params: {}
+🔐 [AUTH MIDDLEWARE] Starting authentication check...
+🔐 [AUTH MIDDLEWARE] Auth header: EXISTS
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+⏭️ Skipping premium user cmeiiqjrb0000ef1lt2m3oarq - no daily credits for paid plans
+🔍 [AFFILIATE TRACKING] Request: /api/auth/me
+🔍 [AFFILIATE TRACKING] Query params: {}
+🔐 [AUTH MIDDLEWARE] Starting authentication check...
+🔐 [AUTH MIDDLEWARE] Auth header: EXISTS
+prisma:query SELECT 1
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+⏭️ Skipping premium user cmeiiqjrb0000ef1lt2m3oarq - no daily credits for paid plans
+🔍 [AFFILIATE TRACKING] Request: /api/auth/me
+🔍 [AFFILIATE TRACKING] Query params: {}
+🔐 [AUTH MIDDLEWARE] Starting authentication check...
+🔐 [AUTH MIDDLEWARE] Auth header: EXISTS
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+⏭️ Skipping premium user cmeiiqjrb0000ef1lt2m3oarq - no daily credits for paid plans
 [32m[nodemon] restarting due to changes...[39m
 [32m[nodemon] starting `node index.js`[39m
+NODE_ENV: development
+🟢 Cloudinary configured for production storage
+🗄️  Storage Provider: cloudinary
+🟢 Cloudinary initialized: df9joii9s
+🔑 FLUX_API_KEY loaded: YES (length: 36)
+🔑 GPT_IMAGE_API_KEY loaded: YES (length: 32)
+🔑 IMGBB_API_KEY loaded: YES (length: 32)
+🔑 KIE API configured for Qwen: {
+  hasKey: true,
+  keyLength: 32,
+  apiUrl: 'https://api.kie.ai/api/v1/playground'
+}
+GPT Image Text-to-Image controller initialized
+🎯 API Provider: Fal.ai
+🔑 KIE API configured: {
+  hasKey: true,
+  keyLength: 32,
+  apiUrl: 'https://api.kie.ai/api/v1/playground',
+  hasCloudinaryConfig: true,
+  cloudinaryCloudName: 'df9joii9s'
+}
+🎬 Runway Video Service initialized
+🔑 API Key configured: ✅ Yes
+☁️ Storage Provider: cloudinary
+⚠️ VAPID keys not found - push notifications will be disabled
+🔧 Environment Configuration Check
+===================================
+✅ All required environment variables are set
+===================================
+
+✅ Credit reset cron jobs initialized successfully
+📅 Daily credits: FREE users reset to 100, PREMIUM users get NO daily credits at 00:00 UTC
+🔄 Additional checks every 6 hours for missed updates
+[2025-09-07T17:12:07.998Z] [INFO] ✅ Subscription expiry cron jobs initialized
+[2025-09-07T17:12:07.999Z] [INFO]    - Expired subscriptions: Every hour
+[2025-09-07T17:12:07.999Z] [INFO]    - Expiring subscriptions: Daily at 9 AM
+[2025-09-07T17:12:08.006Z] [INFO] ✅ Automatic payment cron jobs initialized
+[2025-09-07T17:12:08.007Z] [INFO]    - Auto payments: Every hour
+[2025-09-07T17:12:08.007Z] [INFO]    - Expiry notifications: Daily at 10 AM
+✅ Задачи отслеживания корзин инициализированы
+   - Проверка брошенных корзин: каждые 30 минут
+   - Очистка старых корзин (>90 дней): ежедневно в 3:00
+UNCAUGHT EXCEPTION! 💥 Shutting down...
+Error listen EADDRINUSE: address already in use :::5000
 [31m[nodemon] app crashed - waiting for file changes before starting...[39m

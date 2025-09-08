@@ -1,0 +1,500 @@
+
+> colibrrri-server@1.0.0 dev
+> nodemon index.js
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node index.js`[39m
+NODE_ENV: development
+🟢 Cloudinary configured for production storage
+🗄️  Storage Provider: cloudinary
+🟢 Cloudinary initialized: df9joii9s
+🔑 FLUX_API_KEY loaded: YES (length: 36)
+🔑 GPT_IMAGE_API_KEY loaded: YES (length: 32)
+🔑 IMGBB_API_KEY loaded: YES (length: 32)
+🔑 KIE API configured for Qwen: {
+  hasKey: true,
+  keyLength: 32,
+  apiUrl: 'https://api.kie.ai/api/v1/playground'
+}
+GPT Image Text-to-Image controller initialized
+🎯 API Provider: Fal.ai
+🔑 KIE API configured: {
+  hasKey: true,
+  keyLength: 32,
+  apiUrl: 'https://api.kie.ai/api/v1/playground',
+  hasCloudinaryConfig: true,
+  cloudinaryCloudName: 'df9joii9s'
+}
+🎬 Runway Video Service initialized
+🔑 API Key configured: ✅ Yes
+☁️ Storage Provider: cloudinary
+⚠️ VAPID keys not found - push notifications will be disabled
+🔧 Environment Configuration Check
+===================================
+✅ All required environment variables are set
+===================================
+
+✅ Credit reset cron jobs initialized successfully
+📅 Daily credits: FREE users reset to 100, PREMIUM users get NO daily credits at 00:00 UTC
+🔄 Additional checks every 6 hours for missed updates
+[2025-09-07T16:24:08.887Z] [INFO] ✅ Subscription expiry cron jobs initialized
+[2025-09-07T16:24:08.887Z] [INFO]    - Expired subscriptions: Every hour
+[2025-09-07T16:24:08.887Z] [INFO]    - Expiring subscriptions: Daily at 9 AM
+[2025-09-07T16:24:08.893Z] [INFO] ✅ Automatic payment cron jobs initialized
+[2025-09-07T16:24:08.893Z] [INFO]    - Auto payments: Every hour
+[2025-09-07T16:24:08.893Z] [INFO]    - Expiry notifications: Daily at 10 AM
+✅ Задачи отслеживания корзин инициализированы
+   - Проверка брошенных корзин: каждые 30 минут
+   - Очистка старых корзин (>90 дней): ежедневно в 3:00
+[2025-09-07T16:24:08.969Z] [INFO] Server started {"port":"5000","environment":"development","nodeVersion":"v22.17.1"}
+🔍 [AFFILIATE TRACKING] Request: /api/flux/generate
+🔍 [AFFILIATE TRACKING] Query params: {}
+🔐 [AUTH MIDDLEWARE] Starting authentication check...
+🔐 [AUTH MIDDLEWARE] Auth header: EXISTS
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."email", "public"."colibrrri_users"."username" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+⚠️ Slow query detected: User.findUnique took 1944ms
+prisma:query BEGIN
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query UPDATE "public"."colibrrri_users" SET "totalCredits" = ("public"."colibrrri_users"."totalCredits" - $1), "updatedAt" = $2 WHERE ("public"."colibrrri_users"."id" = $3 AND 1=1) RETURNING "public"."colibrrri_users"."id", "public"."colibrrri_users"."email", "public"."colibrrri_users"."username", "public"."colibrrri_users"."password", "public"."colibrrri_users"."fullName", "public"."colibrrri_users"."avatar", "public"."colibrrri_users"."bio", "public"."colibrrri_users"."website", "public"."colibrrri_users"."location", "public"."colibrrri_users"."role", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate", "public"."colibrrri_users"."emailVerified", "public"."colibrrri_users"."googleId", "public"."colibrrri_users"."facebookId", "public"."colibrrri_users"."createdAt", "public"."colibrrri_users"."updatedAt"
+prisma:query INSERT INTO "public"."colibrrri_credits" ("id","userId","amount","type","description","createdAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."colibrrri_credits"."id", "public"."colibrrri_credits"."userId", "public"."colibrrri_credits"."amount", "public"."colibrrri_credits"."type", "public"."colibrrri_credits"."description", "public"."colibrrri_credits"."createdAt"
+prisma:query COMMIT
+✅ Successfully processed 10 credits for model flux-pro
+📝 Created generation cmf9wouc70004uix9dc7oc686 for model flux-pro
+Using flux-pro model with 28 steps
+Flux API response: {
+  "id": "da835637-71b8-4895-8e60-40b80774967c",
+  "polling_url": "https://api.eu2.bfl.ai/v1/get_result?id=da835637-71b8-4895-8e60-40b80774967c"
+}
+Request da835637-71b8-4895-8e60-40b80774967c not found yet, continuing...
+Request da835637-71b8-4895-8e60-40b80774967c not found yet, continuing...
+Request da835637-71b8-4895-8e60-40b80774967c not found yet, continuing...
+Polling attempt 4: Ready
+Full status response: {
+  "id": "da835637-71b8-4895-8e60-40b80774967c",
+  "status": "Ready",
+  "result": {
+    "sample": "https://delivery-eu4.bfl.ai/results/36/4531310f5c2420/0f5c2420c52c4e60a841ded2017e27fe/sample.jpeg?se=2025-09-07T16%3A37%3A33Z&sp=r&sv=2024-11-04&sr=b&rsct=image/jpeg&sig=4CQoD4MsiSq29m0LvRUzanm02%2BqVs1a%2BRpxrhPV2IpE%3D",
+    "prompt": "Transform this photo into Transform into Corpse Bride style: pale blue-grey corpse-like skin, large expressive white eyes with dark circles, gothic makeup with dark lipstick, flowing dark hair style, Tim Burton aesthetic, gothic romantic style, dramatic shadows, ethereal and melancholic mood, vintage gothic clothing, dark romantic atmosphere. Make it look like a professional corpse-bride animation character portrait.",
+    "seed": 416891366,
+    "start_time": 1757262449.0461102,
+    "end_time": 1757262453.75405,
+    "duration": 4.707939863204956
+  },
+  "progress": null,
+  "details": null,
+  "preview": null
+}
+✅ Flux generation successful, image URL: https://delivery-eu4.bfl.ai/results/36/4531310f5c2420/0f5c2420c52c4e60a841ded2017e27fe/sample.jpeg?se=2025-09-07T16%3A37%3A33Z&sp=r&sv=2024-11-04&sr=b&rsct=image/jpeg&sig=4CQoD4MsiSq29m0LvRUzanm02%2BqVs1a%2BRpxrhPV2IpE%3D
+✅ Updated generation cmf9wouc70004uix9dc7oc686 status to COMPLETED
+Starting to save generated image for user: unitradecargo_1755606425734
+✅ Admin user - image saving enabled
+🔄 [HTTPS FIX] Uploading to IMGBB for HTTPS compatibility...
+📤 [IMGBB] Downloading image from: https://delivery-eu4.bfl.ai/results/36/4531310f5c2420/0f5c2420c52c4e60a841ded2017e27fe/sample.jpeg?se=2025-09-07T16%3A37%3A33Z&sp=r&sv=2024-11-04&sr=b&rsct=image/jpeg&sig=4CQoD4MsiSq29m0LvRUzanm02%2BqVs1a%2BRpxrhPV2IpE%3D
+✅ [IMGBB] Upload successful: https://i.ibb.co/4RK399GR/58dd4b205bee.jpg
+✅ Upload complete: {
+  imageUrl: 'https://i.ibb.co/4RK399GR/58dd4b205bee.jpg',
+  thumbnailUrl: 'https://i.ibb.co/4RK399GR/58dd4b205bee.jpg',
+  cloudPath: 'imgbb/1757262460311'
+}
+✅ Image saved to database with cloudPath: cmf9wp55n0006uix9ff5thkyi cloudPath: imgbb/1757262460311
+Image saved to user gallery
+📤 Sending success response to client...
+📦 Response data prepared: {
+  image: 'URL_PRESENT',
+  thumbnailUrl: 'URL_PRESENT',
+  credits: { used: 10, remaining: 9520 },
+  model: 'flux-pro'
+}
+🚀 About to send success response...
+✅ Sending response in correct format
+🔍 [AFFILIATE TRACKING] Request: /api/image-proxy/proxy?url=https%3A%2F%2Fi.ibb.co%2F4RK399GR%2F58dd4b205bee.jpg
+🔍 [AFFILIATE TRACKING] Query params: { url: 'https://i.ibb.co/4RK399GR/58dd4b205bee.jpg' }
+prisma:query SELECT 1
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+⏭️ Skipping premium user cmeiiqjrb0000ef1lt2m3oarq - no daily credits for paid plans
+🖼️ Proxying image: https://i.ibb.co/4RK399GR/58dd4b205bee.jpg
+🔍 [AFFILIATE TRACKING] Request: /api/gptimage/generate
+🔍 [AFFILIATE TRACKING] Query params: {}
+🔐 [AUTH MIDDLEWARE] Starting authentication check...
+🔐 [AUTH MIDDLEWARE] Auth header: EXISTS
+🎨 [GPT IMAGE] Starting image editing generation...
+🎯 [GPT IMAGE] Prompt: Transform this photo into Transform into Corpse Bride style: pale blue-grey corpse-like skin, large expressive white eyes with dark circles, gothic makeup with dark lipstick, flowing dark hair anime style, Tim Burton aesthetic, gothic romantic style, dramatic shadows, ethereal and melancholic mood, vintage gothic clothing, dark romantic atmosphere, high quality anime portrait, masterpiece
+🎯 [GPT IMAGE] Aspect Ratio: 4:3
+prisma:query SELECT 1
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."email", "public"."colibrrri_users"."username" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."colibrrri_subscriptions"."id", "public"."colibrrri_subscriptions"."userId", "public"."colibrrri_subscriptions"."plan", "public"."colibrrri_subscriptions"."status", "public"."colibrrri_subscriptions"."currentPeriodEnd", "public"."colibrrri_subscriptions"."wayforpayOrderReference", "public"."colibrrri_subscriptions"."isRecurring", "public"."colibrrri_subscriptions"."recurringToken", "public"."colibrrri_subscriptions"."recurringMode", "public"."colibrrri_subscriptions"."nextPaymentDate", "public"."colibrrri_subscriptions"."lastPaymentDate", "public"."colibrrri_subscriptions"."failedPaymentAttempts", "public"."colibrrri_subscriptions"."maxFailedAttempts", "public"."colibrrri_subscriptions"."cancelledAt", "public"."colibrrri_subscriptions"."createdAt", "public"."colibrrri_subscriptions"."updatedAt" FROM "public"."colibrrri_subscriptions" WHERE "public"."colibrrri_subscriptions"."userId" IN ($1) OFFSET $2
+prisma:query BEGIN
+prisma:query SELECT "public"."colibrrri_users"."id", "public"."colibrrri_users"."totalCredits" FROM "public"."colibrrri_users" WHERE ("public"."colibrrri_users"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query UPDATE "public"."colibrrri_users" SET "totalCredits" = ("public"."colibrrri_users"."totalCredits" - $1), "updatedAt" = $2 WHERE ("public"."colibrrri_users"."id" = $3 AND 1=1) RETURNING "public"."colibrrri_users"."id", "public"."colibrrri_users"."email", "public"."colibrrri_users"."username", "public"."colibrrri_users"."password", "public"."colibrrri_users"."fullName", "public"."colibrrri_users"."avatar", "public"."colibrrri_users"."bio", "public"."colibrrri_users"."website", "public"."colibrrri_users"."location", "public"."colibrrri_users"."role", "public"."colibrrri_users"."totalCredits", "public"."colibrrri_users"."lastCreditUpdate", "public"."colibrrri_users"."emailVerified", "public"."colibrrri_users"."googleId", "public"."colibrrri_users"."facebookId", "public"."colibrrri_users"."createdAt", "public"."colibrrri_users"."updatedAt"
+prisma:query INSERT INTO "public"."colibrrri_credits" ("id","userId","amount","type","description","createdAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."colibrrri_credits"."id", "public"."colibrrri_credits"."userId", "public"."colibrrri_credits"."amount", "public"."colibrrri_credits"."type", "public"."colibrrri_credits"."description", "public"."colibrrri_credits"."createdAt"
+prisma:query COMMIT
+✅ Successfully processed 30 credits for model gpt-image
+📝 Created generation cmf9wpvjb000buix9ucl4kgoe for model gpt-image
+🎯 [GPT IMAGE] Converting base64 to public URL...
+📤 [IMGBB] Converting base64 to public URL...
+✅ [IMGBB] Base64 uploaded successfully: https://i.ibb.co/Kp4mySWk/e21202162b92.jpg
+✅ [GPT IMAGE] Image converted to public URL: https://i.ibb.co/Kp4mySWk/e21202162b92.jpg
+🎯 [GPT IMAGE] Request details: {
+  style: 'corpse-bride',
+  originalAspectRatio: '4:3',
+  mappedSize: '3:2',
+  hasPrompt: true,
+  hasPublicImageUrl: true
+}
+🔍 [GPT IMAGE] API Request Body: {
+  "prompt": "Transform this photo into Transform into Corpse Bride style: pale blue-grey corpse-like skin, large expressive white eyes with dark circles, gothic makeup with dark lipstick, flowing dark hair anime style, Tim Burton aesthetic, gothic romantic style, dramatic shadows, ethereal and melancholic mood, vintage gothic clothing, dark romantic atmosphere, high quality anime portrait, masterpiece",
+  "filesUrl": [
+    "https://i.ibb.co/Kp4mySWk/e21202162b92.jpg"
+  ],
+  "size": "3:2",
+  "nVariants": 1,
+  "isEnhance": false,
+  "enableFallback": false
+}
+🔍 [GPT IMAGE] API Response: {
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "taskId": "8d165a47bc4adbccf7a444f79f280491"
+  }
+}
+🔄 [GPT IMAGE] Task created, ID: 8d165a47bc4adbccf7a444f79f280491
+🔄 [GPT IMAGE POLL] Starting polling for task: 8d165a47bc4adbccf7a444f79f280491
+📡 [GPT IMAGE POLL] Attempt 1/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 3000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 2/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 3000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 3/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 3000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 4/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 3000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 5/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 3000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 6/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 3000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 7/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 3000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 8/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.00',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 3000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 9/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.0',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 3000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 10/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.0',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 11/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.0',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 12/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.0',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 0.0%
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 13/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.03',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 3.0%
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 14/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.03',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 3.0%
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 15/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.09',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 9.0%
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 16/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.09',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 9.0%
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 17/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.09',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 9.0%
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 18/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.16',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 16.0%
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 19/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.16',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 16.0%
+⏳ [GPT IMAGE POLL] Waiting 5000ms before next attempt...
+📡 [GPT IMAGE POLL] Attempt 20/30
+📊 [GPT IMAGE POLL] Response code: 200
+📊 [GPT IMAGE POLL] Task data: {
+  successFlag: 0,
+  status: 'GENERATING',
+  progress: '0.23',
+  hasResponse: false,
+  hasResultUrls: false
+}
+⏳ [GPT IMAGE POLL] Task still processing...
+📈 [GPT IMAGE POLL] Progress: 23.0%
+⏳ [GPT IMAGE POLL] Waiting 8000ms before next attempt...
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+NODE_ENV: development
+🟢 Cloudinary configured for production storage
+🗄️  Storage Provider: cloudinary
+🟢 Cloudinary initialized: df9joii9s
+🔑 FLUX_API_KEY loaded: YES (length: 36)
+🔑 GPT_IMAGE_API_KEY loaded: YES (length: 32)
+🔑 IMGBB_API_KEY loaded: YES (length: 32)
+🔑 KIE API configured for Qwen: {
+  hasKey: true,
+  keyLength: 32,
+  apiUrl: 'https://api.kie.ai/api/v1/playground'
+}
+GPT Image Text-to-Image controller initialized
+🎯 API Provider: Fal.ai
+🔑 KIE API configured: {
+  hasKey: true,
+  keyLength: 32,
+  apiUrl: 'https://api.kie.ai/api/v1/playground',
+  hasCloudinaryConfig: true,
+  cloudinaryCloudName: 'df9joii9s'
+}
+🎬 Runway Video Service initialized
+🔑 API Key configured: ✅ Yes
+☁️ Storage Provider: cloudinary
+⚠️ VAPID keys not found - push notifications will be disabled
+🔧 Environment Configuration Check
+===================================
+✅ All required environment variables are set
+===================================
+
+✅ Credit reset cron jobs initialized successfully
+📅 Daily credits: FREE users reset to 100, PREMIUM users get NO daily credits at 00:00 UTC
+🔄 Additional checks every 6 hours for missed updates
+[2025-09-07T16:29:45.505Z] [INFO] ✅ Subscription expiry cron jobs initialized
+[2025-09-07T16:29:45.506Z] [INFO]    - Expired subscriptions: Every hour
+[2025-09-07T16:29:45.506Z] [INFO]    - Expiring subscriptions: Daily at 9 AM
+[2025-09-07T16:29:45.510Z] [INFO] ✅ Automatic payment cron jobs initialized
+[2025-09-07T16:29:45.510Z] [INFO]    - Auto payments: Every hour
+[2025-09-07T16:29:45.510Z] [INFO]    - Expiry notifications: Daily at 10 AM
+✅ Задачи отслеживания корзин инициализированы
+   - Проверка брошенных корзин: каждые 30 минут
+   - Очистка старых корзин (>90 дней): ежедневно в 3:00
+UNCAUGHT EXCEPTION! 💥 Shutting down...
+Error listen EADDRINUSE: address already in use :::5000
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+NODE_ENV: development
+🟢 Cloudinary configured for production storage
+🗄️  Storage Provider: cloudinary
+🟢 Cloudinary initialized: df9joii9s
+🔑 FLUX_API_KEY loaded: YES (length: 36)
+🔑 GPT_IMAGE_API_KEY loaded: YES (length: 32)
+🔑 IMGBB_API_KEY loaded: YES (length: 32)
+🔑 KIE API configured for Qwen: {
+  hasKey: true,
+  keyLength: 32,
+  apiUrl: 'https://api.kie.ai/api/v1/playground'
+}
+GPT Image Text-to-Image controller initialized
+🎯 API Provider: Fal.ai
+🔑 KIE API configured: {
+  hasKey: true,
+  keyLength: 32,
+  apiUrl: 'https://api.kie.ai/api/v1/playground',
+  hasCloudinaryConfig: true,
+  cloudinaryCloudName: 'df9joii9s'
+}
+🎬 Runway Video Service initialized
+🔑 API Key configured: ✅ Yes
+☁️ Storage Provider: cloudinary
+⚠️ VAPID keys not found - push notifications will be disabled
+🔧 Environment Configuration Check
+===================================
+✅ All required environment variables are set
+===================================
+
+✅ Credit reset cron jobs initialized successfully
+📅 Daily credits: FREE users reset to 100, PREMIUM users get NO daily credits at 00:00 UTC
+🔄 Additional checks every 6 hours for missed updates
+[2025-09-07T17:12:07.996Z] [INFO] ✅ Subscription expiry cron jobs initialized
+[2025-09-07T17:12:07.996Z] [INFO]    - Expired subscriptions: Every hour
+[2025-09-07T17:12:07.996Z] [INFO]    - Expiring subscriptions: Daily at 9 AM
+[2025-09-07T17:12:08.004Z] [INFO] ✅ Automatic payment cron jobs initialized
+[2025-09-07T17:12:08.004Z] [INFO]    - Auto payments: Every hour
+[2025-09-07T17:12:08.004Z] [INFO]    - Expiry notifications: Daily at 10 AM
+✅ Задачи отслеживания корзин инициализированы
+   - Проверка брошенных корзин: каждые 30 минут
+   - Очистка старых корзин (>90 дней): ежедневно в 3:00
+[2025-09-07T17:12:08.090Z] [INFO] Server started {"port":"5000","environment":"development","nodeVersion":"v22.17.1"}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m

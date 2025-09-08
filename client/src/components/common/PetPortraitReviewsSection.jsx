@@ -73,7 +73,7 @@ const PetPortraitReviewsSection = () => {
     {
       id: 8,
       image: '/Review Pet Portraits/iap_600x600.6844417521_i6xbupdu.avif', // Pet portrait
-      customerPhoto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face', // Male customer
+      customerPhoto: 'https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=80&h=80&fit=crop&crop=face', // Male customer with beard
       name: 'Chris Taylor',
       rating: 5,
       comment: 'Good price and customer service helped with sizing. Really happy with it!',
@@ -88,19 +88,30 @@ const PetPortraitReviewsSection = () => {
     }, 5000);
 
     return () => clearInterval(timer);
-  }, [currentIndex]);
+  }, []);  // Убираем currentIndex из зависимостей для правильной работы
 
   const handlePrev = () => {
-    setCurrentIndex((prev) => (prev === 0 ? reviews.length - 4 : prev - 1));
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: -330, behavior: 'smooth' });
-    }
+    setCurrentIndex((prev) => {
+      const newIndex = prev === 0 ? reviews.length - 1 : prev - 1;
+      scrollToIndex(newIndex);
+      return newIndex;
+    });
   };
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev >= reviews.length - 4 ? 0 : prev + 1));
+    setCurrentIndex((prev) => {
+      const newIndex = prev === reviews.length - 1 ? 0 : prev + 1;
+      scrollToIndex(newIndex);
+      return newIndex;
+    });
+  };
+
+  // Функция для плавной прокрутки к определенному индексу
+  const scrollToIndex = (index) => {
     if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: 330, behavior: 'smooth' });
+      const cardWidth = 320; // width + gap
+      const scrollPosition = index * cardWidth;
+      scrollRef.current.scrollTo({ left: scrollPosition, behavior: 'smooth' });
     }
   };
 
@@ -160,9 +171,10 @@ const PetPortraitReviewsSection = () => {
           className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {reviews.map((review) => (
+          {/* Дублируем отзывы для бесконечной прокрутки */}
+          {[...reviews, ...reviews].map((review, index) => (
             <div
-              key={review.id}
+              key={`${review.id}-${Math.floor(index / reviews.length)}`}
               className="flex-shrink-0 w-80 h-[450px] snap-center"
             >
               {/* Карточка отзыва */}
@@ -216,12 +228,15 @@ const PetPortraitReviewsSection = () => {
 
         {/* Индикаторы */}
         <div className="flex justify-center gap-2 mt-6">
-          {Array.from({ length: Math.ceil(reviews.length / 4) }, (_, index) => (
+          {reviews.map((_, index) => (
             <button
               key={index}
-              onClick={() => setCurrentIndex(index * 4)}
+              onClick={() => {
+                setCurrentIndex(index);
+                scrollToIndex(index);
+              }}
               className={`w-2 h-2 rounded-full transition-all ${
-                Math.floor(currentIndex / 4) === index
+                currentIndex % reviews.length === index
                   ? 'bg-gray-800 w-8'
                   : 'bg-gray-600/40'
               }`}

@@ -328,14 +328,29 @@ export const generateImage = asyncHandler(async (req, res) => {
       result = await pollTaskStatus(taskId);
     }
 
-    if (result.success && result.url) {
+    // Check result format depending on provider
+    let finalUrl = null;
+    
+    if (USE_FAL_AI) {
+      // Fal.ai returns { images: [{ url: "..." }] }
+      if (result && result.images && Array.isArray(result.images) && result.images.length > 0) {
+        finalUrl = result.images[0].url;
+      }
+    } else {
+      // KIE API returns { success: true, url: "..." }
+      if (result && result.success && result.url) {
+        finalUrl = result.url;
+      }
+    }
+    
+    if (finalUrl) {
       // Update generation status
       await completeGeneration(generation.id);
       
       // Try to save the generated image
       try {
         await saveGeneratedImage(
-          { url: result.url, width: 1024, height: 1024 },
+          { url: finalUrl, width: 1024, height: 1024 },
           user,
           generation
         );
@@ -347,20 +362,27 @@ export const generateImage = asyncHandler(async (req, res) => {
       // Send success response in the format frontend expects
       return res.status(200).json({
         success: true,
-        image: result.url,
-        thumbnailUrl: result.url,
+        image: finalUrl,
+        thumbnailUrl: finalUrl,
         credits: {
           used: creditsUsed,
           remaining: user.totalCredits - creditsUsed
         },
         model: modelId,
         metadata: {
-          provider: 'KIE API',
-          model: 'google/nano-banana-edit'
+          provider: USE_FAL_AI ? 'Fal.ai' : 'KIE API',
+          model: USE_FAL_AI ? 'fal-ai/nano-banana' : 'google/nano-banana-edit'
         }
       });
     } else {
-      throw new Error('Failed to generate image');
+      console.log('❌ [GENERATION FAILED] Invalid result structure:', {
+        provider: USE_FAL_AI ? 'Fal.ai' : 'KIE API',
+        resultKeys: result ? Object.keys(result) : 'null',
+        hasImages: result?.images ? 'yes' : 'no',
+        hasUrl: result?.url ? 'yes' : 'no',
+        hasSuccess: result?.success ? 'yes' : 'no'
+      });
+      throw new Error('Failed to generate image - invalid response format');
     }
 
   } catch (error) {

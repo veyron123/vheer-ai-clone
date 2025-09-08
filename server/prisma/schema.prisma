@@ -8,263 +8,233 @@ datasource db {
 }
 
 model User {
-  id              String    @id @default(cuid())
-  email           String    @unique
-  username        String    @unique
-  password        String?
-  fullName        String?
-  avatar          String?
-  bio             String?
-  website         String?
-  location        String?
-  role            String    @default("USER") // USER, ADMIN
-  totalCredits    Int       @default(100)
-  lastCreditUpdate DateTime  @default(now())
-  emailVerified   Boolean   @default(false)
-  googleId        String?   @unique
-  facebookId      String?   @unique
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  subscription    Subscription?
-  images          Image[]
-  generations     Generation[]
-  credits         Credit[]
-  payments        Payment[]
-  favorites       Favorite[]
-  cartOrders      CartOrder[]
-  cartSessions    CartSession[]
-  paymentIntents  PaymentIntent[]
-  
-  // Affiliate relations
-  affiliate       Affiliate?
-  referredBy      AffiliateReferral?
+  id               String             @id @default(cuid())
+  email            String             @unique
+  username         String             @unique
+  password         String?
+  fullName         String?
+  avatar           String?
+  bio              String?
+  website          String?
+  location         String?
+  totalCredits     Int                @default(100)
+  lastCreditUpdate DateTime           @default(now())
+  emailVerified    Boolean            @default(false)
+  googleId         String?            @unique
+  facebookId       String?            @unique
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  role             String             @default("USER")
+  referredBy       AffiliateReferral?
+  affiliate        Affiliate?
+  cartOrders       CartOrder[]
+  cartSessions     CartSession[]
+  credits          Credit[]
+  favorites        Favorite[]
+  generations      Generation[]
+  images           Image[]
+  paymentIntents   PaymentIntent[]
+  payments         Payment[]
+  subscription     Subscription?
 
-  // New indexes for performance
-  @@index([createdAt(sort: Desc)]) // For sorting users by creation date
-  @@index([role]) // For filtering by role (admin queries)
-  @@index([totalCredits]) // For credit-based queries
+  @@index([createdAt(sort: Desc)])
+  @@index([role])
+  @@index([totalCredits])
   @@map("colibrrri_users")
 }
 
 model Subscription {
-  id              String    @id @default(cuid())
-  userId          String    @unique
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan            String    @default("FREE")
-  status          String    @default("ACTIVE")
-  currentPeriodEnd DateTime?
-  wayforpayOrderReference String? // WayForPay orderReference for cancellation
-  
-  // Recurring payment fields
-  isRecurring     Boolean   @default(false)
-  recurringToken  String?   // WayForPay recurring token
-  recurringMode   String?   // MONTHLY, YEARLY
-  nextPaymentDate DateTime? // Next auto-charge date
-  lastPaymentDate DateTime? // Last successful payment date
-  failedPaymentAttempts Int @default(0) // Count of failed payment attempts
-  maxFailedAttempts Int @default(3) // Max attempts before cancellation
-  
-  cancelledAt     DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  // New indexes
-  @@index([status, nextPaymentDate]) // For finding subscriptions to renew
-  @@index([plan]) // For subscription statistics
+  id                      String    @id @default(cuid())
+  userId                  String    @unique
+  plan                    String    @default("FREE")
+  status                  String    @default("ACTIVE")
+  currentPeriodEnd        DateTime?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  cancelledAt             DateTime?
+  wayforpayOrderReference String?
+  isRecurring             Boolean   @default(false)
+  recurringToken          String?
+  recurringMode           String?
+  nextPaymentDate         DateTime?
+  lastPaymentDate         DateTime?
+  failedPaymentAttempts   Int       @default(0)
+  maxFailedAttempts       Int       @default(3)
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status, nextPaymentDate])
+  @@index([plan])
   @@map("colibrrri_subscriptions")
 }
 
 model Credit {
-  id              String    @id @default(cuid())
-  userId          String
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  amount          Int
-  type            String
-  description     String?
-  createdAt       DateTime  @default(now())
-  
-  // New indexes
-  @@index([userId, createdAt(sort: Desc)]) // For user credit history
-  @@index([type]) // For credit type analytics
+  id          String   @id @default(cuid())
+  userId      String
+  amount      Int
+  type        String
+  description String?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([type])
   @@map("colibrrri_credits")
 }
 
 model PaymentIntent {
-  id            String    @id @default(cuid())
-  trackingId    String    @unique
-  orderReference String?  @unique
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planId        String
-  language      String    @default("en")
-  status        String    @default("INITIATED") // INITIATED, COMPLETED, FAILED, EXPIRED
-  wayforpayData Json?     // Store WayForPay response data
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  expiresAt     DateTime? // Auto-expire after 1 hour
+  id             String    @id @default(cuid())
+  trackingId     String    @unique
+  orderReference String?   @unique
+  userId         String
+  planId         String
+  language       String    @default("en")
+  status         String    @default("INITIATED")
+  wayforpayData  Json?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  expiresAt      DateTime?
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // New indexes
-  @@index([userId, status]) // For user payment queries
-  @@index([status, expiresAt]) // For cleanup queries
+  @@index([userId, status])
+  @@index([status, expiresAt])
   @@map("colibrrri_payment_intents")
 }
 
 model Image {
-  id              String    @id @default(cuid())
-  userId          String
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  url             String
-  thumbnailUrl    String?
-  cloudPath       String?   // Path for cloud storage deletion
-  prompt          String
-  negativePrompt  String?
-  model           String
-  style           String?
-  width           Int
-  height          Int
-  seed            Int?
-  steps           Int?
-  guidance        Float?
-  isPublic        Boolean   @default(false)
-  likes           Int       @default(0)
-  views           Int       @default(0)
-  createdAt       DateTime  @default(now())
-  
-  generation      Generation @relation(fields: [generationId], references: [id])
-  generationId    String
-  favorites       Favorite[]
-  tags            Tag[]
+  id             String     @id @default(cuid())
+  userId         String
+  url            String
+  thumbnailUrl   String?
+  cloudPath      String?
+  prompt         String
+  negativePrompt String?
+  model          String
+  style          String?
+  width          Int
+  height         Int
+  seed           Int?
+  steps          Int?
+  guidance       Float?
+  isPublic       Boolean    @default(false)
+  likes          Int        @default(0)
+  views          Int        @default(0)
+  createdAt      DateTime   @default(now())
+  generationId   String
+  favorites      Favorite[]
+  generation     Generation @relation(fields: [generationId], references: [id])
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tags           Tag[]      @relation("ImageToTag")
 
-  // Critical performance indexes
-  @@index([userId, createdAt(sort: Desc)]) // User's images sorted by date
-  @@index([model]) // Filter by AI model
-  @@index([isPublic, likes(sort: Desc)]) // Public gallery sorted by popularity
-  @@index([isPublic, createdAt(sort: Desc)]) // Public gallery sorted by date
-  @@index([generationId]) // Generation relationship
-  // Note: For full-text search on PostgreSQL, use GIN/GiST indexes via raw SQL
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([model])
+  @@index([isPublic, likes(sort: Desc)])
+  @@index([isPublic, createdAt(sort: Desc)])
+  @@index([generationId])
   @@map("colibrrri_images")
 }
 
 model Generation {
-  id              String    @id @default(cuid())
-  userId          String
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  prompt          String
-  negativePrompt  String?
-  model           String
-  style           String?
-  batchSize       Int       @default(1)
-  status          String @default("PENDING")
-  error           String?
-  creditsUsed     Int
-  createdAt       DateTime  @default(now())
-  completedAt     DateTime?
-  
-  images          Image[]
+  id             String    @id @default(cuid())
+  userId         String
+  prompt         String
+  negativePrompt String?
+  model          String
+  style          String?
+  batchSize      Int       @default(1)
+  status         String    @default("PENDING")
+  error          String?
+  creditsUsed    Int
+  createdAt      DateTime  @default(now())
+  completedAt    DateTime?
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  images         Image[]
 
-  // New indexes
-  @@index([userId, createdAt(sort: Desc)]) // User generation history
-  @@index([status]) // For finding pending/failed generations
-  @@index([model, createdAt(sort: Desc)]) // Analytics by model
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([status])
+  @@index([model, createdAt(sort: Desc)])
   @@map("colibrrri_generations")
 }
 
 model Favorite {
-  id              String    @id @default(cuid())
-  userId          String
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  imageId         String
-  image           Image     @relation(fields: [imageId], references: [id], onDelete: Cascade)
-  createdAt       DateTime  @default(now())
-  
+  id        String   @id @default(cuid())
+  userId    String
+  imageId   String
+  createdAt DateTime @default(now())
+  image     Image    @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, imageId])
-  // Additional index for faster queries
-  @@index([imageId]) // For counting favorites per image
+  @@index([imageId])
   @@map("colibrrri_favorites")
 }
 
 model Payment {
-  id              String    @id @default(cuid())
-  userId          String
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  amount          Float
-  currency        String    @default("USD")
-  status          String
-  wayforpayOrderReference String? @unique
-  description     String?
-  cartItems       Json?     // Store original cart items for WayForPay callbacks
-  createdAt       DateTime  @default(now())
+  id                      String   @id @default(cuid())
+  userId                  String
+  amount                  Float
+  currency                String   @default("USD")
+  status                  String
+  description             String?
+  createdAt               DateTime @default(now())
+  wayforpayOrderReference String?  @unique
+  cartItems               Json?
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // New indexes
-  @@index([userId, createdAt(sort: Desc)]) // User payment history
-  @@index([status]) // Payment analytics
-  @@index([createdAt(sort: Desc)]) // Recent payments
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
   @@map("colibrrri_payments")
 }
 
 model CartOrder {
-  id                      String    @id @default(cuid())
-  orderReference          String    @unique
-  userId                  String?
-  user                    User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  
-  // Payment info
-  amount                  Float
-  currency                String    @default("UAH")
-  paymentStatus           String    @default("PENDING") // PENDING, PAID, FAILED, REFUNDED
-  transactionStatus       String?   // From WayForPay
-  reasonCode              String?   // From WayForPay
-  authCode                String?   // From WayForPay
-  cardPan                 String?   // Masked card number
-  
-  // Customer info (from payment form)
-  customerEmail           String?
-  customerFirstName       String?
-  customerLastName        String?
-  customerPhone           String?
-  customerAddress         String?
-  customerCity            String?
-  customerCountry         String?
-  
-  // Shipping info (from payment form)
-  shippingFirstName       String?
-  shippingLastName        String?
-  shippingPhone           String?
-  shippingAddress         String?
-  shippingCity            String?
-  shippingCountry         String?
-  shippingPostalCode      String?
-  
-  // Order items (stored as JSON)
-  items                   Json      // Array of { image, frameColor, size, quantity, price }
-  
-  // Order management
-  orderStatus             String    @default("PENDING") // PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED
-  trackingNumber          String?
-  trackingCarrier         String?
-  adminNotes              String?
-  
-  // Timestamps
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
-  paidAt                  DateTime?
-  shippedAt               DateTime?
-  deliveredAt             DateTime?
-  
-  // New indexes
-  @@index([userId, createdAt(sort: Desc)]) // User order history
-  @@index([paymentStatus]) // Payment status queries
-  @@index([orderStatus]) // Order fulfillment queries
-  @@index([customerEmail]) // Customer lookup
+  id                 String    @id @default(cuid())
+  orderReference     String    @unique
+  userId             String?
+  amount             Float
+  currency           String    @default("UAH")
+  paymentStatus      String    @default("PENDING")
+  transactionStatus  String?
+  reasonCode         String?
+  authCode           String?
+  cardPan            String?
+  customerEmail      String?
+  customerFirstName  String?
+  customerLastName   String?
+  customerPhone      String?
+  customerAddress    String?
+  customerCity       String?
+  customerCountry    String?
+  shippingFirstName  String?
+  shippingLastName   String?
+  shippingPhone      String?
+  shippingAddress    String?
+  shippingCity       String?
+  shippingCountry    String?
+  shippingPostalCode String?
+  items              Json
+  orderStatus        String    @default("PENDING")
+  trackingNumber     String?
+  trackingCarrier    String?
+  adminNotes         String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  paidAt             DateTime?
+  shippedAt          DateTime?
+  deliveredAt        DateTime?
+  user               User?     @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([paymentStatus])
+  @@index([orderStatus])
+  @@index([customerEmail])
   @@map("colibrrri_cart_orders")
 }
 
 model Tag {
-  id              String    @id @default(cuid())
-  name            String    @unique
-  images          Image[]
-  createdAt       DateTime  @default(now())
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  images    Image[]  @relation("ImageToTag")
 
   @@map("colibrrri_tags")
 }
@@ -275,118 +245,104 @@ model Session {
   data      String
   expiresAt DateTime
 
-  @@index([expiresAt]) // For session cleanup
+  @@index([expiresAt])
   @@map("colibrrri_sessions")
 }
 
 model CartSession {
-  id                    String    @id @default(cuid())
-  sessionId             String    @unique
-  userId                String?
-  user                  User?     @relation(fields: [userId], references: [id])
-  items                 Json      // Array of cart items
-  totalAmount           Float
-  itemCount             Int
-  currency              String    @default("UAH")
-  customerEmail         String?
-  userIp                String?
-  userAgent             String?
-  status                String    @default("active") // active, abandoned, converted
-  lastActivityAt        DateTime  @default(now())
-  abandonedAt           DateTime?
-  convertedToOrderId    String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  id                 String    @id @default(cuid())
+  sessionId          String    @unique
+  userId             String?
+  items              Json
+  totalAmount        Float
+  itemCount          Int
+  currency           String    @default("UAH")
+  customerEmail      String?
+  status             String    @default("active")
+  userIp             String?
+  userAgent          String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  lastActivityAt     DateTime  @default(now())
+  abandonedAt        DateTime?
+  convertedToOrderId String?
+  user               User?     @relation(fields: [userId], references: [id])
 
-  // New indexes
-  @@index([status, abandonedAt]) // For finding abandoned carts
-  @@index([userId]) // User cart queries
+  @@index([status, abandonedAt])
+  @@index([userId])
   @@map("colibrrri_cart_sessions")
 }
 
-// ============================================
-// AFFILIATE PROGRAM MODELS
-// ============================================
-
 model Affiliate {
-  id              String    @id @default(cuid())
-  userId          String    @unique
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  code            String    @unique // Unique affiliate code
-  commissionRate  Float     @default(20.0) // Commission percentage
-  totalEarnings   Float     @default(0.0)
-  pendingPayouts  Float     @default(0.0)
-  paidAmount      Float     @default(0.0)
-  payoutMethod    String?   // bank, paypal, crypto, etc
-  payoutDetails   Json?     // Encrypted payment details
-  status          String    @default("active") // active, suspended, pending
-  tier            String    @default("starter") // starter, bronze, silver, gold, platinum
-  
-  // Relations
-  links           AffiliateLink[]
-  clicks          AffiliateClick[]
-  referrals       AffiliateReferral[]
-  commissions     AffiliateCommission[]
-  payouts         AffiliatePayout[]
-  dailyStats      AffiliateStatDaily[]
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
+  id             String                @id @default(cuid())
+  userId         String                @unique
+  code           String                @unique
+  commissionRate Float                 @default(20.0)
+  totalEarnings  Float                 @default(0.0)
+  pendingPayouts Float                 @default(0.0)
+  paidAmount     Float                 @default(0.0)
+  payoutMethod   String?
+  payoutDetails  Json?
+  status         String                @default("active")
+  tier           String                @default("starter")
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  clicks         AffiliateClick[]
+  commissions    AffiliateCommission[]
+  links          AffiliateLink[]
+  payouts        AffiliatePayout[]
+  referrals      AffiliateReferral[]
+  dailyStats     AffiliateStatDaily[]
+  user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([code])
   @@index([status])
   @@map("colibrrri_affiliates")
 }
 
 model AffiliateLink {
-  id              String    @id @default(cuid())
+  id              String              @id @default(cuid())
   affiliateId     String
-  affiliate       Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-  alias           String?   @unique // Custom alias like 'ai-logo-maker'
-  url             String    // Full URL with parameters
-  clickCount      Int       @default(0)
-  conversionCount Int       @default(0)
-  isDefault       Boolean   @default(false)
-  isActive        Boolean   @default(true)
-  
-  // Relations
+  alias           String?             @unique
+  url             String
+  clickCount      Int                 @default(0)
+  conversionCount Int                 @default(0)
+  isDefault       Boolean             @default(false)
+  isActive        Boolean             @default(true)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
   clicks          AffiliateClick[]
+  affiliate       Affiliate           @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
   referrals       AffiliateReferral[]
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
+
   @@index([affiliateId])
   @@index([isActive])
   @@map("colibrrri_affiliate_links")
 }
 
 model AffiliateClick {
-  id              String    @id @default(cuid())
-  linkId          String?
-  link            AffiliateLink? @relation(fields: [linkId], references: [id], onDelete: SetNull)
-  affiliateId     String
-  affiliate       Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-  sessionId       String?   // For tracking unique visitors
-  ipAddress       String?
-  userAgent       String?
-  referer         String?
-  landingPage     String?
-  utmSource       String?
-  utmMedium       String?
-  utmCampaign     String?
-  utmTerm         String?
-  utmContent      String?
-  country         String?
-  city            String?
-  deviceType      String?   // mobile, desktop, tablet
-  subId           String?   // Sub ID for campaign tracking (fp_sid parameter)
-  
-  // Relations
-  referral        AffiliateReferral?
-  
-  createdAt       DateTime  @default(now())
-  
+  id          String             @id @default(cuid())
+  linkId      String?
+  affiliateId String
+  sessionId   String?
+  ipAddress   String?
+  userAgent   String?
+  referer     String?
+  landingPage String?
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmTerm     String?
+  utmContent  String?
+  country     String?
+  city        String?
+  deviceType  String?
+  createdAt   DateTime           @default(now())
+  subId       String?
+  affiliate   Affiliate          @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  link        AffiliateLink?     @relation(fields: [linkId], references: [id])
+  referral    AffiliateReferral?
+
   @@index([affiliateId])
   @@index([createdAt])
   @@index([sessionId])
@@ -394,26 +350,23 @@ model AffiliateClick {
 }
 
 model AffiliateReferral {
-  id              String    @id @default(cuid())
-  affiliateId     String
-  affiliate       Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-  userId          String    @unique // The referred user
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  linkId          String?
-  link            AffiliateLink? @relation(fields: [linkId], references: [id], onDelete: SetNull)
-  clickId         String?   @unique
-  click           AffiliateClick? @relation(fields: [clickId], references: [id], onDelete: SetNull)
-  status          String    @default("signup") // signup, trial, customer, churned
-  lifetimeValue   Float     @default(0.0)
+  id               String                @id @default(cuid())
+  affiliateId      String
+  userId           String                @unique
+  linkId           String?
+  clickId          String?               @unique
+  status           String                @default("signup")
+  lifetimeValue    Float                 @default(0.0)
   firstPaymentDate DateTime?
-  lastPaymentDate DateTime?
-  conversionDate  DateTime? // When became paying customer
-  
-  // Relations
-  commissions     AffiliateCommission[]
-  
-  createdAt       DateTime  @default(now())
-  
+  lastPaymentDate  DateTime?
+  conversionDate   DateTime?
+  createdAt        DateTime              @default(now())
+  commissions      AffiliateCommission[]
+  affiliate        Affiliate             @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  click            AffiliateClick?       @relation(fields: [clickId], references: [id])
+  link             AffiliateLink?        @relation(fields: [linkId], references: [id])
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([affiliateId])
   @@index([status])
   @@index([createdAt])
@@ -421,26 +374,25 @@ model AffiliateReferral {
 }
 
 model AffiliateCommission {
-  id              String    @id @default(cuid())
-  affiliateId     String
-  affiliate       Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-  referralId      String
-  referral        AffiliateReferral @relation(fields: [referralId], references: [id], onDelete: Cascade)
-  orderId         String?   // Link to payment/subscription
-  type            String    @default("sale") // sale, recurring, bonus
-  amount          Float     // Commission amount
-  baseAmount      Float     // Original sale amount
-  commissionRate  Float
-  currency        String    @default("USD")
-  status          String    @default("pending") // pending, approved, paid, cancelled
-  approvedAt      DateTime?
-  paidAt          DateTime?
-  payoutId        String?
-  payout          AffiliatePayout? @relation(fields: [payoutId], references: [id], onDelete: SetNull)
-  notes           String?
-  
-  createdAt       DateTime  @default(now())
-  
+  id             String            @id @default(cuid())
+  affiliateId    String
+  referralId     String
+  orderId        String?
+  type           String            @default("sale")
+  amount         Float
+  baseAmount     Float
+  commissionRate Float
+  currency       String            @default("USD")
+  status         String            @default("pending")
+  approvedAt     DateTime?
+  paidAt         DateTime?
+  payoutId       String?
+  notes          String?
+  createdAt      DateTime          @default(now())
+  affiliate      Affiliate         @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  payout         AffiliatePayout?  @relation(fields: [payoutId], references: [id])
+  referral       AffiliateReferral @relation(fields: [referralId], references: [id], onDelete: Cascade)
+
   @@index([affiliateId])
   @@index([status])
   @@index([createdAt])
@@ -449,24 +401,21 @@ model AffiliateCommission {
 }
 
 model AffiliatePayout {
-  id              String    @id @default(cuid())
-  affiliateId     String
-  affiliate       Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-  amount          Float
-  currency        String    @default("USD")
-  method          String    // bank, paypal, wise, crypto
-  transactionId   String?   // External transaction ID
-  status          String    @default("pending") // pending, processing, completed, failed
-  notes           String?
-  invoiceNumber   String?
-  processedAt     DateTime?
-  completedAt     DateTime?
-  
-  // Relations
-  commissions     AffiliateCommission[]
-  
-  createdAt       DateTime  @default(now())
-  
+  id            String                @id @default(cuid())
+  affiliateId   String
+  amount        Float
+  currency      String                @default("USD")
+  method        String
+  transactionId String?
+  status        String                @default("pending")
+  notes         String?
+  invoiceNumber String?
+  processedAt   DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime              @default(now())
+  commissions   AffiliateCommission[]
+  affiliate     Affiliate             @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
   @@index([affiliateId])
   @@index([status])
   @@index([createdAt])
@@ -474,19 +423,18 @@ model AffiliatePayout {
 }
 
 model AffiliateStatDaily {
-  id              String    @id @default(cuid())
-  affiliateId     String
-  affiliate       Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
-  date            DateTime  @db.Date
-  clicks          Int       @default(0)
-  uniqueClicks    Int       @default(0)
-  signups         Int       @default(0)
-  customers       Int       @default(0)
-  revenue         Float     @default(0.0)
-  commissions     Float     @default(0.0)
-  
-  createdAt       DateTime  @default(now())
-  
+  id           String    @id @default(cuid())
+  affiliateId  String
+  date         DateTime  @db.Date
+  clicks       Int       @default(0)
+  uniqueClicks Int       @default(0)
+  signups      Int       @default(0)
+  customers    Int       @default(0)
+  revenue      Float     @default(0.0)
+  commissions  Float     @default(0.0)
+  createdAt    DateTime  @default(now())
+  affiliate    Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
   @@unique([affiliateId, date])
   @@index([date])
   @@index([affiliateId])
