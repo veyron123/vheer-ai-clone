@@ -26,6 +26,7 @@ const AnimeGeneratorPage = lazy(() => import('../pages/AnimeGeneratorPage'));
 const ImageToImageGeneratorPage = lazy(() => import('../pages/ImageToImageGeneratorPage'));
 const StyleTransferPage = lazy(() => import('../pages/StyleTransferPage'));
 const PetPortraitGeneratorPage = lazy(() => import('../pages/PetPortraitGeneratorPage'));
+const ActionFigureGeneratorPage = lazy(() => import('../pages/ActionFigureGeneratorPage'));
 const HalloweenPortraitGeneratorPage = lazy(() => import('../pages/HalloweenPortraitGeneratorPage'));
 const TextToImageGeneratorPage = lazy(() => import('../pages/TextToImageGeneratorPage'));
 const RunwayVideoGeneratorPage = lazy(() => import('../pages/RunwayVideoGeneratorPage'));
@@ -113,6 +114,7 @@ const LanguageRoutes = () => {
       <Route path="/image-to-image-generator" element={<ImageToImageGeneratorPage />} />
       <Route path="/image-style-transfer" element={<StyleTransferPage />} />
       <Route path="/pet-portrait-generator" element={<PetPortraitGeneratorPage />} />
+      <Route path="/photo-to-action-figure" element={<ActionFigureGeneratorPage />} />
       <Route path="/halloween-portraits" element={<HalloweenPortraitGeneratorPage />} />
       <Route path="/text-to-image-generator" element={<TextToImageGeneratorPage />} />
       <Route path="/ai-video-generator" element={<RunwayVideoGeneratorPage />} />

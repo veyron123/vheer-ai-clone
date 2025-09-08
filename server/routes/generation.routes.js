@@ -21,6 +21,7 @@ router.get('/styles', getAvailableStyles);
 // Protected routes
 router.post('/', authenticate, generateImage);
 router.post('/pet-portrait', authenticate, generatePetPortrait);
+router.post('/action-figure', authenticate, generatePetPortrait); // Same logic as pet portrait
 router.get('/status/:id', authenticate, getGenerationStatus);
 router.get('/history', authenticate, getUserGenerations);
 router.get('/:id', authenticate, getGenerationById);

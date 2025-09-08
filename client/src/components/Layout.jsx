@@ -109,6 +109,9 @@ const Layout = ({ children }) => {
                   <Link to={createLocalizedLink('/pet-portrait-generator')} className="dropdown-item">
                     <span>AI Pet Portrait Generator</span>
                   </Link>
+                  <Link to={createLocalizedLink('/photo-to-action-figure')} className="dropdown-item">
+                    <span>Photo to Action Figure</span>
+                  </Link>
                   <Link to={createLocalizedLink('/halloween-portraits')} className="dropdown-item">
                     <span>Halloween Portrait Generator</span>
                   </Link>
@@ -287,6 +290,7 @@ const Layout = ({ children }) => {
                 <li><Link to={createLocalizedLink('/image-to-image-generator')} onClick={handleFooterLinkClick} className="hover:text-gray-900 transition">{t('footer.tools.image_to_image')}</Link></li>
                 <li><Link to={createLocalizedLink('/image-style-transfer')} onClick={handleFooterLinkClick} className="hover:text-gray-900 transition">{t('footer.tools.style_transfer')}</Link></li>
                 <li><Link to={createLocalizedLink('/pet-portrait-generator')} onClick={handleFooterLinkClick} className="hover:text-gray-900 transition">AI Pet Portrait Generator</Link></li>
+                <li><Link to={createLocalizedLink('/photo-to-action-figure')} onClick={handleFooterLinkClick} className="hover:text-gray-900 transition">Photo to Action Figure</Link></li>
                 <li><Link to={createLocalizedLink('/halloween-portraits')} onClick={handleFooterLinkClick} className="hover:text-gray-900 transition">Halloween Portrait Generator</Link></li>
                 <li><Link to={createLocalizedLink('/text-to-image-generator')} onClick={handleFooterLinkClick} className="hover:text-gray-900 transition">AI Text To Image Generator</Link></li>
               </ul>
