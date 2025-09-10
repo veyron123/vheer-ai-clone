@@ -274,9 +274,17 @@ async function generateWithKIE(prompt, input_image, style, aspectRatio, modelId,
 
     console.log('📋 [KIE FLUX] Generation response:', response.data);
 
-    if (response.data?.success && response.data?.data?.image_url) {
+    // Check for taskId (async API) or direct image_url (sync API)
+    if (response.data?.data?.taskId) {
+      const taskId = response.data.data.taskId;
+      console.log('🔄 [KIE FLUX] Got taskId, starting polling:', taskId);
+      
+      // Poll for result
+      const result = await pollForKieFluxResult(taskId, req);
+      return result;
+    } else if (response.data?.success && response.data?.data?.image_url) {
       const imageUrl = response.data.data.image_url;
-      console.log('✅ [KIE FLUX] Generation successful:', imageUrl);
+      console.log('✅ [KIE FLUX] Direct generation successful:', imageUrl);
       
       return {
         success: true,
@@ -284,7 +292,7 @@ async function generateWithKIE(prompt, input_image, style, aspectRatio, modelId,
         thumbnailUrl: imageUrl
       };
     } else {
-      const errorMsg = response.data?.error || response.data?.message || 'Unknown KIE API error';
+      const errorMsg = response.data?.error || response.data?.message || response.data?.msg || 'Unknown KIE API error';
       throw new Error(`KIE API error: ${errorMsg}`);
     }
   } catch (error) {
@@ -382,8 +390,90 @@ async function uploadToCloudinaryFluxFallback(base64Data) {
   }
 }
 
-// Note: KIE Flux Kontext API now provides direct synchronous responses
-// No polling required for the new /generate endpoint
+/**
+ * Poll for KIE Flux Kontext task result
+ * KIE Flux Kontext API uses /generate endpoint but still requires polling with taskId
+ */
+async function pollForKieFluxResult(taskId, req = null) {
+  const maxAttempts = 60;
+  const initialDelay = 3000;
+  
+  console.log(`🔄 [KIE FLUX] Starting polling for Kontext task: ${taskId}`);
+  
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    // Check if request was cancelled
+    if (req && req.aborted) {
+      throw new Error('Request was cancelled during polling');
+    }
+    
+    try {
+      // Progressive delay: 3s -> 5s -> 10s
+      const delayMs = attempt < 5 ? initialDelay : 
+                      attempt < 15 ? 5000 : 
+                      10000;
+      
+      if (attempt > 0) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+
+      console.log(`🔍 [KIE FLUX] Kontext polling attempt ${attempt + 1}/${maxAttempts}`);
+      
+      // Use the same API base URL but with task result endpoint
+      const statusResponse = await axios.get(`https://api.kie.ai/api/v1/flux/kontext/taskResult`, {
+        params: { taskId: taskId },
+        headers: {
+          'Authorization': `Bearer ${KIE_API_KEY}`
+        },
+        timeout: 10000
+      });
+
+      console.log(`📊 [KIE FLUX] Kontext status response:`, statusResponse.data);
+
+      // Handle response based on new API format
+      if (statusResponse.data?.code === 200 && statusResponse.data?.data) {
+        const resultData = statusResponse.data.data;
+        
+        // Check if task is completed with image
+        if (resultData.status === 'SUCCESS' && resultData.output?.images && resultData.output.images.length > 0) {
+          const imageUrl = resultData.output.images[0];
+          console.log('✅ [KIE FLUX] Kontext generation successful:', imageUrl);
+          
+          return {
+            success: true,
+            image: imageUrl,
+            thumbnailUrl: imageUrl
+          };
+        } else if (resultData.status === 'FAILED' || resultData.status === 'ERROR') {
+          const failMsg = resultData.error || resultData.message || 'Task failed';
+          console.error('❌ [KIE FLUX] Kontext task failed:', failMsg);
+          throw new Error(failMsg);
+        } else if (resultData.status === 'PROCESSING' || resultData.status === 'PENDING') {
+          console.log('🔄 [KIE FLUX] Kontext task still processing...');
+          continue;
+        } else {
+          console.log(`⏳ [KIE FLUX] Kontext task status: ${resultData.status}, continuing...`);
+          continue;
+        }
+      } else {
+        // Handle API error
+        const errorMsg = statusResponse.data?.message || statusResponse.data?.error || 'Unknown status response';
+        console.error('❌ [KIE FLUX] Kontext API error:', errorMsg);
+        throw new Error(errorMsg);
+      }
+    } catch (error) {
+      console.error(`❌ [KIE FLUX] Kontext polling attempt ${attempt + 1} failed:`, error.message);
+      
+      if (attempt === maxAttempts - 1) {
+        throw error;
+      }
+      
+      // Continue polling on transient errors
+      continue;
+    }
+  }
+
+  throw new Error('KIE Flux Kontext task timeout - exceeded maximum polling attempts');
+}
 
 /**
  * Poll for generation result from bfl.ai
