@@ -675,6 +675,103 @@ export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = '
     }
   }
 
+  // Use Seedream V4 for image-to-image generation
+  if (aiModel === 'seedream-v4') {
+    try {
+      const styleConfig = animeStylePrompts[style] || animeStylePrompts.disney;
+      
+      // Get auth token from store
+      const token = useAuthStore.getState().token;
+      
+      // For Seedream V4, send the image data directly to backend
+      // Backend will handle uploading to Cloudinary and converting to public URL
+      let inputImage;
+      
+      if (imageUrl.startsWith('http')) {
+        // If it's already a URL, use it directly
+        inputImage = imageUrl;
+      } else {
+        // Send base64 data directly to backend - it will handle conversion
+        let base64Data = imageUrl;
+        if (!imageUrl.startsWith('data:')) {
+          base64Data = await urlToBase64(imageUrl);
+        }
+        inputImage = base64Data;
+        console.log('Sending base64 image to backend for Seedream V4 processing...');
+      }
+      
+      // Construct the prompt for Seedream V4
+      let prompt;
+      if (customPrompt && style === 'custom') {
+        prompt = `Transform this image with custom style: ${customPrompt}`;
+      } else {
+        prompt = `Transform this image into ${styleConfig.prefix} style, ${styleConfig.suffix}, high quality, masterpiece`;
+      }
+      
+      // Setup headers
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      // Add authorization header if user is logged in
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      // Use our backend proxy for Seedream V4 API
+      const response = await fetch(getApiUrl('/seedream/generate'), {
+        method: 'POST',
+        headers,
+        signal: abortSignal,
+        body: JSON.stringify({
+          prompt: prompt,
+          input_image: inputImage,
+          style: style,
+          aspectRatio: aspectRatio,
+          model: 'seedream-v4',
+          num_images: 1
+        })
+      });
+      
+      if (!response.ok) {
+        // Handle authentication errors
+        if (response.status === 401) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Authentication required');
+        }
+        
+        // Handle other errors
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || errorData.error || `Server error: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      // Handle both old format (images array) and new format (single image)
+      if (result.success && result.image) {
+        console.log('🎨 [SEEDREAM CLIENT] Processing successful result:', {
+          hasImage: !!result.image,
+          imageUrl: result.image.substring(0, 80) + '...'
+        });
+        return {
+          images: [{
+            url: result.image,
+            thumbnailUrl: result.thumbnailUrl || result.image
+          }]
+        };
+      } else if (result.success && result.images && result.images.length > 0) {
+        return {
+          images: result.images
+        };
+      }
+      
+      throw new Error(result.error || 'Failed to generate image with Seedream V4');
+    } catch (error) {
+      console.error("Error generating with Seedream V4:", error);
+      throw error;
+    }
+  }
+
   // Use GPT IMAGE for image-to-image generation
   if (aiModel === 'gpt-image') {
     try {

@@ -27,6 +27,7 @@ import gptImageTextToImageRoutes from './routes/gptImageTextToImage.routes.js';
 import midjourneyRoutes from './routes/midjourney.routes.js';
 import nanoBananaRoutes from './routes/nanobanana.routes.js';
 import falaiRoutes from './routes/falai.routes.js';
+import seedreamRoutes from './routes/seedream.routes.js';
 // Video generator moved to .ignore folder
 // import lumaVideoRoutes from './routes/lumaVideoRoutes.js';
 import runwayVideoRoutes from './routes/runwayVideo.routes.js';
@@ -167,6 +168,7 @@ app.use('/api/gpt-image-text', gptImageTextToImageRoutes);
 app.use('/api/midjourney', midjourneyRoutes);
 app.use('/api/nano-banana', nanoBananaRoutes);
 app.use('/api/fal-ai', falaiRoutes);
+app.use('/api/seedream', seedreamRoutes);
 // Video generator moved to .ignore folder
 // app.use('/api/video', lumaVideoRoutes);
 app.use('/api/runway-video', runwayVideoRoutes);

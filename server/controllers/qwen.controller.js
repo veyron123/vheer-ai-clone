@@ -17,47 +17,88 @@ console.log('🔑 KIE API configured for Qwen:', {
 });
 
 /**
- * Upload base64 image to IMGBB for public URL access
+ * Upload base64 image to public URL with IMGBB primary, Cloudinary fallback
  * KIE API requires public HTTP URLs, not base64 data
  */
 async function uploadBase64ToImgbb(base64Data) {
+  // Try IMGBB first
+  try {
+    return await uploadToIMGBB(base64Data);
+  } catch (imgbbError) {
+    console.warn('⚠️ [IMGBB] Primary upload failed, trying Cloudinary fallback:', imgbbError.message);
+    
+    // Fallback to Cloudinary
+    try {
+      return await uploadToCloudinaryFallback(base64Data);
+    } catch (cloudinaryError) {
+      console.error('❌ [FALLBACK] Both IMGBB and Cloudinary failed');
+      throw new Error(`Image upload failed. IMGBB: ${imgbbError.message}. Cloudinary: ${cloudinaryError.message}`);
+    }
+  }
+}
+
+/**
+ * Primary IMGBB upload function
+ */
+async function uploadToIMGBB(base64Data) {
   const IMGBB_API_KEY = process.env.IMGBB_API_KEY;
   
   if (!IMGBB_API_KEY) {
-    throw new Error('IMGBB_API_KEY not configured - cannot convert base64 to public URL');
+    throw new Error('IMGBB_API_KEY not configured');
   }
 
-  try {
-    console.log('📤 [IMGBB] Converting base64 to public URL...');
-    
-    // Extract base64 content (remove data:image/...;base64, prefix)
-    const base64Content = base64Data.replace(/^data:image\/[a-z]+;base64,/, '');
-    
-    // Upload to IMGBB
-    const formData = new URLSearchParams();
-    formData.append('key', IMGBB_API_KEY);
-    formData.append('image', base64Content);
-    
-    const response = await axios.post('https://api.imgbb.com/1/upload', formData, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      timeout: 30000
-    });
-    
-    if (response.data?.success && response.data?.data?.url) {
-      const publicUrl = response.data.data.url;
-      console.log('✅ [IMGBB] Base64 uploaded successfully:', publicUrl);
-      return publicUrl;
-    } else {
-      throw new Error('IMGBB upload failed - no URL in response');
-    }
-  } catch (error) {
-    console.error('❌ [IMGBB] Upload error:', error.message);
-    if (error.response?.data) {
-      console.error('❌ [IMGBB] Error details:', error.response.data);
-    }
-    throw error;
+  console.log('📤 [IMGBB] Converting base64 to public URL...');
+  
+  // Extract base64 content (remove data:image/...;base64, prefix)
+  const base64Content = base64Data.replace(/^data:image\/[a-z]+;base64,/, '');
+  
+  // Upload to IMGBB
+  const formData = new URLSearchParams();
+  formData.append('key', IMGBB_API_KEY);
+  formData.append('image', base64Content);
+  
+  const response = await axios.post('https://api.imgbb.com/1/upload', formData, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    timeout: 30000
+  });
+  
+  if (response.data?.success && response.data?.data?.url) {
+    const publicUrl = response.data.data.url;
+    console.log('✅ [IMGBB] Base64 uploaded successfully:', publicUrl);
+    return publicUrl;
+  } else {
+    throw new Error('IMGBB upload failed - no URL in response');
+  }
+}
+
+/**
+ * Cloudinary fallback upload function
+ */
+async function uploadToCloudinaryFallback(base64Data) {
+  const { v2: cloudinary } = await import('cloudinary');
+  
+  // Check if Cloudinary is configured
+  if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+    throw new Error('Cloudinary not configured - cannot use fallback');
+  }
+
+  console.log('📤 [CLOUDINARY] Fallback: Converting base64 to public URL...');
+  
+  // Cloudinary can accept base64 data directly
+  const result = await cloudinary.uploader.upload(base64Data, {
+    folder: 'vheer-ai/temp',
+    resource_type: 'image',
+    quality: 'auto:good',
+    fetch_format: 'auto'
+  });
+  
+  if (result?.secure_url) {
+    console.log('✅ [CLOUDINARY] Fallback upload successful:', result.secure_url);
+    return result.secure_url;
+  } else {
+    throw new Error('Cloudinary upload failed - no secure_url in response');
   }
 }
 
