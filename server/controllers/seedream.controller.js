@@ -70,18 +70,41 @@ export const generateImage = asyncHandler(async (req, res) => {
       // Try to save the generated image and get Cloudinary URLs
       let savedImageData = null;
       try {
+        console.log('💾 [SEEDREAM] Attempting to save image to Cloudinary:', {
+          originalUrl: result.image,
+          imageSize: '1024x1024'
+        });
+        
         savedImageData = await saveGeneratedImage(
           { url: result.image, width: 1024, height: 1024 },
           user,
           generation
         );
-        console.log('✅ Image saved to user gallery');
+        
+        if (savedImageData?.url) {
+          console.log('✅ [SEEDREAM] Image saved to Cloudinary successfully:', {
+            cloudinaryUrl: savedImageData.url,
+            thumbnailUrl: savedImageData.thumbnailUrl,
+            originalFalUrl: result.image
+          });
+        } else {
+          console.log('⚠️ [SEEDREAM] Image saved but no Cloudinary URL returned');
+        }
       } catch (saveError) {
-        console.log('⚠️ Image not saved:', saveError.message);
+        console.log('❌ [SEEDREAM] Image save failed:', {
+          error: saveError.message,
+          stack: saveError.stack,
+          originalUrl: result.image
+        });
       }
       
       // Send success response with Cloudinary URLs if available
-      console.log('📤 Sending success response to client...');
+      console.log('📤 [SEEDREAM] Sending success response to client...', {
+        usingCloudinary: !!savedImageData?.url,
+        finalImageUrl: savedImageData?.url || result.image,
+        originalFalUrl: result.image
+      });
+      
       const response = {
         image: savedImageData?.url || result.image,
         thumbnailUrl: savedImageData?.thumbnailUrl || result.thumbnailUrl,

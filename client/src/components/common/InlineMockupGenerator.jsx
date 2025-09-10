@@ -415,8 +415,12 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
       frameImg.src = contextFramePath;
     };
     
-    // Проксируем внешние изображения для Frame Preview
-    const proxiedImageUrlForPreview = imageUrl.startsWith('http') 
+    // Проксируем внешние изображения для Frame Preview (кроме доверенных доменов)
+    const shouldProxy = imageUrl.startsWith('http') && 
+      !imageUrl.includes('i.ibb.co') && 
+      !imageUrl.includes('res.cloudinary.com');
+    
+    const proxiedImageUrlForPreview = shouldProxy
       ? `/api/image-proxy/proxy?url=${encodeURIComponent(imageUrl)}`
       : imageUrl;
       
@@ -637,7 +641,12 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
         renderImageOnCanvas(userImg);
       };
       
-      const proxiedImageUrl = imageUrl.startsWith('http') 
+      // Проксируем только внешние изображения, исключая доверенные домены (IMGBB, Cloudinary)
+      const shouldProxyMainCanvas = imageUrl.startsWith('http') && 
+        !imageUrl.includes('i.ibb.co') && 
+        !imageUrl.includes('res.cloudinary.com');
+      
+      const proxiedImageUrl = shouldProxyMainCanvas
         ? `/api/image-proxy/proxy?url=${encodeURIComponent(imageUrl)}`
         : imageUrl;
         
@@ -844,8 +853,12 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
         frameImg.src = contextFramePath;
       };
       
-      // Проксируем изображение
-      const proxiedImageUrl = imageUrl.startsWith('http') 
+      // Проксируем изображение (кроме доверенных доменов)
+      const shouldProxyModal = imageUrl.startsWith('http') && 
+        !imageUrl.includes('i.ibb.co') && 
+        !imageUrl.includes('res.cloudinary.com');
+      
+      const proxiedImageUrl = shouldProxyModal
         ? `/api/image-proxy/proxy?url=${encodeURIComponent(imageUrl)}`
         : imageUrl;
         
