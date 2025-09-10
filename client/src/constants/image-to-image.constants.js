@@ -18,6 +18,12 @@ export const IMAGE_AI_MODELS = {
     badge: { text: 'NEW', color: 'bg-green-500 text-white' },
     credits: 20
   },
+  SEEDREAM_V4: {
+    id: 'seedream-v4',
+    name: 'Seedream V4',
+    badge: { text: 'HOT', color: 'bg-orange-500 text-white' },
+    credits: 25
+  },
   NANO_BANANA: {
     id: 'nano-banana',
     name: 'Nano-Banana',

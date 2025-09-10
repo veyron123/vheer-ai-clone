@@ -38,6 +38,14 @@ export const ACTION_FIGURE_MODELS = [
     credits: 25,
     premium: true,
     supportsDualImage: false
+  },
+  {
+    id: 'seedream-v4',
+    name: 'Seedream V4',
+    description: 'Multi-image AI editing & generation',
+    credits: 25,
+    premium: false,
+    supportsDualImage: true
   }
 ];
 

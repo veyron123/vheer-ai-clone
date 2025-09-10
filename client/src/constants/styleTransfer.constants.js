@@ -15,6 +15,11 @@ export const STYLE_TRANSFER_AI_MODELS = {
     name: 'Qwen Image',
     badge: { text: 'NEW', color: 'bg-green-500 text-white' }
   },
+  SEEDREAM_V4: {
+    id: 'seedream-v4',
+    name: 'Seedream V4',
+    badge: { text: 'HOT', color: 'bg-orange-500 text-white' }
+  }
 };
 
 // Style Transfer Configuration

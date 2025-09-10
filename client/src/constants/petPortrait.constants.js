@@ -35,6 +35,14 @@ export const PET_PORTRAIT_MODELS = [
     credits: 20,
     premium: false,
     supportsDualImage: true
+  },
+  {
+    id: 'seedream-v4',
+    name: 'Seedream V4',
+    description: 'Multi-image AI editing & generation',
+    credits: 25,
+    premium: false,
+    supportsDualImage: true
   }
   // Other models temporarily disabled until dual-image support is implemented
   // flux-pro, gpt-image, qwen-image - only support single image input

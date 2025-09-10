@@ -1,3 +1,31 @@
+// AI Models Configuration for Halloween Generator
+export const HALLOWEEN_AI_MODELS = {
+  FLUX_PRO: {
+    id: 'flux-pro',
+    name: 'Flux Pro',
+    badge: { text: 'Fast', color: 'bg-yellow-400 text-black' },
+    credits: 10
+  },
+  GPT_IMAGE: {
+    id: 'gpt-image',
+    name: 'GPT Image',
+    badge: { text: '👑', color: 'bg-red-500 text-white' },
+    credits: 30
+  },
+  QWEN_IMAGE: {
+    id: 'qwen-image',
+    name: 'Qwen Image',
+    badge: { text: 'NEW', color: 'bg-green-500 text-white' },
+    credits: 20
+  },
+  SEEDREAM_V4: {
+    id: 'seedream-v4',
+    name: 'Seedream V4',
+    badge: { text: 'HOT', color: 'bg-orange-500 text-white' },
+    credits: 25
+  }
+};
+
 export const HALLOWEEN_STYLES = [
   {
     id: 'corpse-bride',

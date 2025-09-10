@@ -15,6 +15,13 @@ export const TEXT_TO_IMAGE_MODELS = [
     premium: false
   },
   {
+    id: 'seedream-v4',
+    name: 'Seedream V4',
+    description: 'Multi-image AI editing & generation',
+    credits: 25,
+    premium: false
+  },
+  {
     id: 'nano-banana',
     name: 'Nano-Banana',
     description: 'Fast & creative AI generation',

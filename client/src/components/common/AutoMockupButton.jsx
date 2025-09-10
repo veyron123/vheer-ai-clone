@@ -20,7 +20,8 @@ const AutoMockupButton = ({
       'flux-pro', 
       'flux-max',
       'flux-dev',
-      'flux-schnell'
+      'flux-schnell',
+      'seedream-v4'
     ];
     
     // Поддерживаемые соотношения
