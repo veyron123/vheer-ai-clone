@@ -9,7 +9,7 @@ import { logAIServiceError, getUserFriendlyAIError } from '../utils/aiServiceErr
 const FLUX_PROVIDER = process.env.FLUX_PROVIDER || 'KIE';
 const FLUX_API_KEY = process.env.FLUX_API_KEY;
 const KIE_API_KEY = process.env.KIE_API_KEY || '2286be72f9c75b12557518051d46c551';
-const KIE_API_URL = 'https://api.kie.ai/api/v1/playground';
+const KIE_API_URL = 'https://api.kie.ai/api/v1/flux/kontext';
 
 console.log('🔑 FLUX_API_KEY loaded:', FLUX_API_KEY ? 'YES (length: ' + FLUX_API_KEY.length + ')' : 'NO - MISSING!');
 console.log('🔑 KIE_API_KEY loaded:', KIE_API_KEY ? 'YES (length: ' + KIE_API_KEY.length + ')' : 'NO - MISSING!');
@@ -213,19 +213,29 @@ async function generateWithKIE(prompt, input_image, style, aspectRatio, modelId,
     const imageUrl = await uploadBase64ToImgbb(input_image);
     
     // Map aspectRatio to KIE API format
-    const getImageSize = (aspectRatio) => {
+    const getAspectRatio = (aspectRatio) => {
       const mapping = {
-        '1:1': 'square',
-        'square': 'square',
-        '3:4': 'portrait_4_3',
-        'portrait': 'portrait_4_3', 
-        '9:16': 'portrait_16_9',
-        '4:3': 'landscape_4_3',
-        'landscape': 'landscape_4_3',
-        'landscape_4_3': 'landscape_4_3',
-        '16:9': 'landscape_16_9'
+        '1:1': '1:1',
+        'square': '1:1',
+        '3:4': '3:4',
+        'portrait': '3:4', 
+        '9:16': '9:16',
+        '4:3': '4:3',
+        'landscape': '16:9',
+        'landscape_4_3': '4:3',
+        '16:9': '16:9'
       };
-      return mapping[aspectRatio] || 'landscape_4_3';
+      return mapping[aspectRatio] || '16:9';
+    };
+
+    // Map model names to KIE format
+    const getKieModel = (modelId) => {
+      const modelMapping = {
+        'flux-pro': 'flux-kontext-pro',
+        'flux-dev': 'flux-kontext-pro',
+        'flux-max': 'flux-kontext-max'
+      };
+      return modelMapping[modelId] || 'flux-kontext-pro';
     };
 
     // Combine style with prompt if provided
@@ -233,67 +243,55 @@ async function generateWithKIE(prompt, input_image, style, aspectRatio, modelId,
       ? `${prompt}, ${style} style`
       : prompt;
 
-    // Prepare KIE API request
+    // Prepare KIE API request using new format
     const requestBody = {
-      model: 'flux/dev',
-      input: {
-        prompt: fullPrompt,
-        image_url: imageUrl,
-        image_size: getImageSize(aspectRatio),
-        num_inference_steps: 25,
-        guidance_scale: 3.5,
-        enable_safety_checker: true,
-        output_format: 'png',
-        sync_mode: false
-      }
+      prompt: fullPrompt,
+      image_url: imageUrl,
+      aspectRatio: getAspectRatio(aspectRatio),
+      model: getKieModel(modelId)
     };
 
     console.log('🔍 [KIE FLUX] Full request to KIE API:', {
-      url: `${KIE_API_URL}/createTask`,
+      url: `${KIE_API_URL}/generate`,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${KIE_API_KEY.substring(0, 10)}...`
       },
       body: {
         ...requestBody,
-        input: {
-          ...requestBody.input,
-          image_url: 'IMAGE_URL_PRESENT'
-        }
+        image_url: 'IMAGE_URL_PRESENT'
       }
     });
 
-    // Create task with KIE API
-    const createResponse = await axios.post(`${KIE_API_URL}/createTask`, requestBody, {
+    // Generate with KIE API using new endpoint
+    const response = await axios.post(`${KIE_API_URL}/generate`, requestBody, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${KIE_API_KEY}`
       },
-      timeout: 30000
+      timeout: 60000 // Increased timeout for direct generation
     });
 
-    console.log('📋 [KIE FLUX] Task created:', createResponse.data);
+    console.log('📋 [KIE FLUX] Generation response:', response.data);
 
-    if (!createResponse.data?.data?.taskId) {
-      throw new Error('No taskId received from KIE API');
-    }
-
-    const taskId = createResponse.data.data.taskId;
-
-    // Poll for result
-    const result = await pollForKieResult(taskId, req);
-    
-    if (result.success) {
+    if (response.data?.success && response.data?.data?.image_url) {
+      const imageUrl = response.data.data.image_url;
+      console.log('✅ [KIE FLUX] Generation successful:', imageUrl);
+      
       return {
         success: true,
-        image: result.image,
-        thumbnailUrl: result.image
+        image: imageUrl,
+        thumbnailUrl: imageUrl
       };
     } else {
-      throw new Error(result.error || 'KIE generation failed');
+      const errorMsg = response.data?.error || response.data?.message || 'Unknown KIE API error';
+      throw new Error(`KIE API error: ${errorMsg}`);
     }
   } catch (error) {
     console.error('❌ KIE generation error:', error.message);
+    if (error.response?.data) {
+      console.error('❌ KIE API response:', error.response.data);
+    }
     throw error;
   }
 }
@@ -384,83 +382,8 @@ async function uploadToCloudinaryFluxFallback(base64Data) {
   }
 }
 
-/**
- * Poll for KIE task result
- */
-async function pollForKieResult(taskId, req = null) {
-  const maxAttempts = 60;
-  const initialDelay = 3000;
-  
-  console.log(`🔄 [KIE FLUX] Starting polling for task: ${taskId}`);
-  
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    // Check if request was cancelled
-    if (req && req.aborted) {
-      throw new Error('Request was cancelled during polling');
-    }
-    
-    try {
-      // Progressive delay: 3s -> 5s -> 10s
-      const delayMs = attempt < 5 ? initialDelay : 
-                      attempt < 15 ? 5000 : 
-                      10000;
-      
-      if (attempt > 0) {
-        await new Promise(resolve => setTimeout(resolve, delayMs));
-      }
-
-      console.log(`🔍 [KIE FLUX] Polling attempt ${attempt + 1}/${maxAttempts}`);
-      
-      const statusResponse = await axios.get(`${KIE_API_URL}/getTaskResult`, {
-        params: { task_id: taskId },
-        headers: {
-          'Authorization': `Bearer ${KIE_API_KEY}`
-        },
-        timeout: 10000
-      });
-
-      console.log(`📊 [KIE FLUX] Status response:`, statusResponse.data);
-
-      const { task_status, task_result } = statusResponse.data;
-
-      if (task_status === 'SUCCESS') {
-        if (task_result?.images && task_result.images.length > 0) {
-          const imageUrl = task_result.images[0];
-          console.log('✅ [KIE FLUX] Generation successful:', imageUrl);
-          
-          return {
-            success: true,
-            image: imageUrl,
-            thumbnailUrl: imageUrl
-          };
-        } else {
-          throw new Error('No images in successful result');
-        }
-      } else if (task_status === 'FAILED') {
-        const failMsg = task_result?.error || statusResponse.data.error || 'Unknown error';
-        console.error('❌ [KIE FLUX] Task failed:', failMsg);
-        throw new Error(failMsg);
-      } else if (task_status === 'PROCESSING') {
-        console.log('🔄 [KIE FLUX] Task still processing...');
-        continue;
-      } else {
-        console.log(`⏳ [KIE FLUX] Task status: ${task_status}, continuing...`);
-        continue;
-      }
-    } catch (error) {
-      console.error(`❌ [KIE FLUX] Polling attempt ${attempt + 1} failed:`, error.message);
-      
-      if (attempt === maxAttempts - 1) {
-        throw error;
-      }
-      
-      // Continue polling on transient errors
-      continue;
-    }
-  }
-
-  throw new Error('KIE task timeout - exceeded maximum polling attempts');
-}
+// Note: KIE Flux Kontext API now provides direct synchronous responses
+// No polling required for the new /generate endpoint
 
 /**
  * Poll for generation result from bfl.ai
