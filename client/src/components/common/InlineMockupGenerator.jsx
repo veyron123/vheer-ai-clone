@@ -4,7 +4,7 @@ import useCartStore from '../../stores/cartStore';
 import toast from 'react-hot-toast';
 import { viewImage } from '../../utils/imageUtils';
 
-const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false }) => {
+const InlineMockupGenerator = React.memo(({ imageUrl, aspectRatio, scale, autoShow = false }) => {
   
   // Функция автоматического определения соотношения сторон
   const detectAspectRatio = (width, height) => {
@@ -458,11 +458,14 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
     setSelectedSize(getDefaultSize(detectedAspectRatio));
   }, [detectedAspectRatio]);
   
-  // Мемоизированный ключ для перерисовки основного мокапа
+  // Мемоизированный ключ для перерисовки основного мокапа - ОПТИМИЗИРОВАННЫЙ
   const mainCanvasRenderKey = useMemo(() => {
     if (!imageUrl || !isVisible) return null;
-    return `${imageUrl}_${detectedAspectRatio}_${selectedSize}_${JSON.stringify(scalePerSize[selectedSize])}_${JSON.stringify(positionPerSize[selectedSize])}_${rotation}`;
-  }, [imageUrl, detectedAspectRatio, selectedSize, scalePerSize, positionPerSize, rotation, isVisible]);
+    // Используем только конкретные значения для текущего размера, а не весь объект
+    const currentScale = scalePerSize[selectedSize];
+    const currentPosition = positionPerSize[selectedSize];
+    return `${imageUrl}_${detectedAspectRatio}_${selectedSize}_${currentScale || 'default'}_${JSON.stringify(currentPosition) || 'default'}_${rotation}`;
+  }, [imageUrl, detectedAspectRatio, selectedSize, scalePerSize[selectedSize], positionPerSize[selectedSize], rotation, isVisible]);
 
   // Рендеринг основного мокапа - объединенный useEffect
   useEffect(() => {
@@ -471,6 +474,10 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
       return;
     }
 
+    console.log('🔄 [MAIN CANVAS] Starting render for:', { imageUrl, isVisible, detectedAspectRatio, selectedSize });
+    console.log('🔍 [MAIN CANVAS] Render key:', mainCanvasRenderKey);
+
+    // Увеличиваем debounce до 150ms для снижения частоты рендеринга
     const timeoutId = setTimeout(() => {
       setIsLoading(true);
       
@@ -666,32 +673,35 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
         
       userImg.crossOrigin = 'anonymous';
       userImg.src = proxiedImageUrl;
-    }, 100);
+    }, 150); // Увеличили с 100ms до 150ms
 
     return () => clearTimeout(timeoutId);
-  }, [imageUrl, isVisible, detectedAspectRatio, selectedSize, selectedColor, rotation, scalePerSize, positionPerSize]);
+  }, [mainCanvasRenderKey]); // Заменили зависимости на мемоизированный ключ для предотвращения лишних рендеров
 
 
-  // Мемоизированный ключ для Frame Preview
+  // Мемоизированный ключ для Frame Preview - ОПТИМИЗИРОВАННЫЙ
   const framePreviewRenderKey = useMemo(() => {
     if (!imageUrl || !isVisible || !selectedSize) return null;
+    // Добавляем debounce для предотвращения частых перерендеров
     return `${imageUrl}_${detectedAspectRatio}_${selectedSize}_${selectedColor}`;
   }, [imageUrl, detectedAspectRatio, selectedSize, selectedColor, isVisible]);
 
-  // Мемоизированная функция рендеринга Frame Preview
+  // Мемоизированная функция рендеринга Frame Preview - ОПТИМИЗИРОВАННАЯ
   const renderMemoizedFramePreview = useCallback(() => {
     if (!framePreviewRenderKey || !frameCanvasRef.current) {
       return;
     }
     renderFramePreview(selectedSize, { current: frameCanvasRef.current });
-  }, [framePreviewRenderKey, selectedSize]);
+  }, [selectedSize]); // Убрали framePreviewRenderKey из зависимостей - он уже проверяется внутри
 
-  // Синхронизация мокапа в Frame Preview
+  // Синхронизация мокапа в Frame Preview - ОПТИМИЗИРОВАННАЯ
   useEffect(() => {
     if (framePreviewRenderKey) {
+      console.log('🔄 [FRAME PREVIEW] Starting render for:', { framePreviewRenderKey, selectedSize });
+      // Увеличиваем debounce до 200ms для снижения частоты рендеринга
       const timeoutId = setTimeout(() => {
         renderMemoizedFramePreview();
-      }, 100);
+      }, 200);
       return () => clearTimeout(timeoutId);
     }
   }, [framePreviewRenderKey, renderMemoizedFramePreview]);
@@ -1255,6 +1265,6 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
     </div>
     </>
   );
-};
+}); // Закрывающая скобка для React.memo
 
 export default InlineMockupGenerator;
