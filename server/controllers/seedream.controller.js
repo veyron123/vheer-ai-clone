@@ -6,7 +6,7 @@ import { saveGeneratedImage } from './images.controller.js';
 import { logAIServiceError, getUserFriendlyAIError } from '../utils/aiServiceErrors.js';
 
 // FAL.ai Seedream V4 Configuration
-const FAL_API_KEY = process.env.FAL_API_KEY;
+const FAL_API_KEY = process.env.FAL_API_KEY || '5fe870a0-bd86-4fda-96b1-af8aa26f4835:e56e8f9886dcfaa093554773fe937b5d';
 const FAL_API_URL = 'https://fal.run/fal-ai/bytedance/seedream/v4/edit';
 
 console.log('🔑 FAL_API_KEY loaded:', FAL_API_KEY ? 'YES (length: ' + FAL_API_KEY.length + ')' : 'NO - MISSING!');
