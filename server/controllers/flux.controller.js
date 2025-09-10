@@ -274,11 +274,11 @@ async function generateWithKIE(prompt, input_image, style, aspectRatio, modelId,
 
     console.log('📋 [KIE FLUX] Task created:', createResponse.data);
 
-    if (!createResponse.data?.task_id) {
-      throw new Error('No task_id received from KIE API');
+    if (!createResponse.data?.data?.taskId) {
+      throw new Error('No taskId received from KIE API');
     }
 
-    const taskId = createResponse.data.task_id;
+    const taskId = createResponse.data.data.taskId;
 
     // Poll for result
     const result = await pollForKieResult(taskId, req);
