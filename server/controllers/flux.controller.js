@@ -9,7 +9,7 @@ import { logAIServiceError, getUserFriendlyAIError } from '../utils/aiServiceErr
 const FLUX_PROVIDER = process.env.FLUX_PROVIDER || 'KIE';
 const FLUX_API_KEY = process.env.FLUX_API_KEY;
 const KIE_API_KEY = process.env.KIE_API_KEY || '2286be72f9c75b12557518051d46c551';
-const KIE_API_URL = 'https://api.kie.ai/api/v1/playground';
+const KIE_API_URL = 'https://api.kie.ai/api/v1/flux/kontext';
 
 console.log('🔑 FLUX_API_KEY loaded:', FLUX_API_KEY ? 'YES (length: ' + FLUX_API_KEY.length + ')' : 'NO - MISSING!');
 console.log('🔑 KIE_API_KEY loaded:', KIE_API_KEY ? 'YES (length: ' + KIE_API_KEY.length + ')' : 'NO - MISSING!');
@@ -212,20 +212,21 @@ async function generateWithKIE(prompt, input_image, style, aspectRatio, modelId,
     // Process image URL - convert base64 to public URL
     const imageUrl = await uploadBase64ToImgbb(input_image);
     
-    // Map aspectRatio to KIE Playground API format (image_size)
-    const getImageSize = (aspectRatio) => {
+    // Map aspectRatio to KIE Flux Kontext API format
+    const getAspectRatio = (aspectRatio) => {
       const mapping = {
-        '1:1': 'square',
-        'square': 'square',
-        '3:4': 'portrait_4_3',
-        'portrait': 'portrait_4_3', 
-        '9:16': 'portrait_16_9',
-        '4:3': 'landscape_4_3',
-        'landscape': 'landscape_4_3',
-        'landscape_4_3': 'landscape_4_3',
-        '16:9': 'landscape_16_9'
+        '1:1': '1:1',
+        'square': '1:1',
+        '3:4': '3:4',
+        'portrait': '3:4', 
+        '9:16': '9:16',
+        '4:3': '4:3',
+        'landscape': '16:9',
+        'landscape_4_3': '4:3',
+        '16:9': '16:9',
+        '21:9': '21:9'
       };
-      return mapping[aspectRatio] || 'landscape_4_3';
+      return mapping[aspectRatio] || '16:9';
     };
 
     // Combine style with prompt if provided
@@ -233,38 +234,34 @@ async function generateWithKIE(prompt, input_image, style, aspectRatio, modelId,
       ? `${prompt}, ${style} style`
       : prompt;
 
-    // Prepare KIE API request using playground format
+    // Prepare KIE Flux Kontext API request
     const requestBody = {
-      model: 'flux/dev', // Use flux/dev model for playground API
-      input: {
-        prompt: fullPrompt,
-        image_url: imageUrl,
-        image_size: getImageSize(aspectRatio),
-        num_inference_steps: 25,
-        guidance_scale: 3.5,
-        enable_safety_checker: true,
-        output_format: 'png',
-        sync_mode: false
-      }
+      prompt: fullPrompt,
+      enableTranslation: true,
+      uploadCn: false,
+      inputImage: imageUrl,
+      aspectRatio: getAspectRatio(aspectRatio),
+      outputFormat: 'jpeg',
+      promptUpsampling: false,
+      model: modelId === 'flux-max' ? 'flux-kontext-max' : 'flux-kontext-pro',
+      safetyTolerance: 2,
+      watermark: null
     };
 
-    console.log('🔍 [KIE FLUX] Full request to KIE Playground API:', {
-      url: `${KIE_API_URL}/createTask`,
+    console.log('🔍 [KIE FLUX] Full request to KIE Flux Kontext API:', {
+      url: `${KIE_API_URL}/generate`,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${KIE_API_KEY.substring(0, 10)}...`
       },
       body: {
         ...requestBody,
-        input: {
-          ...requestBody.input,
-          image_url: 'IMAGE_URL_PRESENT'
-        }
+        inputImage: 'IMAGE_URL_PRESENT'
       }
     });
 
-    // Generate with KIE API using playground endpoint
-    const response = await axios.post(`${KIE_API_URL}/createTask`, requestBody, {
+    // Generate with KIE Flux Kontext API
+    const response = await axios.post(`${KIE_API_URL}/generate`, requestBody, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${KIE_API_KEY}`
@@ -272,20 +269,20 @@ async function generateWithKIE(prompt, input_image, style, aspectRatio, modelId,
       timeout: 60000 // Increased timeout for direct generation
     });
 
-    console.log('📋 [KIE FLUX] Playground response:', response.data);
+    console.log('📋 [KIE FLUX] Flux Kontext response:', response.data);
 
-    // Check for playground API response format
+    // Check for Flux Kontext API response format
     if (response.data?.code === 200 && response.data?.data?.taskId) {
       const taskId = response.data.data.taskId;
-      console.log('🔄 [KIE FLUX] Got taskId from playground, starting polling:', taskId);
+      console.log('🔄 [KIE FLUX] Got taskId from Flux Kontext, starting polling:', taskId);
       
-      // Poll for result using playground format
-      const result = await pollForKiePlaygroundResult(taskId, req);
+      // Poll for result using Flux Kontext format
+      const result = await pollForKieFluxKontextResult(taskId, req);
       return result;
     } else {
-      const errorMsg = response.data?.message || response.data?.msg || response.data?.error || 'Unknown KIE Playground API error';
-      console.error('❌ [KIE FLUX] Playground API error response:', response.data);
-      throw new Error(`KIE Playground API error: ${errorMsg}`);
+      const errorMsg = response.data?.msg || response.data?.message || response.data?.error || 'Unknown KIE Flux Kontext API error';
+      console.error('❌ [KIE FLUX] Flux Kontext API error response:', response.data);
+      throw new Error(`KIE Flux Kontext API error: ${errorMsg}`);
     }
   } catch (error) {
     console.error('❌ KIE generation error:', error.message);
@@ -383,14 +380,14 @@ async function uploadToCloudinaryFluxFallback(base64Data) {
 }
 
 /**
- * Poll for KIE Playground task result
- * Uses playground API /recordInfo endpoint
+ * Poll for KIE Flux Kontext task result
+ * Uses Flux Kontext API /record-info endpoint
  */
-async function pollForKiePlaygroundResult(taskId, req = null) {
+async function pollForKieFluxKontextResult(taskId, req = null) {
   const maxAttempts = 60;
   const initialDelay = 3000;
   
-  console.log(`🔄 [KIE FLUX] Starting polling for playground task: ${taskId}`);
+  console.log(`🔄 [KIE FLUX] Starting polling for Flux Kontext task: ${taskId}`);
   
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     // Check if request was cancelled
@@ -408,10 +405,10 @@ async function pollForKiePlaygroundResult(taskId, req = null) {
         await new Promise(resolve => setTimeout(resolve, delayMs));
       }
 
-      console.log(`🔍 [KIE FLUX] Playground polling attempt ${attempt + 1}/${maxAttempts}`);
+      console.log(`🔍 [KIE FLUX] Flux Kontext polling attempt ${attempt + 1}/${maxAttempts}`);
       
-      // Use playground recordInfo endpoint
-      const statusResponse = await axios.get(`${KIE_API_URL}/recordInfo`, {
+      // Use Flux Kontext record-info endpoint
+      const statusResponse = await axios.get(`${KIE_API_URL}/record-info`, {
         params: { taskId: taskId },
         headers: {
           'Authorization': `Bearer ${KIE_API_KEY}`
@@ -419,51 +416,45 @@ async function pollForKiePlaygroundResult(taskId, req = null) {
         timeout: 10000
       });
 
-      console.log(`📊 [KIE FLUX] Playground status response:`, statusResponse.data);
+      console.log(`📊 [KIE FLUX] Flux Kontext status response:`, statusResponse.data);
 
-      // Handle playground API response format
+      // Handle Flux Kontext API response format
       if (statusResponse.data?.code === 200 && statusResponse.data?.data) {
         const resultData = statusResponse.data.data;
         
-        // Check task state
-        if (resultData.state === 'success' && resultData.resultJson) {
-          try {
-            const resultJson = JSON.parse(resultData.resultJson);
-            if (resultJson.resultUrls && resultJson.resultUrls.length > 0) {
-              const imageUrl = resultJson.resultUrls[0];
-              console.log('✅ [KIE FLUX] Playground generation successful:', imageUrl);
-              
-              return {
-                success: true,
-                image: imageUrl,
-                thumbnailUrl: imageUrl
-              };
-            } else {
-              throw new Error('No result URLs in successful task');
-            }
-          } catch (parseError) {
-            console.error('❌ [KIE FLUX] Failed to parse resultJson:', parseError);
-            throw new Error('Failed to parse result data');
-          }
-        } else if (resultData.state === 'fail') {
-          const failMsg = resultData.failMsg || 'Task failed';
-          console.error('❌ [KIE FLUX] Playground task failed:', failMsg);
-          throw new Error(failMsg);
-        } else if (['waiting', 'queuing', 'generating'].includes(resultData.state)) {
-          console.log(`🔄 [KIE FLUX] Playground task state: ${resultData.state}, continuing...`);
+        // Check successFlag (0=GENERATING, 1=SUCCESS, 2=CREATE_TASK_FAILED, 3=GENERATE_FAILED)
+        if (resultData.successFlag === 1 && resultData.response?.resultImageUrl) {
+          const imageUrl = resultData.response.resultImageUrl;
+          console.log('✅ [KIE FLUX] Flux Kontext generation successful:', imageUrl);
+          
+          return {
+            success: true,
+            image: imageUrl,
+            thumbnailUrl: imageUrl
+          };
+        } else if (resultData.successFlag === 2) {
+          const errorMsg = resultData.errorMessage || 'Task creation failed';
+          console.error('❌ [KIE FLUX] Flux Kontext task creation failed:', errorMsg);
+          throw new Error(`Task creation failed: ${errorMsg}`);
+        } else if (resultData.successFlag === 3) {
+          const errorMsg = resultData.errorMessage || 'Generation failed';
+          console.error('❌ [KIE FLUX] Flux Kontext generation failed:', errorMsg);
+          throw new Error(`Generation failed: ${errorMsg}`);
+        } else if (resultData.successFlag === 0) {
+          console.log(`🔄 [KIE FLUX] Flux Kontext task generating, continuing...`);
           continue;
         } else {
-          console.log(`⏳ [KIE FLUX] Unknown playground task state: ${resultData.state}, continuing...`);
+          console.log(`⏳ [KIE FLUX] Unknown successFlag: ${resultData.successFlag}, continuing...`);
           continue;
         }
       } else {
         // Handle API error
-        const errorMsg = statusResponse.data?.message || statusResponse.data?.error || 'Unknown playground status response';
-        console.error('❌ [KIE FLUX] Playground API error:', errorMsg);
+        const errorMsg = statusResponse.data?.msg || statusResponse.data?.message || 'Unknown Flux Kontext status response';
+        console.error('❌ [KIE FLUX] Flux Kontext API error:', errorMsg);
         throw new Error(errorMsg);
       }
     } catch (error) {
-      console.error(`❌ [KIE FLUX] Playground polling attempt ${attempt + 1} failed:`, error.message);
+      console.error(`❌ [KIE FLUX] Flux Kontext polling attempt ${attempt + 1} failed:`, error.message);
       
       if (attempt === maxAttempts - 1) {
         throw error;
@@ -474,7 +465,7 @@ async function pollForKiePlaygroundResult(taskId, req = null) {
     }
   }
 
-  throw new Error('KIE Flux Playground task timeout - exceeded maximum polling attempts');
+  throw new Error('KIE Flux Kontext task timeout - exceeded maximum polling attempts');
 }
 
 /**
