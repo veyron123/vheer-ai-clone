@@ -420,6 +420,13 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
       !imageUrl.includes('i.ibb.co') && 
       !imageUrl.includes('res.cloudinary.com');
     
+    console.log('🖼️ [FRAME PREVIEW] Image URL analysis:', {
+      imageUrl,
+      shouldProxy,
+      isImgbb: imageUrl.includes('i.ibb.co'),
+      isCloudinary: imageUrl.includes('res.cloudinary.com')
+    });
+    
     const proxiedImageUrlForPreview = shouldProxy
       ? `/api/image-proxy/proxy?url=${encodeURIComponent(imageUrl)}`
       : imageUrl;
@@ -646,6 +653,13 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
         !imageUrl.includes('i.ibb.co') && 
         !imageUrl.includes('res.cloudinary.com');
       
+      console.log('🖼️ [MAIN CANVAS] Image URL analysis:', {
+        imageUrl,
+        shouldProxyMainCanvas,
+        isImgbb: imageUrl.includes('i.ibb.co'),
+        isCloudinary: imageUrl.includes('res.cloudinary.com')
+      });
+      
       const proxiedImageUrl = shouldProxyMainCanvas
         ? `/api/image-proxy/proxy?url=${encodeURIComponent(imageUrl)}`
         : imageUrl;
@@ -857,6 +871,13 @@ const InlineMockupGenerator = ({ imageUrl, aspectRatio, scale, autoShow = false 
       const shouldProxyModal = imageUrl.startsWith('http') && 
         !imageUrl.includes('i.ibb.co') && 
         !imageUrl.includes('res.cloudinary.com');
+      
+      console.log('🖼️ [MODAL PREVIEW] Image URL analysis:', {
+        imageUrl,
+        shouldProxyModal,
+        isImgbb: imageUrl.includes('i.ibb.co'),
+        isCloudinary: imageUrl.includes('res.cloudinary.com')
+      });
       
       const proxiedImageUrl = shouldProxyModal
         ? `/api/image-proxy/proxy?url=${encodeURIComponent(imageUrl)}`
