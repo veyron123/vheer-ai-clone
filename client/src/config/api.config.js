@@ -17,7 +17,7 @@ const useLocalAPI = import.meta.env.VITE_USE_LOCAL_API === 'true' || isDevelopme
 export const API_CONFIG = {
   baseURL: import.meta.env.VITE_API_URL || (useLocalAPI 
     ? 'http://localhost:5000/api' 
-    : 'https://colibrrri.com/api'),
+    : 'https://colibrrri-fullstack.onrender.com/api'),
   
   timeout: 30000,
   
