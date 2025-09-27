@@ -87,9 +87,9 @@ const TextToImageGeneratorPage = () => {
 
           {/* Main Content */}
           <div className="grid lg:grid-cols-[1fr,380px] gap-8 lg:items-stretch">
-            
-            {/* Left Column - Image Display */}
-            <div className="order-2 lg:order-1">
+
+            {/* Left Column - Image Display and Mockup */}
+            <div className="order-2 lg:order-1 space-y-8">
               <TextToImageResult
                 generatedImages={generatedImages}
                 generatedImage={generatedImage}
@@ -99,6 +99,14 @@ const TextToImageGeneratorPage = () => {
                 onClear={clearImage}
                 onUseAsBase={handleUseAsBase}
                 isBaseImageActive={isImageToImage}
+              />
+
+              {/* Mockup Generator Section - внутри grid layout */}
+              <MockupSection
+                imageUrl={generatedImage || (generatedImages && generatedImages[0] && (generatedImages[0].url || generatedImages[0]))}
+                aspectRatio={aspectRatio}
+                aiModel="qwen-image"
+                autoShow={true}
               />
             </div>
 

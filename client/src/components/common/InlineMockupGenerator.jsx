@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
-import { Frame, ShoppingCart, Maximize, X, ChevronUp, ChevronDown, Palette, Ruler, ZoomIn } from 'lucide-react';
+import { Frame, ShoppingCart, Maximize, X, ChevronUp, ChevronDown, Palette, Ruler, ZoomIn, Move } from 'lucide-react';
 import useCartStore from '../../stores/cartStore';
 import toast from 'react-hot-toast';
 import { viewImage } from '../../utils/imageUtils';
@@ -48,13 +48,13 @@ const InlineMockupGenerator = React.memo(({ imageUrl, aspectRatio, scale, autoSh
     if (scalePerSize[selectedSize] !== undefined) {
       return scalePerSize[selectedSize];
     }
-    
+
     // Значения по умолчанию для каждого размера - настройки для основного левого мокапа
     const defaultScales = {
-      '6x8': 0.72,   // 72% - для основного мокапа 3:4
-      '12x16': 0.72, // 72% - для основного мокапа 3:4
-      '18x24': 0.72, // 72% - для основного мокапа 3:4
-      '24x32': 0.72, // 72% - для основного мокапа 3:4
+      '6x8': detectedAspectRatio === '3:4' ? 0.64 : 0.72,   // 64% для wallart 3:4, 72% для других
+      '12x16': detectedAspectRatio === '3:4' ? 0.64 : 0.72, // 64% для wallart 3:4, 72% для других
+      '18x24': detectedAspectRatio === '3:4' ? 0.64 : 0.72, // 64% для wallart 3:4, 72% для других
+      '24x32': detectedAspectRatio === '3:4' ? 0.64 : 0.72, // 64% для wallart 3:4, 72% для других
       '8x6': 0.71,   // 71% - для 4:3
       '24x18': 0.71, // 71% - для 4:3
       '32x24': 0.71, // 71% - для 4:3
@@ -64,7 +64,7 @@ const InlineMockupGenerator = React.memo(({ imageUrl, aspectRatio, scale, autoSh
       '16x16': 0.77, // 77% - для 1:1
       '18x18': 0.88  // 88% - для 1:1
     };
-    
+
     return defaultScales[selectedSize] || 0.71; // По умолчанию 71% (как в Mockup Generator 4:3)
   };
   
@@ -81,13 +81,13 @@ const InlineMockupGenerator = React.memo(({ imageUrl, aspectRatio, scale, autoSh
     if (positionPerSize[selectedSize] !== undefined) {
       return positionPerSize[selectedSize];
     }
-    
+
     // Значения по умолчанию для каждого размера - настройки для основного левого мокапа
     const defaultPositions = {
-      '6x8': { x: 0, y: 0 },      // X=0px, Y=0px - для основного мокапа 3:4
-      '12x16': { x: 0, y: 0 },    // X=0px, Y=0px - для основного мокапа 3:4
-      '18x24': { x: 0, y: 0 },    // X=0px, Y=0px - для основного мокапа 3:4
-      '24x32': { x: 0, y: 0 },    // X=0px, Y=0px - для основного мокапа 3:4
+      '6x8': detectedAspectRatio === '3:4' ? { x: 4, y: 0 } : { x: 0, y: 0 },      // X=4px, Y=0px для wallart 3:4
+      '12x16': detectedAspectRatio === '3:4' ? { x: 4, y: 0 } : { x: 0, y: 0 },    // X=4px, Y=0px для wallart 3:4
+      '18x24': detectedAspectRatio === '3:4' ? { x: 4, y: 0 } : { x: 0, y: 0 },    // X=4px, Y=0px для wallart 3:4
+      '24x32': detectedAspectRatio === '3:4' ? { x: 4, y: 0 } : { x: 0, y: 0 },    // X=4px, Y=0px для wallart 3:4
       '8x6': { x: 0, y: 0 },      // X=0px, Y=0px - для 4:3
       '24x18': { x: 0, y: 0 },    // X=0px, Y=0px - для 4:3
       '32x24': { x: 0, y: 0 },    // X=0px, Y=0px - для 4:3
@@ -97,7 +97,7 @@ const InlineMockupGenerator = React.memo(({ imageUrl, aspectRatio, scale, autoSh
       '16x16': { x: 0, y: 61 },   // X=0px, Y=61px - для 1:1
       '18x18': { x: -2, y: 65 }   // X=-2px, Y=65px - для 1:1
     };
-    
+
     return defaultPositions[selectedSize] || { x: 0, y: 0 }; // По умолчанию центрировано (как в Mockup Generator 4:3)
   };
   
@@ -994,24 +994,45 @@ const InlineMockupGenerator = React.memo(({ imageUrl, aspectRatio, scale, autoSh
       {isVisible && isExpanded && (
         <div className="p-6">
           <div className="grid lg:grid-cols-2">
-            {/* Превью */}
+            {/* Превью - показывается на всех экранах */}
             <div>
               <h4 className="text-sm font-medium text-gray-700 mb-3">Preview</h4>
-              <div className="bg-gray-50 rounded-lg flex items-center justify-center relative">
+              <div className="bg-gray-100 rounded-lg border-2 border-gray-200 overflow-hidden mx-auto relative" style={{ width: '365px', height: '365px' }}>
                 {isLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gray-50 rounded-lg z-10">
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg z-10">
                     <div className="text-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-2"></div>
                       <p className="text-sm text-gray-500">Creating mockup...</p>
                     </div>
                   </div>
                 )}
-                <canvas
-                  ref={mainCanvasRef}
-                  className={`max-w-full h-auto ${isLoading ? 'invisible' : 'visible'}`}
-                  style={{ imageRendering: 'crisp-edges' }}
-                />
+                <div className="w-full h-full flex items-center justify-center">
+                  <canvas
+                    ref={mainCanvasRef}
+                    className={`${isLoading ? 'invisible' : 'visible'}`}
+                    style={{ imageRendering: 'crisp-edges', maxWidth: '100%', maxHeight: '100%' }}
+                  />
+                </div>
               </div>
+
+              {/* Информация о доставке - показывается под левым мокапом на планшетах и десктопе */}
+              {!isLoading && imageUrl && (
+                <div className="hidden md:block mt-4 p-4">
+                  <div className="text-left text-sm text-gray-700 space-y-2">
+                    <p className="font-semibold text-sm">Free, Fast and Tracked Shipping, On Us</p>
+
+                    <p className="font-medium text-sm">Once Printed, Expect Orders In:</p>
+
+                    <ul className="space-y-1 ml-4 text-sm">
+                      <li className="list-disc">3-5 days if you're in the USA</li>
+                      <li className="list-disc">5-7 days in the UK and Europe</li>
+                      <li className="list-disc">5-8 days for the rest of the world</li>
+                    </ul>
+
+                    <p className="font-medium text-sm">We Bring Your Art to Life Quickly</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Controls */}
@@ -1061,9 +1082,9 @@ const InlineMockupGenerator = React.memo(({ imageUrl, aspectRatio, scale, autoSh
               )}
 
   
-              {/* Frame Preview - динамический мокап для выбранного размера */}
+              {/* Frame Preview - динамический мокап для выбранного размера - только на больших экранах */}
               {(detectedAspectRatio === '3:4' || detectedAspectRatio === '4:3') && (
-                <div>
+                <div className="hidden lg:block">
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     <Palette className="w-4 h-4 inline mr-1" />
                     Frame Preview - {currentFrameSizes.find(s => s.id === selectedSize)?.name}
@@ -1118,52 +1139,94 @@ const InlineMockupGenerator = React.memo(({ imageUrl, aspectRatio, scale, autoSh
               </div>
               
               {/* Scale Control - открыто для всех соотношений сторон */}
-              {(
-                <div className="space-y-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Ruler className="w-4 h-4 inline mr-1" />
-                    Scale
-                  </label>
-                  
-                  <div className="flex items-center space-x-3">
-                    <label className="text-xs text-gray-600 w-12">Scale:</label>
-                    <input
-                      type="number"
-                      value={Math.round(getCurrentScale() * 100)}
-                      onChange={(e) => setCurrentScale((parseInt(e.target.value) || 50) / 100)}
-                      className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                      step="1"
-                      min="10"
-                      max="200"
-                      placeholder="85"
-                    />
-                    <span className="text-xs text-gray-500">%</span>
-                  </div>
-                  
-                  <button
-                    onClick={() => {
-                      const defaultScales = {
-                        '6x8': 0.71,   // 71% для основного мокапа 3:4
-                        '12x16': 0.71, // 71% для основного мокапа 3:4
-                        '18x24': 0.71, // 71% для основного мокапа 3:4
-                        '24x32': 0.71, // 71% для основного мокапа 3:4
-                        '8x6': 0.71,   // Для 4:3
-                        '24x18': 0.71, // Для 4:3
-                        '32x24': 0.71, // Для 4:3
-                        '10x10': 0.52, // Для 1:1
-                        '12x12': 0.61, // Для 1:1
-                        '14x14': 0.69, // Для 1:1
-                        '16x16': 0.77, // Для 1:1
-                        '18x18': 0.88  // Для 1:1
-                      };
-                      setCurrentScale(defaultScales[selectedSize] || 0.71);
-                    }}
-                    className="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-colors"
-                  >
-                    Reset Scale
-                  </button>
+              {/*
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Ruler className="w-4 h-4 inline mr-1" />
+                  Scale
+                </label>
+
+                <div className="flex items-center space-x-3">
+                  <label className="text-xs text-gray-600 w-12">Scale:</label>
+                  <input
+                    type="number"
+                    value={Math.round(getCurrentScale() * 100)}
+                    onChange={(e) => setCurrentScale((parseInt(e.target.value) || 50) / 100)}
+                    className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    step="1"
+                    min="10"
+                    max="200"
+                    placeholder="85"
+                  />
+                  <span className="text-xs text-gray-500">%</span>
                 </div>
-              )}
+
+                <button
+                  onClick={() => {
+                    const defaultScales = {
+                      '6x8': 0.71,   // 71% для основного мокапа 3:4
+                      '12x16': 0.71, // 71% для основного мокапа 3:4
+                      '18x24': 0.71, // 71% для основного мокапа 3:4
+                      '24x32': 0.71, // 71% для основного мокапа 3:4
+                      '8x6': 0.71,   // Для 4:3
+                      '24x18': 0.71, // Для 4:3
+                      '32x24': 0.71, // Для 4:3
+                      '10x10': 0.52, // Для 1:1
+                      '12x12': 0.61, // Для 1:1
+                      '14x14': 0.69, // Для 1:1
+                      '16x16': 0.77, // Для 1:1
+                      '18x18': 0.88  // Для 1:1
+                    };
+                    setCurrentScale(defaultScales[selectedSize] || 0.71);
+                  }}
+                  className="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-colors"
+                >
+                  Reset Scale
+                </button>
+              </div>
+              */}
+
+              {/* Position Control - открыто для всех соотношений сторон */}
+              {/*
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Move className="w-4 h-4 inline mr-1" />
+                  Position
+                </label>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-gray-600">X: {getCurrentPosition().x}px</label>
+                    <input
+                      type="range"
+                      min="-100"
+                      max="100"
+                      value={getCurrentPosition().x}
+                      onChange={(e) => setCurrentPosition({ ...getCurrentPosition(), x: Number(e.target.value) })}
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-600">Y: {getCurrentPosition().y}px</label>
+                    <input
+                      type="range"
+                      min="-100"
+                      max="100"
+                      value={getCurrentPosition().y}
+                      onChange={(e) => setCurrentPosition({ ...getCurrentPosition(), y: Number(e.target.value) })}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setCurrentPosition({ x: 0, y: 0 })}
+                  className="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-colors"
+                >
+                  Reset Position
+                </button>
+              </div>
+              */}
 
               {/* Action Buttons */}
               <div className="pt-4 border-t space-y-3">
@@ -1176,6 +1239,25 @@ const InlineMockupGenerator = React.memo(({ imageUrl, aspectRatio, scale, autoSh
                   <ShoppingCart className="w-5 h-5" />
                   ADD TO CART - ${currentFrameSizes.find(s => s.id === selectedSize)?.price || 70}
                 </button>
+
+                {/* Информация о доставке - показывается под кнопкой Add to Cart только на мобильных */}
+                {!isLoading && imageUrl && (
+                  <div className="block md:hidden p-3">
+                    <div className="text-left text-sm text-gray-700 space-y-2">
+                      <p className="font-semibold text-sm">Free, Fast and Tracked Shipping, On Us</p>
+
+                      <p className="font-medium text-sm">Once Printed, Expect Orders In:</p>
+
+                      <ul className="space-y-1 ml-4 text-sm">
+                        <li className="list-disc">3-5 days if you're in the USA</li>
+                        <li className="list-disc">5-7 days in the UK and Europe</li>
+                        <li className="list-disc">5-8 days for the rest of the world</li>
+                      </ul>
+
+                      <p className="font-medium text-sm">We Bring Your Art to Life Quickly</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
