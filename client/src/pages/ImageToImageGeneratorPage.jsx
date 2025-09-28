@@ -85,12 +85,12 @@ const ImageToImageGeneratorPage = () => {
         </div>
 
         {/* Main Content */}
-        <div className="container-custom py-8">
-          <div className="grid lg:grid-cols-[1fr,380px] gap-8">
-            
-            {/* Left Column - Upload and Examples */}
-            <div>
-              <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+        <div className="container-custom py-4 sm:py-8">
+          <div className="grid lg:grid-cols-[1fr,380px] gap-4 sm:gap-8">
+
+            {/* Left Column - Upload and Examples - только на десктопе */}
+            <div className="hidden lg:block order-2 lg:order-1">
+              <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
                 <ImageToImageUploader
                   uploadedImage={uploadedImage}
                   generatedImage={generatedImage}
@@ -106,10 +106,10 @@ const ImageToImageGeneratorPage = () => {
                   autoShowMockup={true}
                 />
               </div>
-              
+
               {/* Show examples only when no images are loaded */}
               {!generatedImage && !uploadedImage && <ImageExampleGallery />}
-              
+
               {/* Mockup Generator Section - replaces examples when image is loaded */}
               {(generatedImage || uploadedImage) && (
                 <MockupSection
@@ -121,10 +121,10 @@ const ImageToImageGeneratorPage = () => {
               )}
             </div>
 
-            {/* Right Column - Settings */}
-            <div className="space-y-6">
+            {/* Right Column - Settings - только на десктопе */}
+            <div className="hidden lg:block order-1 lg:order-2 space-y-4 sm:space-y-6">
               {/* Prompt Controls */}
-              <div className="bg-white rounded-2xl shadow-sm p-6">
+              <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6">
                 <PromptControls
                   positivePrompt={positivePrompt}
                   onPositivePromptChange={setPositivePrompt}
@@ -138,18 +138,18 @@ const ImageToImageGeneratorPage = () => {
               </div>
 
               {/* Model and Settings */}
-              <div className="bg-white rounded-2xl shadow-sm p-6 space-y-6">
+              <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6 space-y-4 sm:space-y-6">
                 <ImageModelSelector
                   selectedModel={aiModel}
                   onModelChange={setAiModel}
                 />
-                
+
                 <ImageAspectRatioSelector
                   selectedRatio={aspectRatio}
                   onRatioChange={setAspectRatio}
                   disabled={aiModel === 'nano-banana'}
                 />
-                
+
                 <ImageGenerateButton
                   onClick={handleGenerate}
                   disabled={!uploadedImage}
@@ -158,9 +158,75 @@ const ImageToImageGeneratorPage = () => {
                   aiModel={aiModel}
                 />
 
-                
+
               </div>
             </div>
+          </div>
+
+          {/* ImageUploader и вся секция настроек - на мобильных и планшетах */}
+          <div className="block lg:hidden space-y-4 sm:space-y-6">
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6">
+              <ImageToImageUploader
+                uploadedImage={uploadedImage}
+                generatedImage={generatedImage}
+                generationTime={generationTime}
+                onImageUpload={handleImageUpload}
+                onImageRemove={handleImageRemove}
+                onCancel={cancelGeneration}
+                onPaste={handlePaste}
+                fileInputRef={fileInputRef}
+                isGenerating={isGenerating}
+                aspectRatio={aspectRatio}
+                aiModel={aiModel}
+                autoShowMockup={true}
+              />
+            </div>
+
+            {/* Prompt Controls - на мобильных */}
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6">
+              <PromptControls
+                positivePrompt={positivePrompt}
+                onPositivePromptChange={setPositivePrompt}
+                negativePrompt={negativePrompt}
+                onNegativePromptChange={setNegativePrompt}
+                creativeStrength={creativeStrength}
+                onCreativeStrengthChange={setCreativeStrength}
+                controlStrength={controlStrength}
+                onControlStrengthChange={setControlStrength}
+              />
+            </div>
+
+            {/* Model and Settings - на мобильных */}
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6 space-y-4 sm:space-y-6">
+              <ImageModelSelector
+                selectedModel={aiModel}
+                onModelChange={setAiModel}
+              />
+
+              <ImageAspectRatioSelector
+                selectedRatio={aspectRatio}
+                onRatioChange={setAspectRatio}
+                disabled={aiModel === 'nano-banana'}
+              />
+
+              <ImageGenerateButton
+                onClick={handleGenerate}
+                disabled={!uploadedImage}
+                isGenerating={isGenerating}
+                onClear={clearAll}
+                aiModel={aiModel}
+              />
+            </div>
+
+            {/* Mockup Section - после настроек на мобильных */}
+            {(generatedImage || uploadedImage) && (
+              <MockupSection
+                imageUrl={generatedImage || uploadedImage}
+                aspectRatio={aspectRatio}
+                aiModel={aiModel}
+                autoShow={true}
+              />
+            )}
           </div>
         </div>
 

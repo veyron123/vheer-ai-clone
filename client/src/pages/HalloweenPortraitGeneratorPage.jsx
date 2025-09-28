@@ -59,6 +59,22 @@ const HalloweenPortraitGeneratorPage = () => {
     generateImage(finalStyle, aiModel, aspectRatio, customStyle.trim());
   };
 
+  // Halloween Portrait specific example images
+  const halloweenExampleImages = [
+    {
+      id: 1,
+      original: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop',
+      generated: '/example-results/halloween-family-1.webp',
+      style: 'Halloween Family Portrait'
+    },
+    {
+      id: 2,
+      original: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&h=400&fit=crop',
+      generated: '/example-results/halloween-family-2.webp',
+      style: 'Spooky Halloween Portrait'
+    }
+  ];
+
 
   return (
     <>
@@ -103,7 +119,7 @@ const HalloweenPortraitGeneratorPage = () => {
             </div>
 
             {/* Show examples only when no images are loaded */}
-            {!generatedImage && !uploadedImage && <ExampleGallery />}
+            {!generatedImage && !uploadedImage && <ExampleGallery examples={halloweenExampleImages} />}
 
             {/* Mockup Generator Section - replaces examples when image is loaded */}
             {(generatedImage || uploadedImage) && (

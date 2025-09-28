@@ -94,9 +94,9 @@ const PetPortraitGeneratorPage = () => {
       {/* Main Content */}
       <div className="container-custom py-4 sm:py-8">
         <div className="grid lg:grid-cols-[1fr,380px] gap-4 sm:gap-8">
-          
-          {/* Left Column - Upload and Examples */}
-          <div className="order-2 lg:order-1">
+
+          {/* Left Column - Upload and Examples - только на десктопе */}
+          <div className="hidden lg:block order-2 lg:order-1">
             <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
               <ImageUploader
                 uploadedImage={uploadedImage}
@@ -112,10 +112,10 @@ const PetPortraitGeneratorPage = () => {
                 autoShowMockup={true}
               />
             </div>
-            
+
             {/* Show examples only when no images are loaded */}
             {!generatedImage && !uploadedImage && <ExampleGallery examples={petExampleImages} />}
-            
+
             {/* Mockup Generator Section - replaces examples when image is loaded */}
             {(generatedImage || uploadedImage) && (
               <MockupSection
@@ -127,9 +127,9 @@ const PetPortraitGeneratorPage = () => {
             )}
           </div>
 
-          {/* Right Column - Settings */}
-          <div className="order-1 lg:order-2 bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6 h-fit lg:sticky lg:top-20">
-            <StyleSelector 
+          {/* Right Column - Settings - только на десктопе */}
+          <div className="hidden lg:block order-1 lg:order-2 bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6 h-fit lg:sticky lg:top-20">
+            <StyleSelector
               styles={PET_PORTRAIT_STYLES}
               selectedStyle={selectedStyle}
               onStyleChange={setSelectedStyle}
@@ -137,23 +137,77 @@ const PetPortraitGeneratorPage = () => {
               onCustomStyleChange={setCustomStyle}
               isPetPortrait={true}
             />
-            
+
             <AspectRatioSelector
               selectedRatio={aspectRatio}
               onRatioChange={setAspectRatio}
               disabled={true}
               aiModel={'nano-banana'}
             />
-            
+
             <GenerateButton
               onClick={handleGenerate}
               disabled={!uploadedImage}
               isGenerating={isGenerating}
               aiModel={'nano-banana'}
             />
-            
-            
+
+
           </div>
+        </div>
+
+        {/* ImageUploader и вся секция настроек - на мобильных и планшетах */}
+        <div className="block lg:hidden space-y-4 sm:space-y-6">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6">
+            <ImageUploader
+              uploadedImage={uploadedImage}
+              generatedImage={generatedImage}
+              generationTime={generationTime}
+              onImageUpload={handleImageUpload}
+              onImageRemove={handleImageRemove}
+              onCancel={cancelGeneration}
+              fileInputRef={fileInputRef}
+              isGenerating={isGenerating}
+              aspectRatio={aspectRatio}
+              aiModel={'nano-banana'}
+              autoShowMockup={true}
+            />
+          </div>
+
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6">
+            <StyleSelector
+              styles={PET_PORTRAIT_STYLES}
+              selectedStyle={selectedStyle}
+              onStyleChange={setSelectedStyle}
+              customStyle={customStyle}
+              onCustomStyleChange={setCustomStyle}
+              isPetPortrait={true}
+            />
+
+            <AspectRatioSelector
+              selectedRatio={aspectRatio}
+              onRatioChange={setAspectRatio}
+              disabled={true}
+              aiModel={'nano-banana'}
+            />
+
+            <GenerateButton
+              onClick={handleGenerate}
+              disabled={!uploadedImage}
+              isGenerating={isGenerating}
+              aiModel={'nano-banana'}
+            />
+          </div>
+
+          {/* Mockup Section - после настроек на мобильных */}
+          {(generatedImage || uploadedImage) && (
+            <MockupSection
+              imageUrl={generatedImage || uploadedImage}
+              aspectRatio={aspectRatio}
+              aiModel={'nano-banana'}
+              autoShow={true}
+            />
+          )}
         </div>
       </div>
 

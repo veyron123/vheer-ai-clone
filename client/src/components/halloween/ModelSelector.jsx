@@ -1,34 +1,19 @@
 import React from 'react';
-
-// Halloween-specific AI models - только Flux и Qwen
-const HALLOWEEN_AI_MODELS = {
-  FLUX_PRO: {
-    id: 'flux-pro',
-    name: 'Flux Pro',
-    badge: { text: 'Fast', color: 'bg-yellow-400 text-black' },
-    credits: 10
-  },
-  QWEN_IMAGE: {
-    id: 'qwen-image',
-    name: 'Qwen Image',
-    badge: { text: 'NEW', color: 'bg-green-500 text-white' },
-    credits: 20
-  }
-};
+import { HALLOWEEN_AI_MODELS } from '../../constants/halloween.constants';
 
 const ModelSelector = ({ selectedModel, onModelChange }) => {
   const models = Object.values(HALLOWEEN_AI_MODELS);
   const selectedModelData = models.find(model => model.id === selectedModel);
-  
+
   return (
     <div className="mb-6">
       <label className="flex items-center justify-between mb-3">
         <span className="text-sm font-medium">
-          Model
+          AI Model
         </span>
       </label>
-      
-      <div className="grid grid-cols-2 gap-2">
+
+      <div className="grid grid-cols-3 gap-2">
         {models.map((model) => (
           <button
             key={model.id}
@@ -46,7 +31,7 @@ const ModelSelector = ({ selectedModel, onModelChange }) => {
           </button>
         ))}
       </div>
-      
+
       {/* Price display under buttons */}
       {selectedModelData && (
         <div className="text-center text-sm text-primary-600 font-medium mt-3">

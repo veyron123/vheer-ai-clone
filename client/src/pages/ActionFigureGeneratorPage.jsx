@@ -111,9 +111,9 @@ const ActionFigureGeneratorPage = () => {
       {/* Main Content */}
       <div className="container-custom py-4 sm:py-8">
         <div className="grid lg:grid-cols-[1fr,380px] gap-4 sm:gap-8">
-          
-          {/* Left Column - Upload and Examples */}
-          <div className="order-2 lg:order-1">
+
+          {/* Left Column - Upload and Examples - только на десктопе */}
+          <div className="hidden lg:block order-2 lg:order-1">
             <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
               <ImageUploader
                 uploadedImage={uploadedImage}
@@ -129,10 +129,10 @@ const ActionFigureGeneratorPage = () => {
                 autoShowMockup={true}
               />
             </div>
-            
+
             {/* Show examples only when no images are loaded */}
             {!generatedImage && !uploadedImage && <ExampleGallery examples={actionFigureExampleImages} />}
-            
+
             {/* Mockup Generator Section - replaces examples when image is loaded */}
             {(generatedImage || uploadedImage) && (
               <MockupSection
@@ -144,14 +144,14 @@ const ActionFigureGeneratorPage = () => {
             )}
           </div>
 
-          {/* Right Column - Settings */}
-          <div className="order-1 lg:order-2 bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6 h-fit lg:sticky lg:top-20">
-            <div className="mb-6">
+          {/* Right Column - Settings - только на десктопе */}
+          <div className="hidden lg:block order-1 lg:order-2 bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6 h-fit lg:sticky lg:top-20">
+            <div className="mb-4 sm:mb-6">
               <h3 className="text-lg font-semibold mb-2 text-gray-900">Action Figure Style</h3>
               <p className="text-sm text-gray-600 mb-4">Choose from our collection of action figure styles</p>
             </div>
-            
-            <StyleSelector 
+
+            <StyleSelector
               styles={ACTION_FIGURE_STYLES}
               selectedStyle={selectedStyle}
               onStyleChange={setSelectedStyle}
@@ -159,23 +159,23 @@ const ActionFigureGeneratorPage = () => {
               onCustomStyleChange={setCustomStyle}
               isActionFigure={true}
             />
-            
+
             <AspectRatioSelector
               selectedRatio={aspectRatio}
               onRatioChange={setAspectRatio}
               disabled={false}
               aiModel={'nano-banana'}
             />
-            
+
             <GenerateButton
               onClick={handleGenerate}
               disabled={!uploadedImage}
               isGenerating={isGenerating}
               aiModel={'nano-banana'}
             />
-            
+
             {/* Feature Highlights */}
-            <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
+            <div className="mt-4 sm:mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
               <h4 className="font-semibold text-gray-900 mb-2">✨ Features:</h4>
               <ul className="text-sm text-gray-600 space-y-1">
                 <li>• 20+ action figure styles</li>
@@ -185,6 +185,76 @@ const ActionFigureGeneratorPage = () => {
               </ul>
             </div>
           </div>
+        </div>
+
+        {/* ImageUploader и вся секция настроек - на мобильных и планшетах */}
+        <div className="block lg:hidden space-y-4 sm:space-y-6">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6">
+            <ImageUploader
+              uploadedImage={uploadedImage}
+              generatedImage={generatedImage}
+              generationTime={generationTime}
+              onImageUpload={handleImageUpload}
+              onImageRemove={handleImageRemove}
+              onCancel={cancelGeneration}
+              fileInputRef={fileInputRef}
+              isGenerating={isGenerating}
+              aspectRatio={aspectRatio}
+              aiModel={'nano-banana'}
+              autoShowMockup={true}
+            />
+          </div>
+
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6">
+            <div className="mb-4 sm:mb-6">
+              <h3 className="text-lg font-semibold mb-2 text-gray-900">Action Figure Style</h3>
+              <p className="text-sm text-gray-600 mb-4">Choose from our collection of action figure styles</p>
+            </div>
+
+            <StyleSelector
+              styles={ACTION_FIGURE_STYLES}
+              selectedStyle={selectedStyle}
+              onStyleChange={setSelectedStyle}
+              customStyle={customStyle}
+              onCustomStyleChange={setCustomStyle}
+              isActionFigure={true}
+            />
+
+            <AspectRatioSelector
+              selectedRatio={aspectRatio}
+              onRatioChange={setAspectRatio}
+              disabled={false}
+              aiModel={'nano-banana'}
+            />
+
+            <GenerateButton
+              onClick={handleGenerate}
+              disabled={!uploadedImage}
+              isGenerating={isGenerating}
+              aiModel={'nano-banana'}
+            />
+
+            {/* Feature Highlights */}
+            <div className="mt-4 sm:mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
+              <h4 className="font-semibold text-gray-900 mb-2">✨ Features:</h4>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• 20+ action figure styles</li>
+                <li>• Superhero, anime, fantasy themes</li>
+                <li>• High-quality collectible look</li>
+                <li>• Perfect for social media</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Mockup Section - после настроек на мобильных */}
+          {(generatedImage || uploadedImage) && (
+            <MockupSection
+              imageUrl={generatedImage || uploadedImage}
+              aspectRatio={aspectRatio}
+              aiModel={'nano-banana'}
+              autoShow={true}
+            />
+          )}
         </div>
       </div>
 

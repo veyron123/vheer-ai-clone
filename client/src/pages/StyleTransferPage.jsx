@@ -64,12 +64,12 @@ const StyleTransferPage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="container-custom py-8">
-        <div className="grid lg:grid-cols-[1fr,380px] gap-8">
-          
-          {/* Left Column - Upload and Examples */}
-          <div>
-            <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+      <div className="container-custom py-4 sm:py-8">
+        <div className="grid lg:grid-cols-[1fr,380px] gap-4 sm:gap-8">
+
+          {/* Left Column - Upload and Examples - только на десктопе */}
+          <div className="hidden lg:block order-2 lg:order-1">
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
               <ImageUploader
                 uploadedImage={uploadedImage}
                 generatedImage={generatedImage}
@@ -84,10 +84,10 @@ const StyleTransferPage = () => {
                 autoShowMockup={true}
               />
             </div>
-            
+
             {/* Show examples only when no images are loaded */}
             {!generatedImage && !uploadedImage && <ExampleGallery />}
-            
+
             {/* Mockup Generator Section - replaces examples when image is loaded */}
             {(generatedImage || uploadedImage) && (
               <MockupSection
@@ -99,25 +99,25 @@ const StyleTransferPage = () => {
             )}
           </div>
 
-          {/* Right Column - Settings */}
-          <div className="space-y-4">
+          {/* Right Column - Settings - только на десктопе */}
+          <div className="hidden lg:block order-1 lg:order-2 space-y-4">
             {/* Credit Display */}
             <CreditDisplay />
-            
-            <div className="bg-white rounded-2xl shadow-sm p-6 h-fit">
-              <StyleSelector 
+
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6 h-fit">
+              <StyleSelector
               styles={STYLE_TRANSFER_STYLES}
               selectedStyle={selectedStyle}
               onStyleChange={setSelectedStyle}
               customStyle={customStyle}
               onCustomStyleChange={setCustomStyle}
             />
-            
-            <div className="mb-6">
+
+            <div className="mb-4 sm:mb-6">
               <label className="flex items-center justify-between mb-3">
                 <span className="text-sm font-medium">AI Model</span>
               </label>
-              
+
               <div className="grid grid-cols-3 gap-2">
                 {Object.values(STYLE_TRANSFER_AI_MODELS).map((model) => (
                   <button
@@ -137,22 +137,104 @@ const StyleTransferPage = () => {
                 ))}
               </div>
             </div>
-            
+
             <AspectRatioSelector
               selectedRatio={aspectRatio}
               onRatioChange={setAspectRatio}
               aiModel={aiModel}
             />
-            
+
               <GenerateButton
                 onClick={handleGenerate}
                 disabled={!uploadedImage}
                 isGenerating={isGenerating}
                 aiModel={aiModel}
               />
-              
+
             </div>
           </div>
+        </div>
+
+        {/* ImageUploader и вся секция настроек - на мобильных и планшетах */}
+        <div className="block lg:hidden space-y-4 sm:space-y-6">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6">
+            <ImageUploader
+              uploadedImage={uploadedImage}
+              generatedImage={generatedImage}
+              generationTime={generationTime}
+              onImageUpload={handleImageUpload}
+              onImageRemove={handleImageRemove}
+              onCancel={cancelGeneration}
+              fileInputRef={fileInputRef}
+              isGenerating={isGenerating}
+              aspectRatio={aspectRatio}
+              aiModel={aiModel}
+              autoShowMockup={true}
+            />
+          </div>
+
+          {/* Credit Display - на мобильных */}
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6">
+            <CreditDisplay />
+          </div>
+
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6">
+            <StyleSelector
+            styles={STYLE_TRANSFER_STYLES}
+            selectedStyle={selectedStyle}
+            onStyleChange={setSelectedStyle}
+            customStyle={customStyle}
+            onCustomStyleChange={setCustomStyle}
+          />
+
+          <div className="mb-4 sm:mb-6">
+            <label className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium">AI Model</span>
+            </label>
+
+            <div className="grid grid-cols-3 gap-2">
+              {Object.values(STYLE_TRANSFER_AI_MODELS).map((model) => (
+                <button
+                  key={model.id}
+                  onClick={() => setAiModel(model.id)}
+                  className={`relative py-2 px-3 rounded-lg border text-sm font-medium transition-all ${
+                    aiModel === model.id
+                      ? 'border-primary-500 bg-primary-50 text-primary-700'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  {model.name}
+                  <span className={`absolute -top-3 -right-2 ${model.badge.color} text-sm px-2 py-0.5 rounded-full font-bold`}>
+                    {model.badge.text}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <AspectRatioSelector
+            selectedRatio={aspectRatio}
+            onRatioChange={setAspectRatio}
+            aiModel={aiModel}
+          />
+
+            <GenerateButton
+              onClick={handleGenerate}
+              disabled={!uploadedImage}
+              isGenerating={isGenerating}
+              aiModel={aiModel}
+            />
+          </div>
+
+          {/* Mockup Section - после настроек на мобильных */}
+          {(generatedImage || uploadedImage) && (
+            <MockupSection
+              imageUrl={generatedImage || uploadedImage}
+              aspectRatio={aspectRatio}
+              aiModel={aiModel}
+              autoShow={true}
+            />
+          )}
         </div>
       </div>
 
