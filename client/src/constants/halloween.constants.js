@@ -99,24 +99,10 @@ export const HALLOWEEN_STYLES = [
     prompt: 'Morticia gothic transformation: long straight black hair, deathly pale white skin, dramatic dark eye makeup, elegant black Victorian dress with lace, gothic castle interior background, arched windows with candlelight, sophisticated mysterious expression, professional glamour lighting, high detail textures, classic gothic beauty, haunting aristocratic elegance'
   },
   {
-    id: 'hotel-transylvania',
-    name: 'Hotel Transylvania',
-    description: 'Hotel Transylvania monster family style with Dracula and friends',
-    image: '/halloween-styles/hotel-transylvania.webp',
-    prompt: 'Hotel Transylvania transformation: monster family in Dracula castle, vampire dad with pale skin and fangs, mummy child with big eyes, werewolf dad with fur, green monster dog, gothic castle interior with candles and chandeliers, Halloween party atmosphere, Pixar 3D animation style, colorful monster family, spooky but friendly monsters, professional 3D rendering, high detail character design, fun Halloween family portrait'
-  },
-  {
     id: 'pixar-halloween',
     name: '3D Halloween Pixar',
     description: 'Pixar 3D Halloween style with cute monster family',
     image: '/halloween-styles/pixar-halloween.webp',
-    prompt: '3D Halloween Pixar transformation: cute monster family in 3D Pixar style, mummy child with big blue eyes, vampire mom with fangs, werewolf dad with fur, golden retriever dog, Halloween night scene with full moon, jack-o-lanterns and flying bats, cozy Halloween atmosphere, Pixar character design, 3D animated movie style, warm golden lighting, friendly monster expressions, high detail 3D modeling, colorful Halloween scene'
-  },
-  {
-    id: 'pixar-luca',
-    name: 'Pixar\'s Luca Halloween',
-    description: 'Luca style sea monsters in Halloween celebration',
-    image: '/halloween-styles/luca-halloween.webp',
-    prompt: 'Luca Halloween transformation: sea monster family in Luca Pixar style, dad as sea monster with tentacles and horns, mom as sea monster with fins, child with big curious eyes, golden retriever dog, Halloween celebration in Italian coastal town, underwater magic effects, Pixar 3D animation, colorful sea monster family, Halloween night atmosphere, full moon and jack-o-lanterns, warm Mediterranean Halloween, professional 3D character design, fun family Halloween portrait'
+    prompt: 'Create a Pixar-style animated Halloween family portrait based on the uploaded photo. Transform each family member into a friendly, charming monster character while maintaining their distinctive features and relationships: - Adults should become classic Halloween creatures (vampire, witch, werewolf, etc.) - Children should become cute monster characters (mummy, little monster, etc.) - Pets should become adorable monster versions of themselves - Preserve the family\'s composition, poses, and emotional connections - Keep recognizable features like hairstyles, facial structures, and expressions - Use warm, vibrant colors with a magical Halloween atmosphere - Include Halloween elements: full moon, stars, mysterious background - Style: Pixar/Disney 3D animation quality with soft lighting and rich textures - Mood: Warm, joyful, family-friendly Halloween celebration - Each character should look lovable and friendly, not scary - Maintain the same number of family members and their relative positions - Add subtle costume details like capes, hats, bandages that fit each monster type - Technical specifications: - High quality 3D rendering - Cinematic lighting with moonlight as key light - Depth of field with family in sharp focus - Rich, saturated color palette - Professional character design with personality in each face'
   }
 ];
