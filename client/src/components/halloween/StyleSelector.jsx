@@ -50,7 +50,8 @@ const StyleSelector = ({
         </div>
       </div>
       
-      {/* Custom Style Input */}
+      {/* Custom Style Input - Temporarily disabled */}
+      {/*
       <div className="mb-4">
         <h4 className="text-sm font-medium mb-2 dark:text-gray-300">Or describe your own curse:</h4>
         <textarea
@@ -64,6 +65,7 @@ const StyleSelector = ({
           {customStyle.length}/200 characters
         </div>
       </div>
+      */}
     </>
   );
 };
