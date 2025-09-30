@@ -17,6 +17,12 @@ export const HALLOWEEN_AI_MODELS = {
     name: 'Seedream',
     badge: { text: 'HOT', color: 'bg-orange-500 text-white' },
     credits: 25
+  },
+  NANO_BANANA: {
+    id: 'nano-banana',
+    name: 'Nano-Banana',
+    badge: { text: '🍌', color: 'bg-orange-600 text-white' },
+    credits: 20
   }
 };
 
