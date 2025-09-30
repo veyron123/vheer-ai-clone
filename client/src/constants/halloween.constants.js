@@ -102,7 +102,7 @@ export const HALLOWEEN_STYLES = [
     id: 'pixar-halloween',
     name: '3D Halloween Pixar',
     description: 'Pixar 3D Halloween style with cute monster family',
-    image: '/halloween-styles/spooky-family.webp',
+    image: '/halloween-styles/pixar-halloween.webp',
     prompt: 'Create a Pixar-style animated Halloween family portrait based on the uploaded photo. Transform each family member into a friendly, charming monster character while maintaining their distinctive features and relationships: - Adults should become classic Halloween creatures (vampire, witch, werewolf, etc.) - Children should become cute monster characters (mummy, little monster, etc.) - Pets should become adorable monster versions of themselves - Preserve the family\'s composition, poses, and emotional connections - Keep recognizable features like hairstyles, facial structures, and expressions - Use warm, vibrant colors with a magical Halloween atmosphere - Include Halloween elements: full moon, stars, mysterious background - Style: Pixar/Disney 3D animation quality with soft lighting and rich textures - Mood: Warm, joyful, family-friendly Halloween celebration - Each character should look lovable and friendly, not scary - Maintain the same number of family members and their relative positions - Add subtle costume details like capes, hats, bandages that fit each monster type - Technical specifications: - High quality 3D rendering - Cinematic lighting with moonlight as key light - Depth of field with family in sharp focus - Rich, saturated color palette - Professional character design with personality in each face'
   }
 ];
