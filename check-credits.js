@@ -1,19 +1,22 @@
 const { PrismaClient } = require('@prisma/client');
+const dotenv = require('dotenv');
 
-// Set SQLite database path
-process.env.DATABASE_URL = "file:./prisma/dev.db";
+// Load environment variables
+dotenv.config();
 
 const prisma = new PrismaClient();
 
 async function checkCredits() {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: 'cmeb1954n000013lne7g5nmil' },
+      where: { id: 'unitradecargo_1755606425734' },
       select: { 
         id: true, 
         username: true, 
         email: true,
-        totalCredits: true 
+        totalCredits: true,
+        createdAt: true,
+        updatedAt: true
       }
     });
     
