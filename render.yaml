@@ -1,8 +1,8 @@
 databases:
   # PostgreSQL database
-  - name: vheer-db
-    databaseName: vheer_production
-    user: vheer_admin
+  - name: colibrrri-db
+    databaseName: colibrrri_production
+    user: colibrrri_admin
     plan: free
     region: oregon
     postgresMajorVersion: 15
@@ -10,7 +10,7 @@ databases:
 services:
   # Backend service
   - type: web
-    name: vheer-api
+    name: colibrrri-fullstack
     runtime: node
     plan: free
     region: oregon
@@ -22,7 +22,7 @@ services:
         value: production
       - key: DATABASE_URL
         fromDatabase:
-          name: vheer-db
+          name: colibrrri-db
           property: connectionString
       - key: PORT
         value: 5000
@@ -43,6 +43,8 @@ services:
         value: https://colibrrri.com
       - key: FRONTEND_URL
         value: https://colibrrri.com
+      - key: RENDER
+        value: "true"
       - key: GOOGLE_CLIENT_SECRET
         generateValue: true
       - key: SESSION_SECRET
@@ -52,7 +54,7 @@ services:
 
   # Frontend service
   - type: static
-    name: vheer-client
+    name: colibrrri-client
     buildCommand: cd client && npm install && npm run build
     staticPublishPath: ./client/dist
     headers:
