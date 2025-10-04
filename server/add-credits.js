@@ -4,26 +4,26 @@ const prisma = new PrismaClient();
 
 async function addCredits() {
   try {
-    // Find user by ID
+    // Find user by username
     const user = await prisma.user.findUnique({
-      where: { id: 'cmeb1954n000013lne7g5nmil' },
-      select: { 
-        id: true, 
-        username: true, 
+      where: { username: 'unitradecargo_1759565431778' },
+      select: {
+        id: true,
+        username: true,
         email: true,
-        totalCredits: true 
+        totalCredits: true
       }
     });
-    
+
     if (user) {
       console.log('Current user credits:', user.totalCredits);
-      
-      // Add 1000 credits for testing
+
+      // Add 10000 credits
       const updatedUser = await prisma.user.update({
-        where: { id: 'cmeb1954n000013lne7g5nmil' },
-        data: { totalCredits: 1000 }
+        where: { id: user.id },
+        data: { totalCredits: user.totalCredits + 10000 }
       });
-      
+
       console.log('Updated user credits to:', updatedUser.totalCredits);
     } else {
       console.log('User not found');

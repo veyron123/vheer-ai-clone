@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -89,7 +89,7 @@ model PaymentIntent {
   planId         String
   language       String    @default("en")
   status         String    @default("INITIATED")
-  wayforpayData  Json?
+  wayforpayData  String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   expiresAt      DateTime?
@@ -177,7 +177,7 @@ model Payment {
   description             String?
   createdAt               DateTime @default(now())
   wayforpayOrderReference String?  @unique
-  cartItems               Json?
+  cartItems               String?
   user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt(sort: Desc)])
@@ -211,7 +211,7 @@ model CartOrder {
   shippingCity       String?
   shippingCountry    String?
   shippingPostalCode String?
-  items              Json
+  items              String
   orderStatus        String    @default("PENDING")
   trackingNumber     String?
   trackingCarrier    String?
@@ -253,7 +253,7 @@ model CartSession {
   id                 String    @id @default(cuid())
   sessionId          String    @unique
   userId             String?
-  items              Json
+  items              String
   totalAmount        Float
   itemCount          Int
   currency           String    @default("UAH")
@@ -282,7 +282,7 @@ model Affiliate {
   pendingPayouts Float                 @default(0.0)
   paidAmount     Float                 @default(0.0)
   payoutMethod   String?
-  payoutDetails  Json?
+  payoutDetails  String?
   status         String                @default("active")
   tier           String                @default("starter")
   createdAt      DateTime              @default(now())
@@ -425,7 +425,7 @@ model AffiliatePayout {
 model AffiliateStatDaily {
   id           String    @id @default(cuid())
   affiliateId  String
-  date         DateTime  @db.Date
+  date         DateTime
   clicks       Int       @default(0)
   uniqueClicks Int       @default(0)
   signups      Int       @default(0)
