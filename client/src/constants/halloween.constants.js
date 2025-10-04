@@ -109,6 +109,6 @@ export const HALLOWEEN_STYLES = [
     name: '3D Halloween Pixar',
     description: 'Pixar 3D Halloween style with cute monster family',
     image: '/halloween-styles/pixar-halloween.webp',
-    prompt: 'Create a Pixar-style animated Halloween family portrait based on the uploaded photo. Transform each family member into a friendly, charming monster character while maintaining their distinctive features and relationships:\n\n- Adults should become classic Halloween creatures (vampire, witch, werewolf, etc.)\n- Children should become cute monster characters (mummy, little monster, etc.)'
+    prompt: 'Create a Pixar-style Halloween family portrait. Transform each family member into a friendly, charming monster\n- Adults become classic Halloween creatures (vampire, witch, werewolf, etc.)\n- Children become cute monster characters (mummy, little monster, etc.)'
   }
 ];
