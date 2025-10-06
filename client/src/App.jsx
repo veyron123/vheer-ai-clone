@@ -6,9 +6,6 @@ import Layout from './components/Layout';
 import LocalizedRoutes from './components/LocalizedRoutesOptimized';
 import { useGlobalAnalytics } from './hooks/useGlobalAnalytics';
 
-// Analytics
-import FacebookPixel from './components/analytics/FacebookPixel';
-
 function App() {
   const checkAuth = useAuthStore(state => state.checkAuth);
   
@@ -21,12 +18,9 @@ function App() {
   }, [checkAuth]);
 
   return (
-    <>
-      <FacebookPixel />
-      <Layout>
-        <LocalizedRoutes />
-      </Layout>
-    </>
+    <Layout>
+      <LocalizedRoutes />
+    </Layout>
   );
 }
 
