@@ -9,36 +9,31 @@ const FacebookPixel = () => {
       return;
     }
 
-    // Check if pixel is already loaded to avoid conflicts
-    if (window.fbq && window.fbq.loaded) {
+    // Check if our pixel is already initialized to avoid conflicts
+    if (window.fbq && window.fbq.pixelId === "1306490273852955") {
       console.log('Facebook Pixel: Already initialized');
       return;
     }
 
     // Load Facebook Pixel script
     const loadFacebookPixel = () => {
-      // Clear any existing pixel to avoid conflicts
-      if (window.fbq) {
-        delete window.fbq;
-      }
+      // Create a unique namespace for our pixel
+      const pixelNamespace = 'colibrrri_pixel';
       
-      // Clear any existing _fbq to avoid conflicts
-      if (window._fbq) {
-        delete window._fbq;
-      }
-      
-      // Initialize Facebook Pixel
+      // Initialize Facebook Pixel with unique namespace
       window.fbq = function() {
         window.fbq.callMethod
           ? window.fbq.callMethod.apply(window.fbq, arguments)
           : (window.fbq.queue = window.fbq.queue || []).push(arguments);
       };
       
-      // Initialize _fbq object
-      window._fbq = {
+      // Initialize _fbq object with unique namespace
+      window._fbq = window._fbq || {};
+      window._fbq[pixelNamespace] = {
         loaded: true,
         version: "2.0",
-        queue: []
+        queue: [],
+        pixelId: "1306490273852955"
       };
       
       // Insert script
@@ -50,6 +45,8 @@ const FacebookPixel = () => {
       // Initialize Pixel with your ID only after script is loaded
       script.onload = () => {
         if (window.fbq) {
+          // Track before init to avoid conflicts
+          window.fbq('set', 'autoConfig', false, '1306490273852955');
           window.fbq("init", "1306490273852955");
           window.fbq("track", "PageView");
           console.log('Facebook Pixel: Initialized successfully');
