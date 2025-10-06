@@ -3,6 +3,12 @@ import React, { useEffect } from "react";
 // Facebook Pixel component for tracking conversions
 const FacebookPixel = () => {
   useEffect(() => {
+    // Skip in development mode
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Facebook Pixel: Skipping initialization in development mode');
+      return;
+    }
+
     // Load Facebook Pixel script
     const loadFacebookPixel = () => {
       // Initialize Facebook Pixel
@@ -28,13 +34,21 @@ const FacebookPixel = () => {
         if (window.fbq) {
           window.fbq("init", "1306490273852955");
           window.fbq("track", "PageView");
+          console.log('Facebook Pixel: Initialized successfully');
         }
+      };
+      
+      // Handle script loading errors
+      script.onerror = () => {
+        console.error('Facebook Pixel: Failed to load script');
       };
     };
 
     // Check if fbq is already loaded
     if (!window.fbq) {
       loadFacebookPixel();
+    } else {
+      console.log('Facebook Pixel: Already initialized');
     }
   }, []);
 
