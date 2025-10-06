@@ -22,17 +22,24 @@ const FacebookPixel = () => {
         delete window.fbq;
       }
       
+      // Clear any existing _fbq to avoid conflicts
+      if (window._fbq) {
+        delete window._fbq;
+      }
+      
       // Initialize Facebook Pixel
       window.fbq = function() {
         window.fbq.callMethod
           ? window.fbq.callMethod.apply(window.fbq, arguments)
           : (window.fbq.queue = window.fbq.queue || []).push(arguments);
       };
-      if (!window._fbq) window._fbq = {};
-      window._fbq.push = window._fbq.loaded ? 0 : 1;
-      window._fbq.loaded = true;
-      window._fbq.version = "2.0";
-      window._fbq.queue = [];
+      
+      // Initialize _fbq object
+      window._fbq = {
+        loaded: true,
+        version: "2.0",
+        queue: []
+      };
       
       // Insert script
       const script = document.createElement("script");
