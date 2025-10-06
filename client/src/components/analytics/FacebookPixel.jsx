@@ -9,8 +9,19 @@ const FacebookPixel = () => {
       return;
     }
 
+    // Check if pixel is already loaded to avoid conflicts
+    if (window.fbq && window.fbq.loaded) {
+      console.log('Facebook Pixel: Already initialized');
+      return;
+    }
+
     // Load Facebook Pixel script
     const loadFacebookPixel = () => {
+      // Clear any existing pixel to avoid conflicts
+      if (window.fbq) {
+        delete window.fbq;
+      }
+      
       // Initialize Facebook Pixel
       window.fbq = function() {
         window.fbq.callMethod
@@ -44,12 +55,8 @@ const FacebookPixel = () => {
       };
     };
 
-    // Check if fbq is already loaded
-    if (!window.fbq) {
-      loadFacebookPixel();
-    } else {
-      console.log('Facebook Pixel: Already initialized');
-    }
+    // Load Facebook Pixel
+    loadFacebookPixel();
   }, []);
 
   return null;
