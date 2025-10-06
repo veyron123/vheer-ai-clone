@@ -7,9 +7,9 @@ const FacebookPixel = () => {
     const loadFacebookPixel = () => {
       // Initialize Facebook Pixel
       window.fbq = function() {
-        window.fbq.callMethod 
-          ? window.fbq.callMethod.apply(window.fbq, arguments) 
-          : window.fbq.queue.push(arguments);
+        window.fbq.callMethod
+          ? window.fbq.callMethod.apply(window.fbq, arguments)
+          : (window.fbq.queue = window.fbq.queue || []).push(arguments);
       };
       if (!window._fbq) window._fbq = {};
       window._fbq.push = window._fbq.loaded ? 0 : 1;
@@ -23,9 +23,13 @@ const FacebookPixel = () => {
       script.src = "https://connect.facebook.net/en_US/fbevents.js";
       document.head.appendChild(script);
       
-      // Initialize Pixel with your ID
-      window.fbq("init", "1306490273852955");
-      window.fbq("track", "PageView");
+      // Initialize Pixel with your ID only after script is loaded
+      script.onload = () => {
+        if (window.fbq) {
+          window.fbq("init", "1306490273852955");
+          window.fbq("track", "PageView");
+        }
+      };
     };
 
     // Check if fbq is already loaded
