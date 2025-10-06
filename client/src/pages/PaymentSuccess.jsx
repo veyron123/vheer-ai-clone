@@ -4,6 +4,7 @@ import { CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import analytics from '../services/analytics';
+import { FacebookPixelEvents } from '../components/analytics/FacebookPixelEvents';
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
@@ -22,6 +23,15 @@ const PaymentSuccess = () => {
     
     // Additional goal completed event
     analytics.goalCompleted('subscription_purchase', parseFloat(amount));
+    
+    // Track subscription purchase with Facebook Pixel
+    FacebookPixelEvents.trackSubscription({
+      planName: plan,
+      value: parseFloat(amount),
+      currency: 'USD',
+      transaction_id: transactionId,
+      predicted_ltv: plan === 'BASIC' ? 120 : plan === 'PRO' ? 360 : 1200
+    });
 
     // Show success notification
     toast.success(isUkrainian ? 'Оплата успішна!' : 'Payment successful!');

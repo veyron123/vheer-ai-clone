@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { CheckCircle, Package, ArrowLeft } from 'lucide-react';
 import useCartStore from '../stores/cartStore';
+import { FacebookPixelEvents } from '../components/analytics/FacebookPixelEvents';
 
 const CartPaymentSuccessPage = () => {
   const [searchParams] = useSearchParams();
@@ -12,7 +13,18 @@ const CartPaymentSuccessPage = () => {
   useEffect(() => {
     // Clear cart on successful payment
     clearCart();
-  }, [clearCart]);
+    
+    // Track successful purchase with Facebook Pixel
+    if (orderReference) {
+      FacebookPixelEvents.trackPurchase({
+        order_id: orderReference,
+        content_name: 'Cart Purchase',
+        currency: 'USD',
+        value: 19.99, // Default value, should be replaced with actual cart total
+        content_type: 'product'
+      });
+    }
+  }, [clearCart, orderReference]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">

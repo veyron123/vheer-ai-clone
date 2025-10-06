@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import api from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import analytics from '../services/analytics';
+import { FacebookPixelEvents } from '../components/analytics/FacebookPixelEvents';
 
 const PricingPage = () => {
   const navigate = useNavigate();
@@ -180,6 +181,15 @@ const PricingPage = () => {
           price: plan.price,
           quantity: 1
         }]
+      });
+
+      // 📊 Track subscription attempt with Facebook Pixel
+      FacebookPixelEvents.trackInitiateCheckout({
+        content_name: `${plan.name} Subscription`,
+        content_ids: [plan.id],
+        content_type: 'subscription',
+        value: plan.price,
+        currency: 'USD'
       });
 
       try {

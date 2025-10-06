@@ -7,6 +7,7 @@ import { Sparkles, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import AnimatedLogo from '../components/AnimatedLogo';
 import ColorfulLogo from '../components/ColorfulLogo';
+import { FacebookPixelEvents } from '../components/analytics/FacebookPixelEvents';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -31,6 +32,13 @@ const RegisterPage = () => {
         fullName: data.fullName
       });
       toast.success('Account created successfully!');
+      
+      // Track successful registration with Facebook Pixel
+      FacebookPixelEvents.trackRegistration({
+        method: 'email',
+        user_email: data.email
+      });
+      
       navigate('/image-style-transfer');
     } catch (error) {
       toast.error(error.response?.data?.error || 'Registration failed');
@@ -229,18 +237,30 @@ const RegisterPage = () => {
 
           {/* Social Login */}
           <div className="flex justify-center">
-            <button 
+            <button
               type="button"
-              onClick={loginWithGoogle}
+              onClick={() => {
+                loginWithGoogle();
+                // Track registration with Google
+                FacebookPixelEvents.trackRegistration({
+                  method: 'google'
+                });
+              }}
               className="btn btn-outline hover:bg-gray-50 w-full max-w-xs"
             >
               <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5 mr-2" />
               Sign up with Google
             </button>
             {/* Facebook OAuth временно отключен
-            <button 
+            <button
               type="button"
-              onClick={loginWithFacebook}
+              onClick={() => {
+                loginWithFacebook();
+                // Track registration with Facebook
+                FacebookPixelEvents.trackRegistration({
+                  method: 'facebook'
+                });
+              }}
               className="btn btn-outline hover:bg-gray-50"
             >
               <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" alt="Facebook" className="w-5 h-5 mr-2" />
