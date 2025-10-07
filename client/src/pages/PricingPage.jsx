@@ -209,17 +209,10 @@ const PricingPage = () => {
         console.log('✅ Payment tracking response:', response.data);
 
         if (response.data.success && response.data.paymentUrl) {
-          // Track subscription purchase with Facebook Pixel before redirecting
+          // Don't track subscription here - we'll track it on the success page
+          // This ensures we get the real payment amount
           if (window.fbq) {
-            window.fbq("track", "Subscribe", {
-              content_name: `${plan.name} Subscription`,
-              content_ids: [plan.id],
-              content_type: 'subscription',
-              value: 1.00,
-              currency: 'UAH',
-              predicted_ltv: 12.00
-            });
-            console.log("Facebook Pixel: Subscribe tracked");
+            console.log("Facebook Pixel: Subscribe will be tracked on success page");
           }
           
           console.log('🔗 Redirecting to WayForPay with tracking:', response.data.paymentUrl);

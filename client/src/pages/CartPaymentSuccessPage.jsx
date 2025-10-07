@@ -14,17 +14,24 @@ const CartPaymentSuccessPage = () => {
     // Clear cart on successful payment
     clearCart();
     
-    // Track successful purchase with Facebook Pixel
-    if (orderReference) {
-      FacebookPixelEvents.trackPurchase({
-        order_id: orderReference,
+    // Track successful purchase with Facebook Pixel with real amount
+    if (orderReference && window.fbq) {
+      // Get payment details from URL parameters
+      const amount = searchParams.get('amount') || 1;
+      const currency = searchParams.get('currency') || 'UAH';
+      const productCount = searchParams.get('productCount') || 1;
+      
+      window.fbq("track", "Purchase", {
         content_name: 'Cart Purchase',
-        currency: 'USD',
-        value: 19.99, // Default value, should be replaced with actual cart total
-        content_type: 'product'
+        content_ids: [orderReference],
+        content_type: 'product',
+        value: parseFloat(amount),
+        currency: currency,
+        num_items: parseInt(productCount)
       });
+      console.log("Facebook Pixel: Purchase tracked with real amount", { amount, currency, orderReference });
     }
-  }, [clearCart, orderReference]);
+  }, [clearCart, orderReference, searchParams]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">

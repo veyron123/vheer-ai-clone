@@ -15,8 +15,9 @@ const PaymentSuccess = () => {
   useEffect(() => {
     // 📊 Track successful purchase
     const transactionId = searchParams.get('transactionId') || `wp_${Date.now()}`;
-    const amount = searchParams.get('amount') || 400; // Default BASIC plan price
+    const amount = searchParams.get('amount') || 1; // Default to 1 UAH for testing
     const plan = searchParams.get('plan') || 'BASIC';
+    const currency = searchParams.get('currency') || 'UAH';
 
     // Track subscription purchase with Google Ads conversion
     analytics.trackSubscriptionPurchase(parseFloat(amount), transactionId, plan);
@@ -24,14 +25,18 @@ const PaymentSuccess = () => {
     // Additional goal completed event
     analytics.goalCompleted('subscription_purchase', parseFloat(amount));
     
-    // Track subscription purchase with Facebook Pixel
-    FacebookPixelEvents.trackSubscription({
-      planName: plan,
-      value: parseFloat(amount),
-      currency: 'USD',
-      transaction_id: transactionId,
-      predicted_ltv: plan === 'BASIC' ? 120 : plan === 'PRO' ? 360 : 1200
-    });
+    // Track subscription purchase with Facebook Pixel with real amount
+    if (window.fbq) {
+      window.fbq("track", "Subscribe", {
+        content_name: `${plan} Subscription`,
+        content_ids: [transactionId],
+        content_type: 'subscription',
+        value: parseFloat(amount),
+        currency: currency,
+        predicted_ltv: parseFloat(amount) * 12 || 12.00
+      });
+      console.log("Facebook Pixel: Subscribe tracked with real amount", { amount, currency, plan });
+    }
 
     // Show success notification
     toast.success(isUkrainian ? 'Оплата успішна!' : 'Payment successful!');

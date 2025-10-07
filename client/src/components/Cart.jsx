@@ -241,17 +241,10 @@ const Cart = () => {
           console.error('Ошибка обновления статуса корзины:', error);
         }
 
-        // Track purchase with Facebook Pixel before redirecting to payment
+        // Don't track purchase here - we'll track it on the success page
+        // This avoids duplicate tracking and ensures we get real payment amounts
         if (window.fbq && items.length > 0) {
-          window.fbq("track", "Purchase", {
-            content_name: "Cart Purchase",
-            value: 1.00,
-            currency: "UAH",
-            content_ids: items.map(item => item.id),
-            content_type: "product",
-            num_items: items.length
-          });
-          console.log("Facebook Pixel: Purchase tracked");
+          console.log("Facebook Pixel: Purchase will be tracked on success page");
         }
 
         // Create and submit form to WayForPay
