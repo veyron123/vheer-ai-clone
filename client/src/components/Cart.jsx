@@ -153,6 +153,19 @@ const Cart = () => {
       const userStr = localStorage.getItem('user');
       const user = userStr ? JSON.parse(userStr) : null;
 
+      // Track initiate checkout with Facebook Pixel
+      if (window.fbq && items.length > 0) {
+        window.fbq("track", "InitiateCheckout", {
+          content_name: "Cart Checkout",
+          value: getTotal(),
+          currency: "USD",
+          content_ids: items.map(item => item.id),
+          content_type: "product",
+          num_items: items.length
+        });
+        console.log("Facebook Pixel: InitiateCheckout tracked");
+      }
+
       // Prepare cart data for WayForPay with complete item details
       const cartData = {
         items: items.map(item => ({

@@ -718,6 +718,7 @@ const InlineMockupGenerator = React.memo(({ imageUrl, aspectRatio, scale, autoSh
     
     // Создаем объект товара для корзины (без canvas экспорта)
     const cartItem = {
+      id: `mockup_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // Уникальный ID
       imageUrl: imageUrl, // Используем оригинальное изображение
       originalImageUrl: imageUrl,
       frameColor: selectedColor,
@@ -734,6 +735,18 @@ const InlineMockupGenerator = React.memo(({ imageUrl, aspectRatio, scale, autoSh
     
     // Добавляем в корзину
     addItem(cartItem);
+    
+    // Track add to cart with Facebook Pixel
+    if (window.fbq) {
+      window.fbq("track", "AddToCart", {
+        content_name: `Frame Poster - ${selectedSizeData?.name}`,
+        value: selectedSizeData?.price || 70,
+        currency: "USD",
+        content_ids: [cartItem.id],
+        content_type: "product"
+      });
+      console.log("Facebook Pixel: AddToCart tracked");
+    }
     
     // Показываем уведомление
     toast.success('Added to cart!', {

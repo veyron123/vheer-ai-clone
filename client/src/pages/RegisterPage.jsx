@@ -34,10 +34,15 @@ const RegisterPage = () => {
       toast.success('Account created successfully!');
       
       // Track successful registration with Facebook Pixel
-      FacebookPixelEvents.trackRegistration({
-        method: 'email',
-        user_email: data.email
-      });
+      if (window.fbq) {
+        window.fbq("track", "CompleteRegistration", {
+          content_name: "User Registration",
+          status: "completed",
+          method: 'email',
+          user_email: data.email
+        });
+        console.log("Facebook Pixel: Registration tracked");
+      }
       
       navigate('/image-style-transfer');
     } catch (error) {
@@ -242,9 +247,14 @@ const RegisterPage = () => {
               onClick={() => {
                 loginWithGoogle();
                 // Track registration with Google
-                FacebookPixelEvents.trackRegistration({
-                  method: 'google'
-                });
+                if (window.fbq) {
+                  window.fbq("track", "CompleteRegistration", {
+                    content_name: "User Registration",
+                    status: "completed",
+                    method: 'google'
+                  });
+                  console.log("Facebook Pixel: Google registration tracked");
+                }
               }}
               className="btn btn-outline hover:bg-gray-50 w-full max-w-xs"
             >
