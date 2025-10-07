@@ -35,11 +35,11 @@ router.get('/plans', (req, res) => {
   const pricing = {
     uk: {
       currency: '₴',
-      prices: { FREE: 0, BASIC: 400, PRO: 1200, ENTERPRISE: 4000 }
+      prices: { FREE: 0, BASIC: 1, PRO: 1, ENTERPRISE: 1 }
     },
     en: {
-      currency: '$',
-      prices: { FREE: 0, BASIC: 10, PRO: 30, ENTERPRISE: 99 }
+      currency: '₴',
+      prices: { FREE: 0, BASIC: 1, PRO: 1, ENTERPRISE: 1 }
     }
   };
   
