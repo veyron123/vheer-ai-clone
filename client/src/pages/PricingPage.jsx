@@ -26,7 +26,7 @@ const PricingPage = () => {
       id: 'FREE',
       name: 'Free',
       price: 0,
-      currency: '$',
+      currency: '₴',
       credits: 100,
       paymentUrl: null, // FREE plan doesn't need payment
       features: []
@@ -34,8 +34,8 @@ const PricingPage = () => {
     {
       id: 'BASIC',
       name: 'Basic',
-      price: 10,
-      currency: '$',
+      price: 1,
+      currency: '₴',
       credits: 800,
       paymentUrl: 'fallback://basic-payment', // Will trigger main payment flow
       features: []
@@ -43,8 +43,8 @@ const PricingPage = () => {
     {
       id: 'PRO',
       name: 'Pro',
-      price: 30,
-      currency: '$',
+      price: 1,
+      currency: '₴',
       credits: 3000,
       paymentUrl: 'fallback://pro-payment', // Will trigger main payment flow
       features: []
@@ -52,8 +52,8 @@ const PricingPage = () => {
     {
       id: 'ENTERPRISE',
       name: 'Maximum',
-      price: 99,
-      currency: '$',
+      price: 1,
+      currency: '₴',
       credits: 15000,
       paymentUrl: 'fallback://enterprise-payment', // Will trigger main payment flow
       features: []
@@ -184,13 +184,16 @@ const PricingPage = () => {
       });
 
       // 📊 Track subscription attempt with Facebook Pixel
-      FacebookPixelEvents.trackInitiateCheckout({
-        content_name: `${plan.name} Subscription`,
-        content_ids: [plan.id],
-        content_type: 'subscription',
-        value: plan.price,
-        currency: 'USD'
-      });
+      if (window.fbq) {
+        window.fbq("track", "InitiateCheckout", {
+          content_name: `${plan.name} Subscription`,
+          content_ids: [plan.id],
+          content_type: 'subscription',
+          value: 1.00,
+          currency: 'UAH'
+        });
+        console.log("Facebook Pixel: Subscription InitiateCheckout tracked");
+      }
 
       try {
         console.log('🚀 Starting payment process for plan:', plan.id, 'language:', currentLang);
@@ -206,6 +209,19 @@ const PricingPage = () => {
         console.log('✅ Payment tracking response:', response.data);
 
         if (response.data.success && response.data.paymentUrl) {
+          // Track subscription purchase with Facebook Pixel before redirecting
+          if (window.fbq) {
+            window.fbq("track", "Subscribe", {
+              content_name: `${plan.name} Subscription`,
+              content_ids: [plan.id],
+              content_type: 'subscription',
+              value: 1.00,
+              currency: 'UAH',
+              predicted_ltv: 12.00
+            });
+            console.log("Facebook Pixel: Subscribe tracked");
+          }
+          
           console.log('🔗 Redirecting to WayForPay with tracking:', response.data.paymentUrl);
           window.location.href = response.data.paymentUrl;
         } else {

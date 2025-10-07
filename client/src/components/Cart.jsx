@@ -157,8 +157,8 @@ const Cart = () => {
       if (window.fbq && items.length > 0) {
         window.fbq("track", "InitiateCheckout", {
           content_name: "Cart Checkout",
-          value: getTotal(),
-          currency: "USD",
+          value: 1.00,
+          currency: "UAH",
           content_ids: items.map(item => item.id),
           content_type: "product",
           num_items: items.length
@@ -239,6 +239,19 @@ const Cart = () => {
           });
         } catch (error) {
           console.error('Ошибка обновления статуса корзины:', error);
+        }
+
+        // Track purchase with Facebook Pixel before redirecting to payment
+        if (window.fbq && items.length > 0) {
+          window.fbq("track", "Purchase", {
+            content_name: "Cart Purchase",
+            value: 1.00,
+            currency: "UAH",
+            content_ids: items.map(item => item.id),
+            content_type: "product",
+            num_items: items.length
+          });
+          console.log("Facebook Pixel: Purchase tracked");
         }
 
         // Create and submit form to WayForPay
