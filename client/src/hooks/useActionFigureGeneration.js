@@ -6,6 +6,7 @@ import { ACTION_FIGURE_PROMPTS } from '../constants/actionFigure.constants';
 export const useActionFigureGeneration = () => {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [generatedImage, setGeneratedImage] = useState(null);
+  const [generatedImages, setGeneratedImages] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationTime, setGenerationTime] = useState(null);
   const fileInputRef = useRef(null);

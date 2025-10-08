@@ -24,6 +24,7 @@ const ImageToImageGeneratorPage = () => {
   const {
     uploadedImage,
     generatedImage,
+    generatedImages,
     isGenerating,
     generationTime,
     positivePrompt,

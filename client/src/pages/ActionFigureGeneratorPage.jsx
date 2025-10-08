@@ -29,6 +29,7 @@ const ActionFigureGeneratorPage = () => {
   const {
     uploadedImage,
     generatedImage,
+    generatedImages,
     isGenerating,
     generationTime,
     fileInputRef,

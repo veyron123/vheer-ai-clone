@@ -30,6 +30,7 @@ const AnimeGeneratorPage = () => {
   const {
     uploadedImage,
     generatedImage,
+    generatedImages,
     isGenerating,
     generationTime,
     fileInputRef,
