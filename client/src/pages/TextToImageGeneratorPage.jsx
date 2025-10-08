@@ -102,12 +102,14 @@ const TextToImageGeneratorPage = () => {
               />
 
               {/* Mockup Generator Section - внутри grid layout */}
-              <MockupSection
-                imageUrl={generatedImage || (generatedImages && generatedImages[0] && (generatedImages[0].url || generatedImages[0]))}
-                aspectRatio={aspectRatio}
-                aiModel="qwen-image"
-                autoShow={true}
-              />
+              {!isGenerating && (generatedImage || (generatedImages && generatedImages[0] && (generatedImages[0].url || generatedImages[0]))) && (
+                <MockupSection
+                  imageUrl={generatedImage || (generatedImages && generatedImages[0] && (generatedImages[0].url || generatedImages[0]))}
+                  aspectRatio={aspectRatio}
+                  aiModel="qwen-image"
+                  autoShow={true}
+                />
+              )}
             </div>
 
             {/* Right Column - Controls */}
@@ -216,12 +218,14 @@ const TextToImageGeneratorPage = () => {
           </div>
           
           {/* Mockup Generator Section */}
-          <MockupSection
-            imageUrl={generatedImage || (generatedImages && generatedImages[0] && (generatedImages[0].url || generatedImages[0]))}
-            aspectRatio={aspectRatio}
-            aiModel="qwen-image"
-            autoShow={true}
-          />
+          {!isGenerating && (generatedImage || (generatedImages && generatedImages[0] && (generatedImages[0].url || generatedImages[0]))) && (
+            <MockupSection
+              imageUrl={generatedImage || (generatedImages && generatedImages[0] && (generatedImages[0].url || generatedImages[0]))}
+              aspectRatio={aspectRatio}
+              aiModel="qwen-image"
+              autoShow={true}
+            />
+          )}
 
           {/* Tips Section */}
           <div className="mt-12 bg-blue-50 rounded-2xl p-6">

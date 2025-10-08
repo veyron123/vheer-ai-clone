@@ -11,6 +11,12 @@ const MERCHANT_LOGIN = process.env.WAYFORPAY_MERCHANT_LOGIN;
 const MERCHANT_SECRET = process.env.WAYFORPAY_MERCHANT_SECRET;
 const MERCHANT_PASSWORD = process.env.WAYFORPAY_MERCHANT_PASSWORD;
 
+// Currency conversion rates
+const EXCHANGE_RATES = {
+  UAH_TO_USD: 41.5, // 1 USD = 41.5 UAH (current approximate rate)
+  USD_TO_UAH: 41.5  // 1 UAH = 1/41.5 USD
+};
+
 // Plan configurations with language-specific pricing and URLs
 const getPlanConfig = (language = 'en') => {
   if (language === 'uk' || language === 'ua') {

@@ -134,7 +134,7 @@ const ActionFigureGeneratorPage = () => {
             {!generatedImage && !uploadedImage && <ExampleGallery examples={actionFigureExampleImages} />}
 
             {/* Mockup Generator Section - replaces examples when image is loaded */}
-            {(generatedImage || uploadedImage) && (
+            {!isGenerating && (generatedImage || uploadedImage) && (
               <MockupSection
                 imageUrl={generatedImage || uploadedImage}
                 aspectRatio={aspectRatio}
@@ -247,7 +247,7 @@ const ActionFigureGeneratorPage = () => {
           </div>
 
           {/* Mockup Section - после настроек на мобильных */}
-          {(generatedImage || uploadedImage) && (
+          {!isGenerating && (generatedImage || uploadedImage) && (
             <MockupSection
               imageUrl={generatedImage || uploadedImage}
               aspectRatio={aspectRatio}
