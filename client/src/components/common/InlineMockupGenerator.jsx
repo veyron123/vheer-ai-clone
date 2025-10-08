@@ -437,10 +437,25 @@ const InlineMockupGenerator = React.memo(({ imageUrl, aspectRatio, scale, autoSh
   // Автоматический показ при появлении изображения
   useEffect(() => {
     if (autoShow && imageUrl) {
-      if (!hasShownAuto) {
-        setHasShownAuto(true);
+      // Определяем среду выполнения
+      const isProduction = process.env.NODE_ENV === 'production' ||
+                          window.location.hostname !== 'localhost' &&
+                          !window.location.hostname.includes('127.0.0.1');
+
+      if (isProduction) {
+        // На продакшене компонент показывается сразу после генерации изображения
+        console.log('🖼️ [WALL ART] Production mode - showing after image generation');
+        if (!hasShownAuto) {
+          setHasShownAuto(true);
+        }
+        setIsVisible(true);
+      } else {
+        // На локальном сервере показываем компонент сразу после загрузки изображения
+        if (!hasShownAuto) {
+          setHasShownAuto(true);
+        }
+        setIsVisible(true);
       }
-      setIsVisible(true);
     }
   }, [imageUrl, autoShow, hasShownAuto]);
 
