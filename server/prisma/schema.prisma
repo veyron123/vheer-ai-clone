@@ -89,7 +89,7 @@ model PaymentIntent {
   planId         String
   language       String    @default("en")
   status         String    @default("INITIATED")
-  wayforpayData  String?
+  wayforpayData  String?   // JSON string to store WayForPay callback data
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   expiresAt      DateTime?
