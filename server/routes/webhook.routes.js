@@ -68,112 +68,46 @@ router.post('/external', async (req, res) => {
   }
 });
 
-// WayForPay webhook for payment processing
+// WayForPay webhook - DEPRECATED: Use /api/payments/wayforpay/callback instead
+// This route is kept for backward compatibility but should not be used
 router.post('/wayforpay', async (req, res) => {
-  try {
-    console.log('📥 WayForPay webhook received:', req.body);
-    
-    // Parse WayForPay response
-    const {
-      orderReference,
-      merchantSignature,
-      amount,
-      currency,
-      authCode,
-      cardPan,
-      transactionStatus,
-      reasonCode,
-      reason,
-      email,
-      phone,
-      createdDate,
-      processingDate,
-      productName,
-      productPrice,
-      productCount,
-      merchantDomainName
-    } = req.body;
-    
-    // Log payment details
-    console.log('💳 Payment details:', {
-      orderReference,
-      amount,
-      currency,
-      transactionStatus,
-      productName,
-      productPrice,
-      productCount
-    });
-    
-    // Check if payment was successful
-    if (transactionStatus === 'Approved') {
-      console.log('✅ Payment successful, tracking conversion');
-      
-      // Determine if this is a subscription or cart purchase
-      const isSubscription = productName && productName.toLowerCase().includes('subscription');
-      
-      if (isSubscription) {
-        // Track subscription conversion with Facebook Pixel
-        await trackFacebookPixelEvent('Subscribe', {
-          content_name: productName || 'Subscription',
-          value: parseFloat(amount) || 1.00,
-          currency: currency || 'UAH',
-          content_ids: [orderReference],
-          content_type: 'subscription',
-          predicted_ltv: parseFloat(amount) * 12 || 12.00
-        });
-        
-        console.log('📊 Facebook Pixel: Subscribe tracked with real amount');
-      } else {
-        // Track purchase conversion with Facebook Pixel
-        await trackFacebookPixelEvent('Purchase', {
-          content_name: productName || 'Cart Purchase',
-          value: parseFloat(amount) || 1.00,
-          currency: currency || 'UAH',
-          content_ids: productName ? [orderReference] : [],
-          content_type: 'product',
-          num_items: parseInt(productCount) || 1
-        });
-        
-        console.log('📊 Facebook Pixel: Purchase tracked with real amount');
-      }
-      
-      // Forward to notification service
-      await notificationService.notifyPaymentReceived({
-        email,
-        orderReference,
-        amount,
-        currency,
-        transactionStatus,
-        productName
-      });
-    } else {
-      console.log('❌ Payment failed or pending:', transactionStatus, reason);
-    }
-    
-    // Respond to WayForPay
-    res.setHeader('Content-Type', 'text/xml');
-    res.send(`
-      <?xml version="1.0" encoding="UTF-8"?>
-      <ws_response>
-        <order_reference>${orderReference}</order_reference>
-        <status>accept</status>
-        <time>${Date.now()}</time>
-        <signature>${merchantSignature}</signature>
-      </ws_response>
-    `);
-  } catch (error) {
-    console.error('❌ WayForPay webhook processing failed:', error);
-    res.status(500).json({ error: 'Webhook processing failed' });
-  }
+  console.log('⚠️ DEPRECATED WAYFORPAY WEBHOOK CALLED');
+  console.log('📥 Please use /api/payments/wayforpay/callback instead');
+  console.log('📥 WayForPay webhook received:', req.body);
+
+  // Redirect to the proper endpoint
+  res.redirect(307, '/api/payments/wayforpay/callback');
 });
+
+// Currency conversion rates
+const EXCHANGE_RATES = {
+  UAH_TO_USD: 41.5, // 1 USD = 41.5 UAH (current approximate rate)
+  USD_TO_UAH: 41.5  // 1 UAH = 1/41.5 USD
+};
 
 // Function to track Facebook Pixel events server-side
 async function trackFacebookPixelEvent(eventName, eventData) {
   try {
     // Get Facebook Pixel ID from environment
     const pixelId = process.env.FACEBOOK_PIXEL_ID || '1306490273852955';
-    
+
+    // Convert currency to USD for Facebook Pixel
+    let valueInUSD = eventData.value;
+    let originalCurrency = eventData.currency;
+
+    if (originalCurrency === 'UAH' && valueInUSD) {
+      valueInUSD = parseFloat(valueInUSD) / EXCHANGE_RATES.UAH_TO_USD;
+      valueInUSD = Math.round(valueInUSD * 100) / 100; // Round to 2 decimal places
+      originalCurrency = 'USD';
+
+      console.log('💱 Currency converted for Facebook Pixel:', {
+        originalValue: eventData.value,
+        originalCurrency: eventData.currency,
+        convertedValue: valueInUSD,
+        newCurrency: originalCurrency
+      });
+    }
+
     // Prepare event data
     const pixelData = {
       event_name: eventName,
@@ -185,10 +119,12 @@ async function trackFacebookPixelEvent(eventName, eventData) {
         client_user_agent: req.get('User-Agent')
       },
       custom_data: {
-        ...eventData
+        ...eventData,
+        value: valueInUSD,
+        currency: originalCurrency
       }
     };
-    
+
     // Send to Facebook Conversions API
     const response = await axios.post(
       `https://graph.facebook.com/v18.0/${pixelId}/events`,
@@ -202,8 +138,13 @@ async function trackFacebookPixelEvent(eventName, eventData) {
         }
       }
     );
-    
-    console.log('✅ Facebook Pixel event tracked:', eventName, response.data);
+
+    console.log('✅ Facebook Pixel event tracked:', eventName, {
+      originalValue: eventData.value,
+      convertedValue: valueInUSD,
+      currency: originalCurrency,
+      response: response.data
+    });
     return response.data;
   } catch (error) {
     console.error('❌ Failed to track Facebook Pixel event:', error);
@@ -220,7 +161,7 @@ export const setupWebSocket = (server) => {
   });
 
   wss.on('connection', (ws, req) => {
-    console.log('🔌 New WebSocket connection');
+    console.log('� New WebSocket connection');
     
     // Add client to notification service
     notificationService.addWebSocketClient(ws);
