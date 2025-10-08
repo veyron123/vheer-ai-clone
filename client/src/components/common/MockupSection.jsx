@@ -10,10 +10,18 @@ const MockupSection = ({
 }) => {
   // DEBUG: Логируем что получает MockupSection
   console.log('📋 MockupSection received:', { imageUrl, aspectRatio, aiModel, scale, autoShow });
+
   // Определяем, можно ли показать мокап
   const canShowMockup = () => {
-    if (!imageUrl) {
-      console.log('❌ MockupSection: No imageUrl provided');
+    // Проверяем, что это сгенерированное изображение, а не загруженное
+    const isGeneratedImage = imageUrl && (
+      imageUrl.startsWith('http') &&
+      !imageUrl.includes('base64') &&
+      !imageUrl.includes('data:image')
+    );
+
+    if (!isGeneratedImage) {
+      console.log('❌ MockupSection: Not a generated image URL');
       return false;
     }
     

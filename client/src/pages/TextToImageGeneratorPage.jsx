@@ -102,7 +102,7 @@ const TextToImageGeneratorPage = () => {
               />
 
               {/* Mockup Generator Section - внутри grid layout */}
-              {!isGenerating && (generatedImage || (generatedImages && generatedImages[0] && (generatedImages[0].url || generatedImages[0]))) && (
+              {(generatedImage || (generatedImages && generatedImages[0] && (generatedImages[0].url || generatedImages[0]))) && (
                 <MockupSection
                   imageUrl={generatedImage || (generatedImages && generatedImages[0] && (generatedImages[0].url || generatedImages[0]))}
                   aspectRatio={aspectRatio}
@@ -218,7 +218,7 @@ const TextToImageGeneratorPage = () => {
           </div>
           
           {/* Mockup Generator Section */}
-          {!isGenerating && (generatedImage || (generatedImages && generatedImages[0] && (generatedImages[0].url || generatedImages[0]))) && (
+          {(generatedImage || (generatedImages && generatedImages[0] && (generatedImages[0].url || generatedImages[0]))) && (
             <MockupSection
               imageUrl={generatedImage || (generatedImages && generatedImages[0] && (generatedImages[0].url || generatedImages[0]))}
               aspectRatio={aspectRatio}

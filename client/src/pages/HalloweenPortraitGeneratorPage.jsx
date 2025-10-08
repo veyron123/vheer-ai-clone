@@ -122,7 +122,7 @@ const HalloweenPortraitGeneratorPage = () => {
             {!generatedImage && !uploadedImage && <ExampleGallery examples={halloweenExampleImages} />}
 
             {/* Mockup Generator Section - replaces examples when image is loaded */}
-            {!isGenerating && (generatedImage || uploadedImage) && (
+            {(generatedImage || uploadedImage) && (
               <MockupSection
                 imageUrl={generatedImage || uploadedImage}
                 aspectRatio={aspectRatio}
@@ -219,7 +219,7 @@ const HalloweenPortraitGeneratorPage = () => {
           </div>
 
           {/* Mockup Section - после настроек на мобильных */}
-          {!isGenerating && (generatedImage || uploadedImage) && (
+          {(generatedImage || uploadedImage) && (
             <MockupSection
               imageUrl={generatedImage || uploadedImage}
               aspectRatio={aspectRatio}
