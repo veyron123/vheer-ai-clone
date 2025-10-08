@@ -1,36 +1,39 @@
 // AI Models Configuration for Image to Image
 export const IMAGE_AI_MODELS = {
-  FLUX_PRO: {
-    id: 'flux-pro',
-    name: 'Flux1.Kontext Pro',
-    badge: { text: 'Fast', color: 'bg-yellow-400 text-black' },
-    credits: 10
-  },
-  GPT_IMAGE: {
-    id: 'gpt-image',
-    name: 'GPT Image',
-    badge: { text: '👑', color: 'bg-red-500 text-white' },
-    credits: 30
-  },
   QWEN_IMAGE: {
     id: 'qwen-image',
     name: 'Qwen Image',
     badge: { text: 'NEW', color: 'bg-green-500 text-white' },
-    credits: 20
+    credits: 20,
+    status: 'working'
   },
   SEEDREAM_V4: {
     id: 'seedream-v4',
     name: 'Seedream V4',
     badge: { text: 'HOT', color: 'bg-orange-500 text-white' },
-    credits: 25
+    credits: 25,
+    status: 'working'
   },
   NANO_BANANA: {
     id: 'nano-banana',
     name: 'Nano-Banana',
     badge: { text: '🍌', color: 'bg-orange-600 text-white' },
-    credits: 20
+    credits: 20,
+    status: 'working'
   }
   // Temporarily disabled - issues with API
+  // FLUX_PRO: {
+  //   id: 'flux-pro',
+  //   name: 'Flux1.Kontext Pro',
+  //   badge: { text: 'Fast', color: 'bg-yellow-400 text-black' },
+  //   credits: 10
+  // },
+  // GPT_IMAGE: {
+  //   id: 'gpt-image',
+  //   name: 'GPT Image',
+  //   badge: { text: '👑', color: 'bg-red-500 text-white' },
+  //   credits: 30
+  // },
   // MIDJOURNEY: {
   //   id: 'midjourney',
   //   name: 'Midjourney v7',

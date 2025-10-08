@@ -1,18 +1,10 @@
 // AI Models Configuration for Halloween Generator
 export const HALLOWEEN_AI_MODELS = {
-  FLUX_PRO: {
-    id: 'flux-pro',
-    name: 'Flux Pro',
-    credits: 10,
-    status: 'broken',
-    issue: 'Provider configuration mismatch'
-  },
   QWEN_IMAGE: {
     id: 'qwen-image',
     name: 'Qwen Image',
     credits: 20,
-    status: 'broken',
-    issue: 'API key validation failed'
+    status: 'working'
   },
   SEEDREAM_V4: {
     id: 'seedream-v4',
@@ -26,6 +18,14 @@ export const HALLOWEEN_AI_MODELS = {
     credits: 20,
     status: 'working'
   }
+  // Temporarily disabled - issues with API
+  // FLUX_PRO: {
+  //   id: 'flux-pro',
+  //   name: 'Flux Pro',
+  //   credits: 10,
+  //   status: 'broken',
+  //   issue: 'Provider configuration mismatch'
+  // }
 };
 
 export const HALLOWEEN_STYLES = [

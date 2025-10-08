@@ -18,7 +18,7 @@ import TextReviewsSection from '../components/common/TextReviewsSection';
 import { useImageToImageGeneration } from '../hooks/useImageToImageGeneration';
 
 const ImageToImageGeneratorPage = () => {
-  const [aiModel, setAiModel] = useState('flux-pro');
+  const [aiModel, setAiModel] = useState('qwen-image');
   const [aspectRatio, setAspectRatio] = useState('match');
   
   const {
@@ -53,7 +53,7 @@ const ImageToImageGeneratorPage = () => {
     <>
       <SEO 
         title="AI Image to Image Generator - Transform Photos with AI Magic"
-        description="Reimagine any photo with AI magic. Keep facial features intact while exploring endless creative possibilities. Use Flux Pro, Flux Max, and GPT Image models."
+        description="Reimagine any photo with AI magic. Keep facial features intact while exploring endless creative possibilities. Use Qwen Image, Seedream V4, and Nano-Banana models."
         keywords="image to image generator, AI image transformation, photo editor AI, style transfer, image variation generator, AI photo enhancer"
         url="https://colibrrri.com/image-to-image-generator"
       />
