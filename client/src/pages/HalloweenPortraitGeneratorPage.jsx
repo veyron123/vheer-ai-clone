@@ -44,6 +44,7 @@ const HalloweenPortraitGeneratorPage = () => {
   const {
     uploadedImage,
     generatedImage,
+    generatedImages,
     isGenerating,
     generationTime,
     fileInputRef,
