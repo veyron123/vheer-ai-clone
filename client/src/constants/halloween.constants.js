@@ -3,26 +3,28 @@ export const HALLOWEEN_AI_MODELS = {
   FLUX_PRO: {
     id: 'flux-pro',
     name: 'Flux Pro',
-    badge: { text: 'Fast', color: 'bg-yellow-400 text-black' },
-    credits: 10
+    credits: 10,
+    status: 'broken',
+    issue: 'Provider configuration mismatch'
   },
   QWEN_IMAGE: {
     id: 'qwen-image',
     name: 'Qwen Image',
-    badge: { text: 'NEW', color: 'bg-green-500 text-white' },
-    credits: 20
+    credits: 20,
+    status: 'broken',
+    issue: 'API key validation failed'
   },
   SEEDREAM_V4: {
     id: 'seedream-v4',
     name: 'Seedream',
-    badge: { text: 'HOT', color: 'bg-orange-500 text-white' },
-    credits: 25
+    credits: 25,
+    status: 'working'
   },
   NANO_BANANA: {
     id: 'nano-banana',
     name: 'Nano-Banana',
-    badge: { text: '🍌', color: 'bg-orange-600 text-white' },
-    credits: 20
+    credits: 20,
+    status: 'working'
   }
 };
 

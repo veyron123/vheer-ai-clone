@@ -3,9 +3,11 @@
 ## Overview
 **Nano-Banana on Fal.ai** - это мощный AI сервис для редактирования изображений с использованием модели Gemini. Он позволяет редактировать множественные изображения одновременно с помощью текстовых промптов.
 
-**Базовый URL**: `fal-ai/nano-banana/edit`
+**Базовый URL**: `https://fal.run/fal-ai/nano-banana/edit`
+**Model ID**: `fal-ai/nano-banana/edit`
 **Провайдер**: Fal.ai
 **Модель**: Gemini-based editing
+**Категория**: image-to-image
 
 ---
 

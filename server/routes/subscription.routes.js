@@ -7,15 +7,15 @@ const router = Router();
 const getPaymentUrls = (lang) => {
   if (lang === 'uk' || lang === 'ua') {
     return {
-      BASIC: process.env.WAYFORPAY_BASIC_BUTTON_URL_UK,
-      PRO: process.env.WAYFORPAY_PRO_BUTTON_URL_UK,
-      ENTERPRISE: process.env.WAYFORPAY_ENTERPRISE_BUTTON_URL_UK
+      BASIC: 'https://secure.wayforpay.com/button/bd0b2c7d46c3c',
+      PRO: 'https://secure.wayforpay.com/button/bd0b2c7d46c3c',
+      ENTERPRISE: 'https://secure.wayforpay.com/button/bd0b2c7d46c3c'
     };
   } else {
     return {
-      BASIC: process.env.WAYFORPAY_BASIC_BUTTON_URL,
-      PRO: process.env.WAYFORPAY_PRO_BUTTON_URL,
-      ENTERPRISE: process.env.WAYFORPAY_ENTERPRISE_BUTTON_URL
+      BASIC: 'https://secure.wayforpay.com/button/bd0b2c7d46c3c',
+      PRO: 'https://secure.wayforpay.com/button/bd0b2c7d46c3c',
+      ENTERPRISE: 'https://secure.wayforpay.com/button/bd0b2c7d46c3c'
     };
   }
 };
