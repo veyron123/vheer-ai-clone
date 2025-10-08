@@ -455,6 +455,7 @@ export const handleCallback = async (req, res) => {
     }
 
     // Find user by extracted userId
+    let user;
     try {
       user = await prisma.user.findUnique({
         where: { id: extractedUserId },
