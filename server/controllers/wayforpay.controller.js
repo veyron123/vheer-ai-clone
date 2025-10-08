@@ -460,26 +460,35 @@ export const handleCallback = async (req, res) => {
         where: { id: extractedUserId },
         include: { subscription: true }
       });
-      
+
       if (!user) {
         console.error('❌ USER NOT FOUND for userId:', extractedUserId);
-        return res.status(404).json({ 
-          success: false, 
-          message: 'User not found - authentication required' 
+        return res.status(404).json({
+          success: false,
+          message: 'User not found - authentication required'
         });
       }
-      
+
       console.log('✅ VARIANT 3: User authenticated via orderReference:', {
         userId: user.id,
         email: user.email,
         currentPlan: user.subscription?.plan || 'FREE'
       });
-      
+
     } catch (error) {
       console.error('❌ Database error finding user:', error);
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Database error during authentication' 
+      return res.status(500).json({
+        success: false,
+        message: 'Database error during authentication'
+      });
+    }
+
+    // CRITICAL: Ensure user is defined before continuing
+    if (!user) {
+      console.error('❌ CRITICAL: User variable is undefined after lookup');
+      return res.status(500).json({
+        success: false,
+        message: 'User authentication failed'
       });
     }
 
