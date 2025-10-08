@@ -113,8 +113,8 @@ const PetPortraitGeneratorPage = () => {
               />
             </div>
 
-            {/* Show examples only when no images are loaded */}
-            {!generatedImage && !uploadedImage && <ExampleGallery examples={petExampleImages} />}
+            {/* Show examples only when no generated images exist */}
+            {(!generatedImage && !(generatedImages && generatedImages[0])) && <ExampleGallery examples={petExampleImages} />}
 
             {/* Mockup Generator Section - replaces examples when image is loaded */}
             {(generatedImage || uploadedImage) && (

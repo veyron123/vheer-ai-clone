@@ -85,8 +85,8 @@ const StyleTransferPage = () => {
               />
             </div>
 
-            {/* Show examples only when no images are loaded */}
-            {!generatedImage && !uploadedImage && <ExampleGallery />}
+            {/* Show examples only when no generated images exist */}
+            {(!generatedImage && !(generatedImages && generatedImages[0])) && <ExampleGallery />}
 
             {/* Mockup Generator Section - replaces examples when image is loaded */}
             {(generatedImage || uploadedImage) && (

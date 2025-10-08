@@ -107,8 +107,8 @@ const ImageToImageGeneratorPage = () => {
                 />
               </div>
 
-              {/* Show examples only when no images are loaded */}
-              {!generatedImage && !uploadedImage && <ImageExampleGallery />}
+              {/* Show examples only when no generated images exist */}
+              {(!generatedImage && !(generatedImages && generatedImages[0])) && <ImageExampleGallery />}
 
               {/* Mockup Generator Section - replaces examples when image is loaded */}
               {(generatedImage || uploadedImage) && (
