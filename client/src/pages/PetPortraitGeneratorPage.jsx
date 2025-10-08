@@ -29,6 +29,7 @@ const PetPortraitGeneratorPage = () => {
   const {
     uploadedImage,
     generatedImage,
+    generatedImages,
     isGenerating,
     generationTime,
     fileInputRef,

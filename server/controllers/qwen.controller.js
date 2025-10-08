@@ -6,14 +6,12 @@ import { getUserFriendlyAIError, logAIServiceError } from '../utils/aiServiceErr
 import fetch from 'node-fetch';
 import axios from 'axios';
 
-// KIE API Configuration for Qwen
-const KIE_API_KEY = process.env.KIE_API_KEY || '2286be72f9c75b12557518051d46c551';
-const KIE_API_URL = 'https://api.kie.ai/api/v1/playground';
+// FAL API Configuration for Qwen
+const FAL_API_KEY = process.env.FAL_KEY || 'your-fal-api-key-here';
 
-console.log('🔑 KIE API configured for Qwen:', {
-  hasKey: !!KIE_API_KEY,
-  keyLength: KIE_API_KEY?.length,
-  apiUrl: KIE_API_URL
+console.log('🔑 FAL API configured for Qwen:', {
+  hasKey: !!FAL_API_KEY,
+  keyLength: FAL_API_KEY?.length
 });
 
 /**
@@ -251,13 +249,13 @@ export const generateImageTurbo = asyncHandler(async (req, res) => {
     // Process image URL
     const imageUrl = await processImageUrl(input_image);
 
-    // Map aspectRatio to KIE API image_size format
+    // Map aspectRatio to FAL API format
     const getImageSize = (aspectRatio) => {
       const mapping = {
         '1:1': 'square',
         'square': 'square',
         '3:4': 'portrait_4_3',
-        'portrait': 'portrait_4_3', 
+        'portrait': 'portrait_4_3',
         '9:16': 'portrait_16_9',
         '4:3': 'landscape_4_3',
         'landscape': 'landscape_4_3',
@@ -267,38 +265,34 @@ export const generateImageTurbo = asyncHandler(async (req, res) => {
       return mapping[aspectRatio] || 'landscape_4_3'; // default
     };
 
-    // Prepare KIE API request body with proper image_size
-    const requestBody = {
-      model: 'qwen/image-edit',
+    // Import fal client for Qwen Image
+    const { fal } = await import('@fal-ai/client');
+
+    // Configure fal client
+    fal.config({
+      credentials: FAL_API_KEY
+    });
+
+    console.log('🚀 [QWEN FAL.AI] Sending request to Fal.ai Qwen Image:', {
+      prompt: prompt,
+      imageUrl: imageUrl?.substring(0, 50) + '...',
+      image_size: getImageSize(aspectRatio),
+      num_inference_steps: num_inference_steps,
+      guidance_scale: guidance_scale
+    });
+
+    // Submit to Fal.ai Qwen Image
+    const falResult = await fal.subscribe('fal-ai/qwen/image-edit', {
       input: {
-        prompt,
+        prompt: prompt,
         image_url: imageUrl,
         image_size: getImageSize(aspectRatio),
-        num_inference_steps,
-        guidance_scale,
+        num_inference_steps: num_inference_steps,
+        guidance_scale: guidance_scale,
         enable_safety_checker: true,
         output_format: 'png',
         sync_mode: false
       }
-    };
-
-    console.log('🔍 [QWEN TURBO DEBUG] Full request to KIE API:', {
-      url: `${KIE_API_URL}/createTask`,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${KIE_API_KEY.substring(0, 10)}...`
-      },
-      body: JSON.stringify(requestBody, null, 2)
-    });
-
-    // Create task with KIE API
-    const createTaskResponse = await fetch(`${KIE_API_URL}/createTask`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${KIE_API_KEY}`
-      },
-      body: JSON.stringify(requestBody)
     });
 
     if (!createTaskResponse.ok) {
