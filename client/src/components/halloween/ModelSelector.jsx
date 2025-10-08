@@ -25,9 +25,11 @@ const ModelSelector = ({ selectedModel, onModelChange }) => {
             }`}
           >
             {model.name}
-            <span className={`absolute -top-3 -right-2 ${model.badge.color} text-sm px-2 py-0.5 rounded-full font-bold`}>
-              {model.badge.text}
-            </span>
+            {model.badge && model.badge.text && (
+              <span className={`absolute -top-3 -right-2 ${model.badge.color} text-sm px-2 py-0.5 rounded-full font-bold`}>
+                {model.badge.text}
+              </span>
+            )}
           </button>
         ))}
       </div>

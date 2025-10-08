@@ -36,12 +36,14 @@ const StyleSelector = ({
                   : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
               } ${isPetPortrait ? 'hover:scale-105' : ''}`}
             >
-              <img 
-                src={style.image} 
-                alt={`${style.name} Halloween style - Transform photos to ${style.name} style`}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
+              {style.image && (
+                <img
+                  src={style.image}
+                  alt={`${style.name} Halloween style - Transform photos to ${style.name} style`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              )}
               <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent ${isPetPortrait ? 'p-1' : 'p-0.5'}`}>
                 <p className={`text-white leading-tight font-medium ${isPetPortrait ? 'text-[10px]' : 'text-[9px]'}`}>{style.name}</p>
               </div>
