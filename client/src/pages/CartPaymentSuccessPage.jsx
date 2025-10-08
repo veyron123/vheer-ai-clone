@@ -18,7 +18,7 @@ const CartPaymentSuccessPage = () => {
     if (orderReference && window.fbq) {
       // Get payment details from URL parameters
       const amount = searchParams.get('amount') || 1;
-      const currency = searchParams.get('currency') || 'UAH';
+      const currency = searchParams.get('currency') || 'USD';
       const productCount = searchParams.get('productCount') || 1;
       
       window.fbq("track", "Purchase", {

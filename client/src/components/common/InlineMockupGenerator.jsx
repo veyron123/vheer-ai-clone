@@ -741,7 +741,7 @@ const InlineMockupGenerator = React.memo(({ imageUrl, aspectRatio, scale, autoSh
       window.fbq("track", "AddToCart", {
         content_name: `Frame Poster - ${selectedSizeData?.name}`,
         value: 1.00,
-        currency: "UAH",
+        currency: "USD",
         content_ids: [cartItem.id],
         content_type: "product"
       });

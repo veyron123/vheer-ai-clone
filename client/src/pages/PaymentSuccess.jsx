@@ -15,9 +15,9 @@ const PaymentSuccess = () => {
   useEffect(() => {
     // 📊 Track successful purchase
     const transactionId = searchParams.get('transactionId') || `wp_${Date.now()}`;
-    const amount = searchParams.get('amount') || 1; // Default to 1 UAH for testing
+    const amount = searchParams.get('amount') || 1; // Default to 1 USD for testing
     const plan = searchParams.get('plan') || 'BASIC';
-    const currency = searchParams.get('currency') || 'UAH';
+    const currency = searchParams.get('currency') || 'USD';
 
     // Track subscription purchase with Google Ads conversion
     analytics.trackSubscriptionPurchase(parseFloat(amount), transactionId, plan);

@@ -190,7 +190,7 @@ const PricingPage = () => {
           content_ids: [plan.id],
           content_type: 'subscription',
           value: 1.00,
-          currency: 'UAH'
+          currency: 'USD'
         });
         console.log("Facebook Pixel: Subscription InitiateCheckout tracked");
       }

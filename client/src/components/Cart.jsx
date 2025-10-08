@@ -158,7 +158,7 @@ const Cart = () => {
         window.fbq("track", "InitiateCheckout", {
           content_name: "Cart Checkout",
           value: 1.00,
-          currency: "UAH",
+          currency: "USD",
           content_ids: items.map(item => item.id),
           content_type: "product",
           num_items: items.length
