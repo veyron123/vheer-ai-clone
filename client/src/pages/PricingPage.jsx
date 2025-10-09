@@ -26,7 +26,7 @@ const PricingPage = () => {
       id: 'FREE',
       name: 'Free',
       price: 0,
-      currency: '₴',
+      currency: currentLang === 'uk' ? '₴' : '$',
       credits: 100,
       paymentUrl: null, // FREE plan doesn't need payment
       features: []
@@ -34,8 +34,8 @@ const PricingPage = () => {
     {
       id: 'BASIC',
       name: 'Basic',
-      price: 1,
-      currency: '₴',
+      price: currentLang === 'uk' ? 400 : 10,
+      currency: currentLang === 'uk' ? '₴' : '$',
       credits: 800,
       paymentUrl: 'fallback://basic-payment', // Will trigger main payment flow
       features: []
