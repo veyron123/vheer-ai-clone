@@ -29,18 +29,6 @@ export const ASPECT_RATIOS = [
 
 // AI Models Configuration
 export const AI_MODELS = {
-  FLUX_PRO: {
-    id: 'flux-pro',
-    name: 'Flux Pro',
-    badge: { text: 'Fast', color: 'bg-yellow-400 text-black' },
-    credits: 10
-  },
-  GPT_IMAGE: {
-    id: 'gpt-image',
-    name: 'GPT Image',
-    badge: { text: '👑', color: 'bg-red-500 text-white' },
-    credits: 30
-  },
   QWEN_IMAGE: {
     id: 'qwen-image',
     name: 'Qwen Image',
@@ -53,6 +41,19 @@ export const AI_MODELS = {
     badge: { text: 'HOT', color: 'bg-orange-500 text-white' },
     credits: 25
   }
+  // Temporarily disabled - issues with API
+  // FLUX_PRO: {
+  //   id: 'flux-pro',
+  //   name: 'Flux Pro',
+  //   badge: { text: 'Fast', color: 'bg-yellow-400 text-black' },
+  //   credits: 10
+  // },
+  // GPT_IMAGE: {
+  //   id: 'gpt-image',
+  //   name: 'GPT Image',
+  //   badge: { text: '👑', color: 'bg-red-500 text-white' },
+  //   credits: 30
+  // }
 };
 
 // Example Images

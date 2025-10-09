@@ -24,7 +24,7 @@ import { useImageGeneration } from '../hooks/useImageGeneration';
 const AnimeGeneratorPage = () => {
   const [selectedStyle, setSelectedStyle] = useState('disney');
   const [customStyle, setCustomStyle] = useState('');
-  const [aiModel, setAiModel] = useState('flux-pro');
+  const [aiModel, setAiModel] = useState('qwen-image');
   const [aspectRatio, setAspectRatio] = useState('match');
   
   const {
@@ -51,7 +51,7 @@ const AnimeGeneratorPage = () => {
     <>
       <SEO 
         title="AI Anime Generator - Transform Photos to Anime Art"
-        description="Convert your photos into stunning anime, Disney, Pixar, and manga styles instantly. Use advanced AI models including Flux Pro, Flux Max, and GPT Image for amazing results."
+        description="Convert your photos into stunning anime, Disney, Pixar, and manga styles instantly. Use advanced AI models including Qwen Image, Seedream V4, and Nano-Banana for amazing results."
         keywords="anime generator, photo to anime, AI anime converter, Disney style generator, Pixar filter, manga creator, cartoon filter, anime art AI"
         url="https://vheer.ai/anime-generator"
       />
