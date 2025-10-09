@@ -43,8 +43,8 @@ const PricingPage = () => {
     {
       id: 'PRO',
       name: 'Pro',
-      price: 1,
-      currency: '₴',
+      price: currentLang === 'uk' ? 1200 : 30,
+      currency: currentLang === 'uk' ? '₴' : '$',
       credits: 3000,
       paymentUrl: 'fallback://pro-payment', // Will trigger main payment flow
       features: []
@@ -52,8 +52,8 @@ const PricingPage = () => {
     {
       id: 'ENTERPRISE',
       name: 'Maximum',
-      price: 1,
-      currency: '₴',
+      price: currentLang === 'uk' ? 4000 : 99,
+      currency: currentLang === 'uk' ? '₴' : '$',
       credits: 15000,
       paymentUrl: 'fallback://enterprise-payment', // Will trigger main payment flow
       features: []
