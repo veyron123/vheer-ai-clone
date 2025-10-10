@@ -139,7 +139,7 @@ const InlineMockupGenerator = React.memo(({ imageUrl, aspectRatio, scale, autoSh
       { id: '18x18', name: '18"×18"', price: 120 }
     ],
     '3:4': [
-      { id: '6x8', name: '6"×8"', price: 70 },
+      { id: '6x8', name: '6"×8"', price: 1 },
       { id: '12x16', name: '12"×16"', price: 80 },
       { id: '18x24', name: '18"×24"', price: 90 },
       { id: '24x32', name: '24"×32"', price: 100 }
