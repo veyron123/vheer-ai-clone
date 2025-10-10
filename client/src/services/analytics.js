@@ -373,11 +373,11 @@ export default analytics;
 /*
 // AI Generation
 analytics.aiGenerationStarted({
-  model: 'flux-pro',
+  model: 'qwen-image',
   style: 'anime',
   prompt: 'beautiful anime girl',
   userCredits: 100,
-  creditCost: 10
+  creditCost: 20
 });
 
 // E-commerce with Google Ads Conversion
@@ -388,12 +388,12 @@ analytics.trackUserSignUp('google');
 
 // AI Generation with Google Ads Conversion
 analytics.trackAIGenerationCompleted({
-  model: 'flux-pro',
+  model: 'qwen-image',
   style: 'anime',
   generationTime: 15000,
   success: true,
   imagesCount: 1,
-  creditsUsed: 10
+  creditsUsed: 20
 });
 
 // Direct Google Ads Conversion

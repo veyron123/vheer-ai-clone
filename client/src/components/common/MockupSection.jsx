@@ -27,10 +27,8 @@ const MockupSection = ({
     
     // Поддерживаемые модели
     const supportedModels = [
-      'gpt-image', 
-      'qwen-image', 
+      'qwen-image',
       'nano-banana',
-      'flux-pro', 
       'flux-max',
       'flux-dev',
       'flux-schnell',

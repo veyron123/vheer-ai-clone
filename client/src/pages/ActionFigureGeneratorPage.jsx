@@ -103,9 +103,6 @@ const ActionFigureGeneratorPage = () => {
           <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
             Photo to Action Figure Generator
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Transform your photos into amazing collectible action figures! Choose from superhero, anime, fantasy, and many more styles.
-          </p>
         </div>
       </div>
 

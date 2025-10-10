@@ -24,7 +24,7 @@ import { useImageGeneration } from '../hooks/useImageGeneration';
 const StyleTransferPage = () => {
   const [selectedStyle, setSelectedStyle] = useState('studio-ghibli');
   const [customStyle, setCustomStyle] = useState('');
-  const [aiModel, setAiModel] = useState('flux-pro');
+  const [aiModel, setAiModel] = useState('qwen-image');
   const [aspectRatio, setAspectRatio] = useState('match');
   
   const {

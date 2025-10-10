@@ -8,63 +8,16 @@ const PetPortraitReviewsSection = () => {
   // Pet Portrait specific reviews with customer artwork
   const reviews = [
     {
-      id: 1,
-      image: '/Review Pet Portraits/MycDB-Kd2_mid.jpg', // Golden doodle with newspaper portrait
-      customerPhoto: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face', // Male customer
-      name: 'Mike Johnson',
-      rating: 5,
-      comment: "😂 Perfect bathroom art! My dog reading the newspaper on the toilet is hilarious. Guests love it.",
-      verified: true
-    },
-    {
       id: 2,
       image: '/Review Pet Portraits/Z5XXEZckp.jpg', // Pitbull in tuxedo portrait displayed in dining room
-      customerPhoto: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=80&h=80&fit=crop&crop=face', // Female customer
       name: 'Lisa Chen',
       rating: 5,
       comment: "Love this! My pit bull looks so classy in his formal portrait hanging in the dining room.",
       verified: true
     },
     {
-      id: 3,
-      image: '/Review Pet Portraits/2dBi0csWn.jpg', // Two cats with portrait
-      customerPhoto: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face', // Female customer
-      name: 'Jessica Martinez',
-      rating: 5,
-      comment: "Super cute! My cat looks amazing in this style. Great quality and fast delivery!",
-      verified: true
-    },
-    {
-      id: 4,
-      image: '/Review Pet Portraits/Vuq5H8nMQ.jpg', // Dog reading newspaper portrait on wall
-      customerPhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face', // Male customer
-      name: 'Tom Wilson',
-      rating: 5,
-      comment: "Wife loves it now too 😄 Our golden retriever reading the news is the perfect conversation starter.",
-      verified: true
-    },
-    {
-      id: 5,
-      image: '/Review Pet Portraits/i0h5WWz0Q.jpg', // Small dog with newspaper portrait
-      customerPhoto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face', // Male customer with glasses
-      name: 'David Kim',
-      rating: 5,
-      comment: "My little dog looks so serious with his newspaper 🤓 Quality is great, ordering another one!",
-      verified: true
-    },
-    {
-      id: 6,
-      image: '/Review Pet Portraits/zDkwY5qlR.jpg', // Puppy portrait on wood wall
-      customerPhoto: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=80&h=80&fit=crop&crop=face', // Female customer
-      name: 'Amy Davis',
-      rating: 5,
-      comment: 'Beautiful quality print. This puppy portrait brings back great memories of my dad.',
-      verified: true
-    },
-    {
       id: 7,
       image: '/Review Pet Portraits/iap_600x600.6829780242_44gr63cs.webp', // Cat portrait
-      customerPhoto: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&crop=face', // Female customer
       name: 'Rachel Brown',
       rating: 5,
       comment: 'Print quality is amazing! Colors are so vibrant and shipped super fast.',
@@ -73,10 +26,65 @@ const PetPortraitReviewsSection = () => {
     {
       id: 8,
       image: '/Review Pet Portraits/iap_600x600.6844417521_i6xbupdu.avif', // Pet portrait
-      customerPhoto: 'https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=80&h=80&fit=crop&crop=face', // Male customer with beard
       name: 'Chris Taylor',
       rating: 5,
       comment: 'Good price and customer service helped with sizing. Really happy with it!',
+      verified: true
+    },
+    {
+      id: 9,
+      image: '/Review Pet Portraits/iap_600x600.6743113928_6ne9kycw.webp', // Chihuahua in royal attire
+      name: 'Maria Rodriguez',
+      rating: 5,
+      comment: 'My little Boy looks like royalty in this portrait! The golden mantle and attention to detail are absolutely stunning. Perfect gift for my family.',
+      verified: true
+    },
+    {
+      id: 10,
+      image: '/Review Pet Portraits/iap_600x600.6748630512_a0de9atj.webp', // Cat in golden dress
+      name: 'Emma Thompson',
+      rating: 5,
+      comment: 'The way my cat is portrayed in this golden Renaissance dress is magnificent! The pearl necklace and embroidery details make her look like true nobility.',
+      verified: true
+    },
+    {
+      id: 11,
+      image: '/Review Pet Portraits/iap_600x600.6794317956_bb5x84hd.webp', // Dachshund in military uniform
+      name: 'Robert Miller',
+      rating: 5,
+      comment: 'My Dachshund has never looked more distinguished! The military uniform with medals captures his personality perfectly. Outstanding artwork quality.',
+      verified: true
+    },
+    {
+      id: 14,
+      image: '/Review Pet Portraits/iap_600x600.6748630512_a0de9atj.webp', // Calico cat in golden Renaissance dress
+      name: 'Jennifer Walsh',
+      rating: 5,
+      comment: 'My calico cat looks absolutely majestic in this golden Renaissance gown! The intricate embroidery and pearl necklace make her look like she stepped out of a royal portrait.',
+      verified: true
+    },
+    {
+      id: 15,
+      image: '/Review Pet Portraits/zDkwY5qlR.jpg', // Cocker Spaniel in green military uniform
+      name: 'Michael Thompson',
+      rating: 5,
+      comment: 'My Cocker Spaniel looks so proud and noble in this green military uniform! The golden epaulets and medals perfectly capture his distinguished personality.',
+      verified: true
+    },
+    {
+      id: 16,
+      image: '/Review Pet Portraits/i0h5WWz0Q.jpg', // Akita in white lace Renaissance dress
+      name: 'Hiroshi Tanaka',
+      rating: 5,
+      comment: 'My Akita looks absolutely beautiful in this elegant white lace Renaissance gown. The delicate ruffled collar and graceful pose capture her noble spirit perfectly.',
+      verified: true
+    },
+    {
+      id: 17,
+      image: '/Review Pet Portraits/iap_600x600.6829780242_44gr63cs.webp', // Tuxedo cat in luxurious Renaissance dress
+      name: 'Catherine Dubois',
+      rating: 5,
+      comment: 'My tuxedo cat looks absolutely stunning in this luxurious Renaissance gown with intricate gold embroidery. The attention to detail in every whisker is remarkable!',
       verified: true
     }
   ];
@@ -206,13 +214,8 @@ const PetPortraitReviewsSection = () => {
                   </p>
 
                   {/* Информация о клиенте */}
-                  <div className="flex items-center gap-2 pt-3 border-t border-gray-100 mt-auto">
-                    <img
-                      src={review.customerPhoto}
-                      alt={review.name}
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                    <div className="flex-1">
+                  <div className="flex items-center justify-center gap-2 pt-3 border-t border-gray-100 mt-auto">
+                    <div className="flex-1 text-center">
                       <p className="text-sm font-medium text-gray-900">{review.name}</p>
                       <p className="text-xs text-gray-500">Verified Customer</p>
                     </div>

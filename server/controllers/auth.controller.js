@@ -275,10 +275,10 @@ export const oauthSuccess = async (req, res, next) => {
       console.log('Daily credits check failed for OAuth user:', error.message);
     }
     
-    // Redirect to frontend with token  
-    const frontendURL = process.env.FRONTEND_URL || 
-      (process.env.NODE_ENV === 'production' 
-        ? 'https://colibrrri.com' 
+    // Redirect to frontend with token
+    const frontendURL = process.env.FRONTEND_URL ||
+      (process.env.NODE_ENV === 'production'
+        ? 'https://colibrrri.com'
         : 'http://localhost:5178');
     res.redirect(`${frontendURL}/en/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
       id: user.id,
@@ -303,9 +303,9 @@ export const oauthFailure = (req, res) => {
     messages: req.session?.messages
   });
   
-  const frontendURL = process.env.FRONTEND_URL || 
-    (process.env.NODE_ENV === 'production' 
-      ? 'https://colibrrri.com' 
+  const frontendURL = process.env.FRONTEND_URL ||
+    (process.env.NODE_ENV === 'production'
+      ? 'https://colibrrri.com'
       : 'http://localhost:5178');
       
   res.redirect(`${frontendURL}/en/auth/error?message=OAuth authentication failed`);

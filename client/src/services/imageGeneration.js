@@ -568,16 +568,12 @@ export async function generateWithFlux(imageBase64, style = 'disney', model = 'f
  * Generate anime-style image from uploaded photo
  * @param {string} imageUrl - URL or base64 of the uploaded image
  * @param {string} style - Selected anime style
- * @param {string} aiModel - AI model to use ('flux-pro', 'gpt-image', 'qwen-image', or 'nano-banana')
+ * @param {string} aiModel - AI model to use ('qwen-image', 'nano-banana', or legacy options)
  * @param {string} aspectRatio - Aspect ratio for generation ('1:1', '16:9', etc.)
  * @param {AbortSignal} abortSignal - Signal to abort the request
  * @returns {Promise} Generated image data
  */
-export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = 'flux-pro', aspectRatio = '1:1', abortSignal = null, customPrompt = null) {
-  // Use Flux for image-to-image generation
-  if (aiModel === 'flux-pro') {
-    return await generateWithFlux(imageUrl, style, aiModel, aspectRatio, abortSignal, customPrompt);
-  }
+export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = 'qwen-image', aspectRatio = '1:1', abortSignal = null, customPrompt = null) {
   
   // Use Qwen Image for generation
   if (aiModel === 'qwen-image') {
@@ -772,83 +768,9 @@ export async function generateAnimeImage(imageUrl, style = 'disney', aiModel = '
     }
   }
 
-  // Use GPT IMAGE for image-to-image generation
+  // Use GPT IMAGE for image-to-image generation (removed)
   if (aiModel === 'gpt-image') {
-    try {
-      const styleConfig = animeStylePrompts[style] || animeStylePrompts.disney;
-      
-      // Get auth token from store
-      const token = useAuthStore.getState().token;
-      
-      // Ensure image is in base64 format
-      let base64Data = imageUrl;
-      if (!imageUrl.startsWith('data:')) {
-        base64Data = await urlToBase64(imageUrl);
-      }
-      
-      // Remove data URL prefix if present
-      const base64Only = base64Data.replace(/^data:image\/[a-z]+;base64,/, '');
-      
-      // Construct the prompt for GPT IMAGE
-      let prompt;
-      if (customPrompt && style === 'custom') {
-        prompt = `Transform this photo with custom style: ${customPrompt}`;
-      } else {
-        prompt = `Transform this photo into ${styleConfig.prefix} anime style, ${styleConfig.suffix}, high quality anime portrait, masterpiece`;
-      }
-      
-      // Setup headers
-      const headers = {
-        'Content-Type': 'application/json'
-      };
-      
-      // Add authorization header if user is logged in
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
-      // Use our backend proxy for GPT IMAGE API
-      const response = await fetch(getApiUrl('/gptimage/generate'), {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          prompt: prompt,
-          input_image: base64Only,
-          style: style,
-          aspectRatio: aspectRatio
-        })
-      });
-      
-      if (!response.ok) {
-        // Handle authentication errors
-        if (response.status === 401) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || 'Authentication required');
-        }
-        
-        // Handle other errors
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || errorData.error || `Server error: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      
-      if (result.success && result.image) {
-        return {
-          images: [{
-            url: result.image,
-            width: 1024,
-            height: 1024,
-            content_type: 'image/png'
-          }]
-        };
-      }
-      
-      throw new Error(result.error || 'Failed to generate image');
-    } catch (error) {
-      console.error("Error generating with GPT IMAGE:", error);
-      throw error;
-    }
+    throw new Error('GPT Image model is no longer supported');
   }
 
   // Use Nano-Banana for image-to-image generation
@@ -952,7 +874,7 @@ export async function uploadImage(file) {
  * @param {AbortSignal} abortSignal - Signal to abort the request
  * @returns {Promise} Generated pet portrait data
  */
-export async function generatePetPortrait(userImageUrl, styleImageUrl, styleName, aiModel = 'flux-pro', aspectRatio = '1:1', abortSignal = null) {
+export async function generatePetPortrait(userImageUrl, styleImageUrl, styleName, aiModel = 'qwen-image', aspectRatio = '1:1', abortSignal = null) {
   try {
     // Create specialized prompt for pet portrait style transfer
     const petPortraitPrompt = `Replace the animal in the style reference image with the pet from the user's photo. Keep all the costume, background, pose, lighting, and artistic style exactly the same. Only change the animal/pet while maintaining the ${styleName} aesthetic and all visual elements like clothing, accessories, setting, and composition.`;
@@ -966,12 +888,8 @@ export async function generatePetPortrait(userImageUrl, styleImageUrl, styleName
     });
 
     // Use appropriate AI model for generation
-    if (aiModel === 'flux-pro') {
-      return await generateWithFluxPetPortrait(userImageUrl, styleImageUrl, petPortraitPrompt, aiModel, aspectRatio, abortSignal);
-    }
-    
     if (aiModel === 'gpt-image') {
-      return await generateWithGPTImagePetPortrait(userImageUrl, styleImageUrl, petPortraitPrompt, aspectRatio, abortSignal);
+      throw new Error('GPT Image model is no longer supported');
     }
     
     if (aiModel === 'qwen-image') {
@@ -990,129 +908,6 @@ export async function generatePetPortrait(userImageUrl, styleImageUrl, styleName
   }
 }
 
-/**
- * Generate Pet Portrait using Flux Pro with dual image input
- */
-async function generateWithFluxPetPortrait(userImageUrl, styleImageUrl, prompt, aiModel, aspectRatio, abortSignal) {
-  const token = useAuthStore.getState().token;
-  
-  if (!token) {
-    throw new Error('Please sign in to generate pet portraits');
-  }
-  
-  // Calculate dimensions based on aspect ratio
-  let width = 1024, height = 1024;
-  if (aspectRatio && aspectRatio !== '1:1') {
-    if (aspectRatio === '16:9') {
-      width = 1344;
-      height = 768;
-    } else if (aspectRatio === '4:5') {
-      width = 832;
-      height = 1024;
-    } else if (aspectRatio === '3:4') {
-      width = 896;
-      height = 1152;
-    }
-  }
-  
-  const requestBody = {
-    userImageUrl: userImageUrl,
-    styleImageUrl: styleImageUrl,
-    styleName: prompt.includes('aesthetic') ? prompt.match(/maintaining the (.+?) aesthetic/)?.[1] || 'custom' : 'custom',
-    prompt: prompt, // Add missing prompt parameter
-    aiModel: aiModel,
-    aspectRatio: aspectRatio,
-    width: width,
-    height: height
-  };
-  
-  const response = await fetch(getApiUrl('/nano-banana/pet-portrait'), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` })
-    },
-    body: JSON.stringify(requestBody),
-    signal: abortSignal
-  });
-  
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    
-    // Handle specific error types
-    if (response.status === 400 && errorData.error === 'Insufficient credits') {
-      throw new Error('Insufficient credits');
-    }
-    
-    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-  }
-  
-  const result = await response.json();
-  
-  // Return in expected format
-  return {
-    imageUrl: result.imageUrl,
-    generation: result.generation,
-    remainingCredits: result.remainingCredits
-  };
-}
-
-// GPT Image Pet Portrait generation
-async function generateWithGPTImagePetPortrait(userImageUrl, styleImageUrl, prompt, aspectRatio, abortSignal) {
-  const token = useAuthStore.getState().token;
-  
-  if (!token) {
-    throw new Error('Please sign in to generate pet portraits');
-  }
-  
-  // Calculate dimensions for GPT Image
-  let width = 1024, height = 1024;
-  if (aspectRatio && aspectRatio !== '1:1') {
-    if (aspectRatio === '16:9') {
-      width = 1344; height = 768;
-    } else if (aspectRatio === '4:5') {
-      width = 832; height = 1024;
-    } else if (aspectRatio === '3:4') {
-      width = 896; height = 1152;
-    }
-  }
-
-  const requestBody = {
-    userImageUrl: userImageUrl,
-    styleImageUrl: styleImageUrl,
-    styleName: prompt.includes('aesthetic') ? prompt.match(/maintaining the (.+?) aesthetic/)?.[1] || 'custom' : 'custom',
-    prompt: prompt, // Add missing prompt parameter
-    aiModel: 'gpt-image',
-    aspectRatio: aspectRatio,
-    width: width,
-    height: height
-  };
-
-  const response = await fetch(getApiUrl('/nano-banana/pet-portrait'), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` })
-    },
-    body: JSON.stringify(requestBody),
-    signal: abortSignal
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    if (response.status === 400 && errorData.error === 'Insufficient credits') {
-      throw new Error('Insufficient credits');
-    }
-    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-  }
-
-  const result = await response.json();
-  return {
-    imageUrl: result.imageUrl,
-    generation: result.generation,
-    remainingCredits: result.remainingCredits
-  };
-}
 
 // Qwen Pet Portrait generation
 async function generateWithQwenPetPortrait(userImageUrl, styleImageUrl, prompt, aspectRatio, abortSignal) {

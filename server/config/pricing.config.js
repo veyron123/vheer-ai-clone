@@ -1,24 +1,5 @@
 // Backend pricing configuration for AI models
 export const MODEL_PRICING = {
-  // Flux Models
-  'flux-pro': {
-    name: 'Flux Pro',
-    credits: 10,
-    description: 'Fast & reliable'
-  },
-  'flux-max': {
-    name: 'Flux Max', 
-    credits: 20,
-    description: 'Maximum quality'
-  },
-  
-  // GPT Image Models
-  'gpt-image': {
-    name: 'GPT Image',
-    credits: 30,
-    description: 'Advanced AI'
-  },
-
   // Qwen Image Models
   'qwen-image': {
     name: 'Qwen Image',
@@ -32,18 +13,18 @@ export const MODEL_PRICING = {
     credits: 20,
     description: 'Fast & creative AI'
   },
-  
+
   // Midjourney Models (future)
   'midjourney': {
     name: 'Midjourney',
     credits: 25,
     description: 'Artistic style'
   },
-  
+
   // Default fallback
   'default': {
     name: 'Standard',
-    credits: 10,
+    credits: 20,
     description: 'Default model'
   }
 };

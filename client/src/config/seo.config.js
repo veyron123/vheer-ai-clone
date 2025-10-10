@@ -12,7 +12,7 @@ export const SEO_CONFIG = {
   defaults: {
     title: 'СolibRRRi AI - Transform Photos into Stunning Anime Art | Free AI Image Generator',
     titleTemplate: '%s | СolibRRRi AI',
-    description: 'Transform your photos into amazing anime, cartoon and artistic styles using advanced AI models. Support for Disney, Pixar, Manga styles and more. Try Flux Pro, Flux Max, and GPT Image generators for free!',
+    description: 'Transform your photos into amazing anime, cartoon and artistic styles using advanced AI models. Support for Disney, Pixar, Manga styles and more.',
     keywords: 'AI image generator, anime converter, photo to anime, cartoon filter, Disney style, Pixar style, manga creator, AI art generator, Flux Pro, GPT Image, free image generator',
     image: 'https://colibrrri.ai/og-image.jpg',
   },
@@ -25,7 +25,7 @@ export const SEO_CONFIG = {
     },
     animeGenerator: {
       title: 'AI Anime Generator - Transform Photos to Anime Art',
-      description: 'Convert your photos into stunning anime, Disney, Pixar, and manga styles instantly. Use advanced AI models including Flux Pro, Flux Max, and GPT Image.',
+      description: 'Convert your photos into stunning anime, Disney, Pixar, and manga styles instantly. Use advanced AI models.',
       keywords: 'anime generator, photo to anime, AI anime converter, Disney style generator, Pixar filter',
     },
     gallery: {

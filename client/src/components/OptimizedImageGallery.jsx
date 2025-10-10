@@ -128,9 +128,7 @@ const OptimizedImageGallery = ({ images = [] }) => {
             className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
           >
             <option value="">All Models</option>
-            <option value="flux-pro">Flux Pro</option>
             <option value="flux-max">Flux Max</option>
-            <option value="gpt-image">GPT Image</option>
             <option value="qwen">Qwen</option>
             <option value="midjourney">Midjourney</option>
           </select>

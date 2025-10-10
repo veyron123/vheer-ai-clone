@@ -14,7 +14,7 @@ export const getGeneratorStructuredData = () => ({
     "Disney style transformation",
     "Pixar style generation",
     "Manga and anime conversion",
-    "Multiple AI models (Flux Pro, Flux Max, GPT Image)",
+    "Multiple AI models",
     "Custom aspect ratios",
     "High-quality output",
     "Fast generation",
@@ -61,7 +61,7 @@ export const getFAQStructuredData = () => ({
       "name": "How does Vheer AI anime generator work?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Vheer AI uses advanced artificial intelligence models including Flux Pro, Flux Max, and GPT Image to transform your photos into anime and cartoon styles. Simply upload a photo, select a style, and our AI will generate a stunning artistic version."
+        "text": "Vheer AI uses advanced artificial intelligence models to transform your photos into anime and cartoon styles. Simply upload a photo, select a style, and our AI will generate a stunning artistic version."
       }
     },
     {

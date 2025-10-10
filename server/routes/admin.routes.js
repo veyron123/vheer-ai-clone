@@ -244,7 +244,9 @@ router.get('/stats', authenticateUser, adminAuth, async (req, res) => {
     // Payment stats
     const paymentStats = await prisma.payment.aggregate({
       where: {
-        status: 'SUCCESS'
+        status: {
+          in: ['SUCCESS', 'COMPLETED']
+        }
       },
       _sum: {
         amount: true

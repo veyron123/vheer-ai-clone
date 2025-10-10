@@ -1,15 +1,5 @@
 // AI Models Configuration for Style Transfer
 export const STYLE_TRANSFER_AI_MODELS = {
-  FLUX_PRO: {
-    id: 'flux-pro',
-    name: 'Flux Pro',
-    badge: { text: 'Fast', color: 'bg-yellow-400 text-black' }
-  },
-  GPT_IMAGE: {
-    id: 'gpt-image',
-    name: 'GPT Image',
-    badge: { text: '👑', color: 'bg-red-500 text-white' }
-  },
   QWEN_IMAGE: {
     id: 'qwen-image',
     name: 'Qwen Image',

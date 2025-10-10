@@ -20,8 +20,6 @@ export function validateEnv() {
   // API Keys - temporarily disabled in production to fix deployment
   // Only require them in development
   const apiKeyVars = !isProduction ? {
-    FLUX_API_KEY: 'Flux AI API key',
-    GPT_IMAGE_API_KEY: 'GPT Image API key', 
     IMGBB_API_KEY: 'ImgBB storage API key',
     FAL_KEY: 'FAL AI API key',
   } : {};

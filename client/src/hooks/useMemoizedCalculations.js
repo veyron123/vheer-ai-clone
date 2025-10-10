@@ -182,9 +182,9 @@ export const useMemoizedCredits = (generations, bonuses, subscriptionPlan) => {
     // Heavy credit calculation
     const baseCreditsUsed = generations.reduce((total, gen) => {
       const modelCosts = {
-        'flux-pro': 10,
         'flux-max': 15,
-        'gpt-image': 8,
+        'qwen-image': 10,
+        'nano-banana': 12,
         'qwen': 6,
         'midjourney': 20,
         'runway': 25

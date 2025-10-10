@@ -507,7 +507,7 @@ export const generatePetPortrait = async (req, res, next) => {
       let imageUrl = null;
 
       // Call the appropriate AI service based on aiModel
-      if (aiModel === 'flux-pro' || aiModel === 'flux-max') {
+      if (aiModel === 'flux-max') {
         // Use working Flux API with dual-image Pet Portrait support
         const FLUX_API_KEY = process.env.FLUX_API_KEY;
         
@@ -678,7 +678,7 @@ export const generatePetPortrait = async (req, res, next) => {
         }
       }
       else {
-        throw new AppError(`Pet Portrait generation not yet supported for ${aiModel}. Currently supports: flux-pro, flux-max, nano-banana`, 400);
+        throw new AppError(`Pet Portrait generation not yet supported for ${aiModel}. Currently supports: flux-max, nano-banana`, 400);
       }
 
       if (!imageUrl) {

@@ -32,14 +32,6 @@ export const ACTION_FIGURE_MODELS = [
     supportsDualImage: true
   },
   {
-    id: 'flux-pro',
-    name: 'Flux Pro',
-    description: 'High-quality action figure generation',
-    credits: 25,
-    premium: true,
-    supportsDualImage: false
-  },
-  {
     id: 'seedream-v4',
     name: 'Seedream V4',
     description: 'Multi-image AI editing & generation',

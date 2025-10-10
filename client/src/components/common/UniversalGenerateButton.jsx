@@ -14,7 +14,7 @@ const UniversalGenerateButton = ({
   onClear,
   isGenerating = false,
   disabled = false,
-  aiModel = 'flux-pro',
+  aiModel = 'qwen-image',
   numImages = 1,
   showClearButton = false,
   generateText = 'Generate',

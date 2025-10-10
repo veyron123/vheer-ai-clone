@@ -474,21 +474,17 @@ export async function generateWithGPTImageToImage(imageBase64, positivePrompt, n
  * @param {string} negativePrompt - Negative prompt for generation
  * @param {number} creativeStrength - Creative strength (1-10)
  * @param {number} controlStrength - Control strength (0-5)
- * @param {string} aiModel - AI model to use ('flux-pro', 'gpt-image', 'qwen-image', or 'nano-banana')
+ * @param {string} aiModel - AI model to use ('qwen-image', 'nano-banana', or legacy options)
  * @param {string} aspectRatio - Aspect ratio for generation ('1:1', '16:9', etc.)
  * @param {AbortSignal|null} abortSignal - AbortController signal to cancel requests
  * @param {number} scale - Guidance scale for generation quality (default: 3.5)
  * @returns {Promise} Generated image data
  */
-export async function generateImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aiModel = 'flux-pro', aspectRatio = '1:1', abortSignal = null, scale = 3.5) {
-  // Use Flux for image-to-image generation
-  if (aiModel === 'flux-pro') {
-    return await generateWithFluxImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aiModel, abortSignal, scale);
-  }
+export async function generateImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aiModel = 'qwen-image', aspectRatio = '1:1', abortSignal = null, scale = 3.5) {
   
-  // Use GPT IMAGE for image-to-image generation
+  // Use GPT IMAGE for image-to-image generation (removed)
   if (aiModel === 'gpt-image') {
-    return await generateWithGPTImageToImage(imageUrl, positivePrompt, negativePrompt, creativeStrength, controlStrength, aspectRatio, abortSignal, scale);
+    throw new Error('GPT Image model is no longer supported');
   }
   
   // Use Qwen Image for image-to-image generation

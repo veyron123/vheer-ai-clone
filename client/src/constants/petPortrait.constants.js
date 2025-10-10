@@ -44,8 +44,6 @@ export const PET_PORTRAIT_MODELS = [
     premium: false,
     supportsDualImage: true
   }
-  // Other models temporarily disabled until dual-image support is implemented
-  // flux-pro, gpt-image, qwen-image - only support single image input
 ];
 
 export const PET_PORTRAIT_ASPECT_RATIOS = [

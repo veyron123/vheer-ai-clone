@@ -2,7 +2,7 @@ import React from 'react';
 import UniversalGenerateButton from '../common/UniversalGenerateButton';
 
 // KISS: Simple wrapper using unified UniversalGenerateButton
-const GenerateButton = ({ onClick, disabled, isGenerating, aiModel = 'flux-pro', numImages = 1 }) => {
+const GenerateButton = ({ onClick, disabled, isGenerating, aiModel = 'qwen-image', numImages = 1 }) => {
   return (
     <UniversalGenerateButton
       onGenerate={onClick}

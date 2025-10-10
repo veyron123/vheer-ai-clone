@@ -41,19 +41,6 @@ export const AI_MODELS = {
     badge: { text: 'HOT', color: 'bg-orange-500 text-white' },
     credits: 25
   }
-  // Temporarily disabled - issues with API
-  // FLUX_PRO: {
-  //   id: 'flux-pro',
-  //   name: 'Flux Pro',
-  //   badge: { text: 'Fast', color: 'bg-yellow-400 text-black' },
-  //   credits: 10
-  // },
-  // GPT_IMAGE: {
-  //   id: 'gpt-image',
-  //   name: 'GPT Image',
-  //   badge: { text: '👑', color: 'bg-red-500 text-white' },
-  //   credits: 30
-  // }
 };
 
 // Example Images

@@ -15,13 +15,12 @@ const AutoMockupButton = ({
     
     // Поддерживаемые модели (расширяем список)
     const supportedModels = [
-      'gpt-image', 
-      'qwen-image', 
-      'flux-pro', 
+      'qwen-image',
       'flux-max',
       'flux-dev',
       'flux-schnell',
-      'seedream-v4'
+      'seedream-v4',
+      'nano-banana'
     ];
     
     // Поддерживаемые соотношения

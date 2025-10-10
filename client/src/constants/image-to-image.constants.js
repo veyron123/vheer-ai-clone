@@ -21,24 +21,6 @@ export const IMAGE_AI_MODELS = {
     credits: 20,
     status: 'working'
   }
-  // Temporarily disabled - issues with API
-  // FLUX_PRO: {
-  //   id: 'flux-pro',
-  //   name: 'Flux1.Kontext Pro',
-  //   badge: { text: 'Fast', color: 'bg-yellow-400 text-black' },
-  //   credits: 10
-  // },
-  // GPT_IMAGE: {
-  //   id: 'gpt-image',
-  //   name: 'GPT Image',
-  //   badge: { text: '👑', color: 'bg-red-500 text-white' },
-  //   credits: 30
-  // },
-  // MIDJOURNEY: {
-  //   id: 'midjourney',
-  //   name: 'Midjourney v7',
-  //   badge: { text: '🎨 Pro', color: 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' }
-  // }
 };
 
 // Aspect Ratio Options - Базовые соотношения для всех моделей (кроме Nano-Banana)

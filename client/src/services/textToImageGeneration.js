@@ -253,9 +253,9 @@ export async function generateTextToImage(prompt, negativePrompt = '', style = '
     return await generateWithQwenTextToImage(prompt, negativePrompt, style, aspectRatio, abortSignal, baseImage, advancedSettings);
   }
   
-  // Use GPT Image for text-to-image generation
+  // Use GPT Image for text-to-image generation (removed)
   if (aiModel === 'gpt-image') {
-    return await generateWithGPTTextToImage(prompt, negativePrompt, style, aspectRatio, abortSignal);
+    throw new Error('GPT Image model is no longer supported');
   }
   
   throw new Error(`Unsupported AI model: ${aiModel}`);

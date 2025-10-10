@@ -1,19 +1,5 @@
 // AI Model Pricing Configuration
 export const MODEL_PRICING = {
-  // Flux Models
-  'flux-pro': {
-    name: 'Flux Pro',
-    credits: 10,
-    description: 'Fast & reliable'
-  },
-  
-  // GPT Image Models
-  'gpt-image': {
-    name: 'GPT Image',
-    credits: 30,
-    description: 'Advanced AI'
-  },
-
   // Qwen Image Models
   'qwen-image': {
     name: 'Qwen Image',

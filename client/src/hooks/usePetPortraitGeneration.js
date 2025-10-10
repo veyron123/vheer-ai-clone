@@ -79,7 +79,7 @@ export const usePetPortraitGeneration = () => {
         // Nano-Banana always generates 1024x1024 regardless of aspect ratio
         finalAspectRatio = '1:1';
       } else {
-        // All other models (GPT Image, Qwen Image, Flux) support aspect ratio selection
+        // All other models (Qwen Image) support aspect ratio selection
         finalAspectRatio = aspectRatio || '1:1';
         if (aspectRatio === 'match' && uploadedImage) {
           finalAspectRatio = await detectAspectRatio(uploadedImage);

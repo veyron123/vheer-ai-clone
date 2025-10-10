@@ -1,13 +1,6 @@
 // Text To Image Generator Constants
 export const TEXT_TO_IMAGE_MODELS = [
   {
-    id: 'gpt-image',
-    name: 'GPT Image',
-    description: 'AI-powered text to image generation',
-    credits: 30,
-    premium: false
-  },
-  {
     id: 'qwen-image',
     name: 'Qwen Image',
     description: 'Advanced text to image creation',
