@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { useAuthStore } from '../stores/authStore';
+import { generateWithNanoBananaImageToImage } from '../services/nanoBananaGeneration';
+import { urlToBase64 } from '../utils/imageUtils';
 
 export const useActionFigureGeneration = () => {
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -48,10 +50,7 @@ export const useActionFigureGeneration = () => {
     const startTime = Date.now();
 
     try {
-      // Use the same approach as Pet Portrait - client-side generation
-      const token = useAuthStore.getState().token;
-
-      // Convert uploaded image to base64 if needed
+      // Convert uploaded image to base64 if needed (for nano-banana approach)
       let imageBase64 = uploadedImage;
       if (uploadedImage.startsWith('blob:')) {
         // Convert blob URL to base64
@@ -64,51 +63,24 @@ export const useActionFigureGeneration = () => {
         });
       }
 
-      // Create the prompt for action figure generation using user input
-      const stylePrompt = `Create an action figure named "${figureName}" with the following items and accessories: ${figureItems}. Transform this person into a collectible action figure with detailed sculpting, dynamic pose, and professional product photography look. Include all specified items as accessories in the packaging.`;
+      // Create the detailed prompt for blister packaging style
+      const stylePrompt = `Make a picture of a 3D action figure toy Make it look like it's being displayed in a transparent plastic package, blister packaging model. The figure is as in the photo, style is very detailed and realistic. On the top of the packaging there is a large writing: "${figureName}" in white text then below it "${figureName}". Also add some supporting items for the job next to the figure, like ${figureItems}. The packaging design is minimalist, cardboard colour, cute toy style sold in stores. The style is cartoonish, cute but still neat.`;
 
-      // Setup headers for backend request
-      const headers = {
-        'Content-Type': 'application/json'
-      };
+      // Use the same nano-banana approach as Pet Portrait generator
+      const result = await generateWithNanoBananaImageToImage(
+        imageBase64,
+        stylePrompt,
+        'none',
+        aspectRatio || '1:1'
+      );
 
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      // Use backend proxy for action figure generation
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/nano-banana/action-figure`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          userImageUrl: imageBase64,
-          styleImageUrl: styleData.image,
-          styleName: figureName,
-          prompt: stylePrompt,
-          aiModel: aiModel,
-          aspectRatio: aspectRatio || '1:1',
-          width: 1024,
-          height: 1024
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        if (response.status === 400 && errorData.error === 'Insufficient credits') {
-          throw new Error('Insufficient credits');
-        }
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (!data.imageUrl) {
-        throw new Error('No image URL received from server');
+      if (!result || !result.url) {
+        throw new Error('No image generated');
       }
 
       const endTime = Date.now();
       setGenerationTime(Math.round((endTime - startTime) / 1000));
-      setGeneratedImage(data.imageUrl);
+      setGeneratedImage(result.url);
 
       toast.success(`Action figure "${figureName}" generated successfully!`);
 

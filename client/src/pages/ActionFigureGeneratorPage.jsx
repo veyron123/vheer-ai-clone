@@ -140,13 +140,13 @@ const ActionFigureGeneratorPage = () => {
             {/* Name Input */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Figure Name
+                Name
               </label>
               <input
                 type="text"
                 value={figureName}
                 onChange={(e) => setFigureName(e.target.value)}
-                placeholder="Enter figure name..."
+                placeholder="Enter name for the packaging..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
@@ -154,12 +154,12 @@ const ActionFigureGeneratorPage = () => {
             {/* Items Input */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Items & Accessories
+                Profession & Items
               </label>
               <textarea
                 value={figureItems}
                 onChange={(e) => setFigureItems(e.target.value)}
-                placeholder="Enter items and accessories for the figure..."
+                placeholder="Enter profession and items for the figure (e.g., doctor with stethoscope, teacher with books, etc.)..."
                 rows={4}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
@@ -207,13 +207,13 @@ const ActionFigureGeneratorPage = () => {
             {/* Name Input */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Figure Name
+                Name
               </label>
               <input
                 type="text"
                 value={figureName}
                 onChange={(e) => setFigureName(e.target.value)}
-                placeholder="Enter figure name..."
+                placeholder="Enter name for the packaging..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
@@ -221,12 +221,12 @@ const ActionFigureGeneratorPage = () => {
             {/* Items Input */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Items & Accessories
+                Profession & Items
               </label>
               <textarea
                 value={figureItems}
                 onChange={(e) => setFigureItems(e.target.value)}
-                placeholder="Enter items and accessories for the figure..."
+                placeholder="Enter profession and items for the figure (e.g., doctor with stethoscope, teacher with books, etc.)..."
                 rows={4}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
