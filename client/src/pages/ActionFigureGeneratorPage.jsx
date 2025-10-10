@@ -4,7 +4,6 @@ import { ChevronRight } from 'lucide-react';
 
 // Components
 import ImageUploader from '../components/anime/ImageUploader';
-import StyleSelector from '../components/anime/StyleSelector';
 import AspectRatioSelector from '../components/anime/AspectRatioSelector';
 import GenerateButton from '../components/anime/GenerateButton';
 import ExampleGallery from '../components/anime/ExampleGallery';
@@ -20,8 +19,8 @@ import { ACTION_FIGURE_STYLES } from '../constants/actionFigure.constants';
 import { useActionFigureGeneration } from '../hooks/useActionFigureGeneration';
 
 const ActionFigureGeneratorPage = () => {
-  const [selectedStyle, setSelectedStyle] = useState('superhero-classic');
-  const [customStyle, setCustomStyle] = useState('');
+  const [figureName, setFigureName] = useState('');
+  const [figureItems, setFigureItems] = useState('');
   // Using Nano-Banana model for Action Figure generation (best for style transfer)
   const aiModel = 'nano-banana';
   const [aspectRatio, setAspectRatio] = useState('3:4');
@@ -40,21 +39,25 @@ const ActionFigureGeneratorPage = () => {
   } = useActionFigureGeneration();
 
   const handleGenerate = () => {
-    if (customStyle.trim()) {
-      // For custom style, use traditional approach
-      alert('Custom styles not supported yet for Action Figure Generator. Please select a predefined style.');
+    if (!figureName.trim()) {
+      alert('Please enter a name for the action figure');
       return;
     }
-    
-    // Find the selected style data
-    const styleData = ACTION_FIGURE_STYLES.find(style => style.id === selectedStyle);
-    if (!styleData) {
-      alert('Please select a valid action figure style');
+
+    if (!figureItems.trim()) {
+      alert('Please enter items/accessories for the action figure');
       return;
     }
-    
-    // Generate action figure with style image
-    generateActionFigureImage(selectedStyle, styleData, aiModel, aspectRatio);
+
+    // Create custom style data for the action figure
+    const customStyleData = {
+      id: 'custom',
+      name: figureName,
+      image: '/example-results/idyXE20dVrPCQE62CUUxJ.jpeg' // Default style reference image
+    };
+
+    // Generate action figure with custom name and items
+    generateActionFigureImage(figureName, figureItems, customStyleData, aiModel, aspectRatio);
   };
 
   // Action figure specific example images
@@ -130,14 +133,37 @@ const ActionFigureGeneratorPage = () => {
 
           {/* Right Column - Settings - только на десктопе */}
           <div className="hidden lg:block order-1 lg:order-2 bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6 h-fit lg:sticky lg:top-20">
-            <StyleSelector
-              styles={ACTION_FIGURE_STYLES}
-              selectedStyle={selectedStyle}
-              onStyleChange={setSelectedStyle}
-              customStyle={customStyle}
-              onCustomStyleChange={setCustomStyle}
-              isActionFigure={true}
-            />
+            <div className="mb-4 sm:mb-6">
+              <h3 className="text-lg font-semibold mb-2 text-gray-900">Name or title on the packaging:</h3>
+            </div>
+
+            {/* Name Input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Figure Name
+              </label>
+              <input
+                type="text"
+                value={figureName}
+                onChange={(e) => setFigureName(e.target.value)}
+                placeholder="Enter figure name..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Items Input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Items & Accessories
+              </label>
+              <textarea
+                value={figureItems}
+                onChange={(e) => setFigureItems(e.target.value)}
+                placeholder="Enter items and accessories for the figure..."
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+            </div>
 
             <AspectRatioSelector
               selectedRatio={aspectRatio}
@@ -148,7 +174,7 @@ const ActionFigureGeneratorPage = () => {
 
             <GenerateButton
               onClick={handleGenerate}
-              disabled={!uploadedImage}
+              disabled={!uploadedImage || !figureName.trim() || !figureItems.trim()}
               isGenerating={isGenerating}
               aiModel={'nano-banana'}
             />
@@ -174,14 +200,37 @@ const ActionFigureGeneratorPage = () => {
           </div>
 
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6">
-            <StyleSelector
-              styles={ACTION_FIGURE_STYLES}
-              selectedStyle={selectedStyle}
-              onStyleChange={setSelectedStyle}
-              customStyle={customStyle}
-              onCustomStyleChange={setCustomStyle}
-              isActionFigure={true}
-            />
+            <div className="mb-4 sm:mb-6">
+              <h3 className="text-lg font-semibold mb-2 text-gray-900">Name or title on the packaging:</h3>
+            </div>
+
+            {/* Name Input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Figure Name
+              </label>
+              <input
+                type="text"
+                value={figureName}
+                onChange={(e) => setFigureName(e.target.value)}
+                placeholder="Enter figure name..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Items Input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Items & Accessories
+              </label>
+              <textarea
+                value={figureItems}
+                onChange={(e) => setFigureItems(e.target.value)}
+                placeholder="Enter items and accessories for the figure..."
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+            </div>
 
             <AspectRatioSelector
               selectedRatio={aspectRatio}
@@ -192,7 +241,7 @@ const ActionFigureGeneratorPage = () => {
 
             <GenerateButton
               onClick={handleGenerate}
-              disabled={!uploadedImage}
+              disabled={!uploadedImage || !figureName.trim() || !figureItems.trim()}
               isGenerating={isGenerating}
               aiModel={'nano-banana'}
             />

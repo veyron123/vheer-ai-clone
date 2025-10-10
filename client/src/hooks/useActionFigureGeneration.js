@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { useAuthStore } from '../stores/authStore';
-import { ACTION_FIGURE_PROMPTS } from '../constants/actionFigure.constants';
 
 export const useActionFigureGeneration = () => {
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -34,7 +33,7 @@ export const useActionFigureGeneration = () => {
     }
   };
 
-  const generateActionFigureImage = async (selectedStyle, styleData, aiModel, aspectRatio) => {
+  const generateActionFigureImage = async (figureName, figureItems, styleData, aiModel, aspectRatio) => {
     if (!uploadedImage) {
       toast.error('Please upload an image first');
       return;
@@ -65,9 +64,8 @@ export const useActionFigureGeneration = () => {
         });
       }
 
-      // Create the prompt for action figure generation
-      const stylePrompt = ACTION_FIGURE_PROMPTS[selectedStyle] ||
-        'Transform this person into an action figure style. Create a collectible toy figure with detailed sculpting, dynamic pose, and professional product photography look.';
+      // Create the prompt for action figure generation using user input
+      const stylePrompt = `Create an action figure named "${figureName}" with the following items and accessories: ${figureItems}. Transform this person into a collectible action figure with detailed sculpting, dynamic pose, and professional product photography look. Include all specified items as accessories in the packaging.`;
 
       // Setup headers for backend request
       const headers = {
@@ -85,7 +83,7 @@ export const useActionFigureGeneration = () => {
         body: JSON.stringify({
           userImageUrl: imageBase64,
           styleImageUrl: styleData.image,
-          styleName: selectedStyle,
+          styleName: figureName,
           prompt: stylePrompt,
           aiModel: aiModel,
           aspectRatio: aspectRatio || '1:1',
@@ -112,7 +110,7 @@ export const useActionFigureGeneration = () => {
       setGenerationTime(Math.round((endTime - startTime) / 1000));
       setGeneratedImage(data.imageUrl);
 
-      toast.success('Action figure generated successfully!');
+      toast.success(`Action figure "${figureName}" generated successfully!`);
 
     } catch (error) {
       console.error('Action figure generation error:', error);
