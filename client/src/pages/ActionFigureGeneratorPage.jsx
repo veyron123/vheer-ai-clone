@@ -58,26 +58,20 @@ const ActionFigureGeneratorPage = () => {
   };
 
   // Action figure specific example images
-  const actionFigureExampleImages = [
-    {
-      id: 1,
-      original: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop',
-      generated: '/example-results/action-figure-example-1.webp',
-      style: 'Superhero Action Figure'
-    },
-    {
-      id: 2,
-      original: 'https://images.unsplash.com/photo-1494790108755-2616b612b851?w=300&h=400&fit=crop',
-      generated: '/example-results/action-figure-example-2.webp',
-      style: 'Anime Action Figure'
-    },
-    {
-      id: 3,
-      original: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=400&fit=crop',
-      generated: '/example-results/action-figure-example-3.webp',
-      style: 'Robot Mech Figure'
-    }
-  ];
+   const actionFigureExampleImages = [
+     {
+       id: 1,
+       original: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop',
+       generated: '/example-results/idyXE20dVrPCQE62CUUxJ.jpeg',
+       style: 'Action Figure Style'
+     },
+     {
+       id: 2,
+       original: 'https://images.unsplash.com/photo-1494790108755-2616b612b851?w=300&h=400&fit=crop',
+       generated: '/example-results/output.jpeg',
+       style: 'Action Figure Style'
+     }
+   ];
 
   return (
     <>
@@ -97,14 +91,6 @@ const ActionFigureGeneratorPage = () => {
         </div>
       </div>
 
-      {/* Hero Section */}
-      <div className="container-custom py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Photo to Action Figure Generator
-          </h1>
-        </div>
-      </div>
 
       {/* Main Content */}
       <div className="container-custom py-4 sm:py-8">
@@ -144,11 +130,6 @@ const ActionFigureGeneratorPage = () => {
 
           {/* Right Column - Settings - только на десктопе */}
           <div className="hidden lg:block order-1 lg:order-2 bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6 h-fit lg:sticky lg:top-20">
-            <div className="mb-4 sm:mb-6">
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">Action Figure Style</h3>
-              <p className="text-sm text-gray-600 mb-4">Choose from our collection of action figure styles</p>
-            </div>
-
             <StyleSelector
               styles={ACTION_FIGURE_STYLES}
               selectedStyle={selectedStyle}
@@ -171,17 +152,6 @@ const ActionFigureGeneratorPage = () => {
               isGenerating={isGenerating}
               aiModel={'nano-banana'}
             />
-
-            {/* Feature Highlights */}
-            <div className="mt-4 sm:mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
-              <h4 className="font-semibold text-gray-900 mb-2">✨ Features:</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• 20+ action figure styles</li>
-                <li>• Superhero, anime, fantasy themes</li>
-                <li>• High-quality collectible look</li>
-                <li>• Perfect for social media</li>
-              </ul>
-            </div>
           </div>
         </div>
 
@@ -204,11 +174,6 @@ const ActionFigureGeneratorPage = () => {
           </div>
 
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6">
-            <div className="mb-4 sm:mb-6">
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">Action Figure Style</h3>
-              <p className="text-sm text-gray-600 mb-4">Choose from our collection of action figure styles</p>
-            </div>
-
             <StyleSelector
               styles={ACTION_FIGURE_STYLES}
               selectedStyle={selectedStyle}
@@ -231,17 +196,6 @@ const ActionFigureGeneratorPage = () => {
               isGenerating={isGenerating}
               aiModel={'nano-banana'}
             />
-
-            {/* Feature Highlights */}
-            <div className="mt-4 sm:mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
-              <h4 className="font-semibold text-gray-900 mb-2">✨ Features:</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• 20+ action figure styles</li>
-                <li>• Superhero, anime, fantasy themes</li>
-                <li>• High-quality collectible look</li>
-                <li>• Perfect for social media</li>
-              </ul>
-            </div>
           </div>
 
           {/* Mockup Section - после настроек на мобильных */}
@@ -274,8 +228,8 @@ const ActionFigureGeneratorPage = () => {
             <div className="bg-pink-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">🎭</span>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Choose Style</h3>
-            <p className="text-gray-600">Select from 20+ action figure styles and themes</p>
+            <h3 className="text-xl font-semibold mb-2">AI Generation</h3>
+            <p className="text-gray-600">Advanced AI transforms your photo into action figure</p>
           </div>
           <div className="text-center">
             <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">

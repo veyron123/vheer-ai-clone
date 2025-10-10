@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { parseCartItems } from '../utils/cartItems.js';
 
 const prisma = new PrismaClient();
 
@@ -172,25 +173,23 @@ export const getCarts = async (req, res) => {
     });
 
     // Transform to match expected cart format
-    const transformedCarts = carts.map((cart) => {
-      return {
-        id: cart.id,
-        sessionId: cart.sessionId,
-        userId: cart.userId,
-        user: cart.user,
-        items: cart.items,
-        totalAmount: cart.totalAmount,
-        itemCount: cart.itemCount || 0,
-        currency: cart.currency,
-        customerEmail: cart.customerEmail || cart.user?.email,
-        status: cart.status,
-        createdAt: cart.createdAt,
-        updatedAt: cart.updatedAt,
-        lastActivityAt: cart.lastActivityAt || cart.updatedAt,
-        isAbandoned: cart.status === 'abandoned',
-        isConverted: cart.status === 'converted'
-      };
-    });
+    const transformedCarts = carts.map((cart) => ({
+      id: cart.id,
+      sessionId: cart.sessionId,
+      userId: cart.userId,
+      user: cart.user,
+      items: parseCartItems(cart.items),
+      totalAmount: cart.totalAmount,
+      itemCount: cart.itemCount || 0,
+      currency: cart.currency,
+      customerEmail: cart.customerEmail || cart.user?.email,
+      status: cart.status,
+      createdAt: cart.createdAt,
+      updatedAt: cart.updatedAt,
+      lastActivityAt: cart.lastActivityAt || cart.updatedAt,
+      isAbandoned: cart.status === 'abandoned',
+      isConverted: cart.status === 'converted'
+    }));
 
     res.json({
       success: true,
@@ -246,7 +245,7 @@ export const getCartById = async (req, res) => {
       sessionId: cart.sessionId,
       userId: cart.userId,
       user: cart.user,
-      items: cart.items,
+      items: parseCartItems(cart.items),
       totalAmount: cart.totalAmount,
       itemCount: cart.itemCount || 0,
       currency: cart.currency,
@@ -327,7 +326,7 @@ export const updateCartById = async (req, res) => {
       sessionId: cart.sessionId,
       userId: cart.userId,
       user: cart.user,
-      items: cart.items,
+      items: parseCartItems(cart.items),
       totalAmount: cart.totalAmount,
       itemCount: cart.itemCount || 0,
       currency: cart.currency,

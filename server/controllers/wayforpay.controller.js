@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
 import WayForPayRecurringService from '../services/wayforpayRecurringService.js';
 import { trackAffiliateConversion } from '../middleware/affiliateTracking.js';
+import { serializeCartItems } from '../utils/cartItems.js';
 
 const prisma = new PrismaClient();
 const recurringService = new WayForPayRecurringService();
@@ -1299,7 +1300,7 @@ export const handleCartCallback = async (req, res) => {
             shippingPhone: deliveryPhone || clientPhone || '',
             
             // Order items with full details
-            items: items,
+            items: serializeCartItems(items),
             
             // Order status
             orderStatus: 'PROCESSING',

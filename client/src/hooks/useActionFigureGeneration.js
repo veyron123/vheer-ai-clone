@@ -47,45 +47,63 @@ export const useActionFigureGeneration = () => {
 
     setIsGenerating(true);
     const startTime = Date.now();
-    
-    try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-      
-      // Prepare the request
-      const formData = new FormData();
-      
-      // Convert base64 to blob for the user image
-      const base64Response = await fetch(uploadedImage);
-      const blob = await base64Response.blob();
-      formData.append('userImage', blob, 'user-image.jpg');
-      
-      // Add style information
-      formData.append('styleName', selectedStyle);
-      formData.append('styleImageUrl', styleData.image);
-      formData.append('aspectRatio', aspectRatio);
-      formData.append('aiModel', aiModel);
-      
-      // Add style-specific prompt
-      const stylePrompt = ACTION_FIGURE_PROMPTS[selectedStyle] || 
-        'action figure style, collectible toy, detailed sculpting, professional photography';
-      formData.append('customPrompt', stylePrompt);
 
-      // Make the request
-      const response = await fetch(`${API_BASE}/api/generation/action-figure`, {
+    try {
+      // Use the same approach as Pet Portrait - client-side generation
+      const token = useAuthStore.getState().token;
+
+      // Convert uploaded image to base64 if needed
+      let imageBase64 = uploadedImage;
+      if (uploadedImage.startsWith('blob:')) {
+        // Convert blob URL to base64
+        const response = await fetch(uploadedImage);
+        const blob = await response.blob();
+        imageBase64 = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(blob);
+        });
+      }
+
+      // Create the prompt for action figure generation
+      const stylePrompt = ACTION_FIGURE_PROMPTS[selectedStyle] ||
+        'Transform this person into an action figure style. Create a collectible toy figure with detailed sculpting, dynamic pose, and professional product photography look.';
+
+      // Setup headers for backend request
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      // Use backend proxy for action figure generation
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/nano-banana/action-figure`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: formData
+        headers,
+        body: JSON.stringify({
+          userImageUrl: imageBase64,
+          styleImageUrl: styleData.image,
+          styleName: selectedStyle,
+          prompt: stylePrompt,
+          aiModel: aiModel,
+          aspectRatio: aspectRatio || '1:1',
+          width: 1024,
+          height: 1024
+        })
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        if (response.status === 400 && errorData.error === 'Insufficient credits') {
+          throw new Error('Insufficient credits');
+        }
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      
+
       if (!data.imageUrl) {
         throw new Error('No image URL received from server');
       }
@@ -93,13 +111,13 @@ export const useActionFigureGeneration = () => {
       const endTime = Date.now();
       setGenerationTime(Math.round((endTime - startTime) / 1000));
       setGeneratedImage(data.imageUrl);
-      
+
       toast.success('Action figure generated successfully!');
-      
+
     } catch (error) {
       console.error('Action figure generation error:', error);
       let errorMessage = 'Failed to generate action figure. ';
-      
+
       if (error.message.includes('credits')) {
         errorMessage += 'Insufficient credits.';
       } else if (error.message.includes('premium')) {
@@ -109,7 +127,7 @@ export const useActionFigureGeneration = () => {
       } else {
         errorMessage += error.message || 'Please try again.';
       }
-      
+
       toast.error(errorMessage);
     } finally {
       setIsGenerating(false);

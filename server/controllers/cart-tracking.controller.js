@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { serializeCartItems, parseCartItems } from '../utils/cartItems.js';
 
 const prisma = new PrismaClient();
 
@@ -20,11 +21,15 @@ export const saveCartSession = async (req, res) => {
     });
     
     if (existingSession) {
+      const normalizedItems = items !== undefined
+        ? items
+        : parseCartItems(existingSession.items);
+
       // Обновляем существующую сессию
       const updatedSession = await prisma.cartSession.update({
         where: { sessionId },
         data: {
-          items,
+          items: serializeCartItems(normalizedItems),
           totalAmount,
           itemCount,
           currency,
@@ -38,9 +43,14 @@ export const saveCartSession = async (req, res) => {
         }
       });
       
+      const responseSession = {
+        ...updatedSession,
+        items: parseCartItems(updatedSession.items)
+      };
+
       res.json({
         success: true,
-        cartSession: updatedSession,
+        cartSession: responseSession,
         message: 'Корзина обновлена'
       });
     } else {
@@ -49,7 +59,7 @@ export const saveCartSession = async (req, res) => {
         data: {
           sessionId,
           userId,
-          items,
+          items: serializeCartItems(items ?? []),
           totalAmount,
           itemCount,
           currency,
@@ -60,9 +70,14 @@ export const saveCartSession = async (req, res) => {
         }
       });
       
+      const responseSession = {
+        ...newSession,
+        items: parseCartItems(newSession.items)
+      };
+
       res.json({
         success: true,
-        cartSession: newSession,
+        cartSession: responseSession,
         message: 'Корзина сохранена'
       });
     }
@@ -91,9 +106,14 @@ export const markCartAsConverted = async (req, res) => {
       }
     });
     
+    const responseSession = {
+      ...updatedSession,
+      items: parseCartItems(updatedSession.items)
+    };
+
     res.json({
       success: true,
-      cartSession: updatedSession,
+      cartSession: responseSession,
       message: 'Корзина помечена как оплаченная'
     });
     
@@ -174,9 +194,14 @@ export const getActiveCarts = async (req, res) => {
       }
     });
     
+    const normalizedCarts = carts.map(cart => ({
+      ...cart,
+      items: parseCartItems(cart.items)
+    }));
+
     res.json({
       success: true,
-      carts,
+      carts: normalizedCarts,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
@@ -244,9 +269,14 @@ export const getCartDetails = async (req, res) => {
       });
     }
     
+    const normalizedCart = {
+      ...cart,
+      items: parseCartItems(cart.items)
+    };
+
     res.json({
       success: true,
-      cart,
+      cart: normalizedCart,
       order
     });
     
@@ -381,20 +411,24 @@ export const getCartStats = async (req, res) => {
     // Обработка популярных товаров
     const productCounts = {};
     topProducts.forEach(cart => {
-      if (cart.items && Array.isArray(cart.items)) {
-        cart.items.forEach(item => {
-          const key = item.frameColorName || item.frameColor || 'Unknown';
-          if (!productCounts[key]) {
-            productCounts[key] = {
-              name: key,
-              count: 0,
-              totalValue: 0
-            };
-          }
-          productCounts[key].count += item.quantity || 1;
-          productCounts[key].totalValue += (item.price || 0) * (item.quantity || 1);
-        });
+      const itemsInCart = parseCartItems(cart.items);
+
+      if (itemsInCart.length === 0) {
+        return;
       }
+
+      itemsInCart.forEach(item => {
+        const key = item.frameColorName || item.frameColor || 'Unknown';
+        if (!productCounts[key]) {
+          productCounts[key] = {
+            name: key,
+            count: 0,
+            totalValue: 0
+          };
+        }
+        productCounts[key].count += item.quantity || 1;
+        productCounts[key].totalValue += (item.price || 0) * (item.quantity || 1);
+      });
     });
     
     const topProductsList = Object.values(productCounts)

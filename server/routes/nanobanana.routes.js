@@ -13,4 +13,7 @@ router.post('/generate', authenticate, generateFromPrompt);
 // Generate Pet Portrait with dual images (user + style reference)
 router.post('/pet-portrait', authenticate, generatePetPortrait);
 
+// Generate Action Figure with dual images (user + style reference)
+router.post('/action-figure', authenticate, generatePetPortrait);
+
 export default router;

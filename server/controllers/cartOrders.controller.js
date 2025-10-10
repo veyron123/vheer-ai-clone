@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { parseCartItems } from '../utils/cartItems.js';
 
 const prisma = new PrismaClient();
 
@@ -44,7 +45,7 @@ export const getCartOrders = async (req, res) => {
     const totalOrders = await prisma.cartOrder.count({ where });
 
     // Get orders with user relation
-    const orders = await prisma.cartOrder.findMany({
+    const rawOrders = await prisma.cartOrder.findMany({
       where,
       skip,
       take: parseInt(limit),
@@ -62,6 +63,11 @@ export const getCartOrders = async (req, res) => {
         }
       }
     });
+
+    const orders = rawOrders.map((order) => ({
+      ...order,
+      items: parseCartItems(order.items)
+    }));
 
     // Calculate stats
     const stats = await prisma.cartOrder.aggregate({
@@ -138,9 +144,14 @@ export const getCartOrder = async (req, res) => {
       });
     }
 
+    const normalizedOrder = {
+      ...order,
+      items: parseCartItems(order.items)
+    };
+
     res.json({
       success: true,
-      order
+      order: normalizedOrder
     });
   } catch (error) {
     console.error('Error fetching cart order:', error);
@@ -207,9 +218,14 @@ export const updateCartOrder = async (req, res) => {
       }
     });
 
+    const normalizedOrder = {
+      ...order,
+      items: parseCartItems(order.items)
+    };
+
     res.json({
       success: true,
-      order
+      order: normalizedOrder
     });
   } catch (error) {
     console.error('Error updating cart order:', error);
