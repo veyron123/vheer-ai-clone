@@ -232,7 +232,7 @@ const ActionFigureGeneratorPage = () => {
             <GenerateButton
               onClick={handleGenerate}
               disabled={!uploadedImage || !figureName.trim() ||
-                       (hasSecondFigure && (!secondFigureName.trim() || !secondFigureItems.trim()))}
+                       (hasSecondFigure && !secondFigureName.trim())}
               isGenerating={isGenerating}
               aiModel={'nano-banana'}
             />
@@ -345,7 +345,7 @@ const ActionFigureGeneratorPage = () => {
             <GenerateButton
               onClick={handleGenerate}
               disabled={!uploadedImage || !figureName.trim() ||
-                       (hasSecondFigure && (!secondFigureName.trim() || !secondFigureItems.trim()))}
+                       (hasSecondFigure && !secondFigureName.trim())}
               isGenerating={isGenerating}
               aiModel={'nano-banana'}
             />
