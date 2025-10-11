@@ -282,7 +282,7 @@ export const generateImageTurbo = asyncHandler(async (req, res) => {
     });
 
     // Submit to Fal.ai Qwen Image
-    const falResult = await fal.subscribe('fal-ai/qwen/image-edit', {
+    const falResult = await fal.subscribe('fal-ai/qwen-image-edit', {
       input: {
         prompt: prompt,
         image_url: imageUrl,
@@ -510,7 +510,7 @@ export const generateImageUltra = asyncHandler(async (req, res) => {
     });
 
     // Submit to Fal.ai Qwen Image
-    const falResult = await fal.subscribe('fal-ai/qwen/image-edit', {
+    const falResult = await fal.subscribe('fal-ai/qwen-image-edit', {
       input: {
         prompt: prompt,
         image_url: imageUrl,
