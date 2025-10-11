@@ -64,13 +64,16 @@ export const useActionFigureGeneration = () => {
       }
 
       // Create the detailed prompt for blister packaging style
-      const stylePrompt = `Make a realistic 3D render of an action figure toy displayed inside a transparent blister package, as if it's a real product on cardboard backing.
-The packaging background is light brown cardboard with soft shadows and realistic lighting.
-Do not use a white or plain background — use a subtle neutral gradient or soft shadow under the package so it looks real and not floating.
-At the top of the packaging, write in large white text: "${figureName}", and below it in smaller white text: "${figureName}".
-Include a few small supporting items related to the character's job or hobby next to the figure, like ${figureItems}.
-Keep the packaging design minimalist, clean, and cute, in a toy-store cartoonish style, but rendered realistically.
-Style: detailed, 3D product render, no frame, no environment.`;
+      const stylePrompt = `Create a realistic 3D render of a collectible action figure toy set displayed inside a transparent blister package on a cardboard backing.
+If there is more than one subject in the photo, include all of them together in the same packaging — each with their own section and name label.
+
+At the top of the packaging, write all names combined, like "${figureName}" (or only one name if there is one person).
+Each character should have their own matching accessories placed next to them — for example, ${figureItems}.
+If there is a pet, show it as a smaller toy figure in the same style, positioned near its owner with fitting accessories like ${figureItems}.
+
+The packaging design is minimalist, cute, and clean — light brown cardboard color, realistic lighting and soft shadows.
+The entire package should fill most of the frame (tight composition, front-facing).
+Do not include any external background, frame, or environment — only the package itself.`;
 
       // Use the same nano-banana approach as Pet Portrait generator
       const result = await generateWithNanoBananaImageToImage(
