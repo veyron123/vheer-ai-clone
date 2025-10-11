@@ -64,12 +64,14 @@ export const useActionFigureGeneration = () => {
       }
 
       // Create the detailed prompt for blister packaging style
+      const itemsText = figureItems.trim() ? `Each character should have their own matching accessories placed next to them — for example, ${figureItems}.` : '';
+
       const stylePrompt = `Create a realistic 3D render of a collectible action figure toy set displayed inside a transparent blister package on a cardboard backing.
 If there is more than one subject in the photo, include all of them together in the same packaging — each with their own section and name label.
 
 At the top of the packaging, write all names combined, like "${figureName}" (or only one name if there is one person).
-Each character should have their own matching accessories placed next to them — for example, ${figureItems}.
-If there is a pet, show it as a smaller toy figure in the same style, positioned near its owner with fitting accessories like ${figureItems}.
+${itemsText}
+If there is a pet, show it as a smaller toy figure in the same style, positioned near its owner${figureItems.trim() ? ` with fitting accessories like ${figureItems}` : ''}.
 
 The packaging design is minimalist, cute, and clean — light brown cardboard color, realistic lighting and soft shadows.
 The entire package should fill most of the frame (tight composition, front-facing).
