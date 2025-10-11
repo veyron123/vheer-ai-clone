@@ -64,7 +64,13 @@ export const useActionFigureGeneration = () => {
       }
 
       // Create the detailed prompt for blister packaging style
-      const stylePrompt = `Make a picture of a 3D action figure toy Make it look like it's being displayed in a transparent plastic package, blister packaging model. The figure is as in the photo, style is very detailed and realistic. On the top of the packaging there is a large writing: "${figureName}" in white text then below it "${figureName}". Also add some supporting items for the job next to the figure, like ${figureItems}. The packaging design is minimalist, cardboard colour, cute toy style sold in stores. The style is cartoonish, cute but still neat.`;
+      const stylePrompt = `Make a realistic 3D render of an action figure toy displayed inside a transparent blister package, as if it's a real product on cardboard backing.
+The packaging background is light brown cardboard with soft shadows and realistic lighting.
+Do not use a white or plain background — use a subtle neutral gradient or soft shadow under the package so it looks real and not floating.
+At the top of the packaging, write in large white text: "${figureName}", and below it in smaller white text: "${figureName}".
+Include a few small supporting items related to the character's job or hobby next to the figure, like ${figureItems}.
+Keep the packaging design minimalist, clean, and cute, in a toy-store cartoonish style, but rendered realistically.
+Style: detailed, 3D product render, no frame, no environment.`;
 
       // Use the same nano-banana approach as Pet Portrait generator
       const result = await generateWithNanoBananaImageToImage(
