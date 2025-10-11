@@ -276,10 +276,17 @@ export const oauthSuccess = async (req, res, next) => {
     }
     
     // Redirect to frontend with token
-    const frontendURL = process.env.FRONTEND_URL ||
+    const sessionRedirectBase = req.session?.oauthFrontendBase;
+    const frontendURL = sessionRedirectBase ||
+      process.env.FRONTEND_URL ||
       (process.env.NODE_ENV === 'production'
         ? 'https://colibrrri.com'
         : 'http://localhost:5178');
+
+    if (req.session?.oauthFrontendBase) {
+      delete req.session.oauthFrontendBase;
+    }
+
     res.redirect(`${frontendURL}/en/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
       id: user.id,
       email: user.email,
@@ -303,10 +310,16 @@ export const oauthFailure = (req, res) => {
     messages: req.session?.messages
   });
   
-  const frontendURL = process.env.FRONTEND_URL ||
+  const sessionRedirectBase = req.session?.oauthFrontendBase;
+  const frontendURL = sessionRedirectBase ||
+    process.env.FRONTEND_URL ||
     (process.env.NODE_ENV === 'production'
       ? 'https://colibrrri.com'
       : 'http://localhost:5178');
+
+  if (req.session?.oauthFrontendBase) {
+    delete req.session.oauthFrontendBase;
+  }
       
   res.redirect(`${frontendURL}/en/auth/error?message=OAuth authentication failed`);
 };

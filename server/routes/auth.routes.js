@@ -14,12 +14,30 @@ import { authenticate } from '../middleware/auth.js';
 
 const router = Router();
 
+// Capture frontend origin to redirect users back after OAuth
+const captureOAuthOrigin = (req, res, next) => {
+  try {
+    const referer = req.get('referer');
+    if (referer) {
+      const url = new URL(referer);
+      req.session.oauthFrontendBase = `${url.protocol}//${url.host}`;
+    } else if (req.query.redirect_uri) {
+      const url = new URL(req.query.redirect_uri);
+      req.session.oauthFrontendBase = `${url.protocol}//${url.host}`;
+    }
+  } catch (error) {
+    console.warn('⚠️ Failed to capture OAuth referer:', error.message);
+  }
+  next();
+};
+
 // Public routes
 router.post('/register', register);
 router.post('/login', login);
 
 // Google OAuth routes
 router.get('/google', 
+  captureOAuthOrigin,
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 router.get('/google/callback', 
