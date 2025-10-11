@@ -23,6 +23,7 @@
     "prisma:deploy": "cd server && npx prisma migrate deploy",
     "check:security": "npm audit && cd server && npm audit && cd ../client && npm audit",
     "check:env": "node scripts/check-env.js",
+    "dev:embedded": "cd server && node scripts/dev-embedded.js",
     "pre-deploy": "npm run prisma:generate && npm run build"
   },
   "keywords": [

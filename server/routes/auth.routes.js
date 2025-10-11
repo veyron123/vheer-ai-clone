@@ -100,12 +100,12 @@ if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
       // Generate JWT token
       const jwt = await import('jsonwebtoken');
       const token = jwt.default.sign(
-        { userId: testUser.id }, 
-        process.env.JWT_SECRET, 
+        { userId: testUser.id },
+        process.env.JWT_SECRET,
         { expiresIn: process.env.JWT_EXPIRE || '7d' }
       );
 
-      const frontendURL = 'http://localhost:5183';
+      const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5178';
       res.redirect(`${frontendURL}/en/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
         id: testUser.id,
         email: testUser.email,
