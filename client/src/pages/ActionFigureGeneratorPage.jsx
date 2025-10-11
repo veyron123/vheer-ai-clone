@@ -47,18 +47,18 @@ const ActionFigureGeneratorPage = () => {
       return;
     }
 
-    if (!figureItems.trim()) {
-      alert('Please enter items/accessories for the action figure');
-      return;
-    }
-
     // Handle multiple figures
     let combinedName = figureName;
     let combinedItems = figureItems;
 
-    if (hasSecondFigure && secondFigureName.trim() && secondFigureItems.trim()) {
+    if (hasSecondFigure && secondFigureName.trim()) {
       combinedName = `${figureName} & ${secondFigureName}`;
-      combinedItems = `${figureItems} for ${figureName}, and ${secondFigureItems} for ${secondFigureName}`;
+      combinedItems = figureItems;
+      if (secondFigureItems.trim()) {
+        combinedItems += ` for ${figureName}, and ${secondFigureItems} for ${secondFigureName}`;
+      } else {
+        combinedItems += ` for ${figureName}`;
+      }
     }
 
     // Create custom style data for the action figure
