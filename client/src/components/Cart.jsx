@@ -194,6 +194,7 @@ const Cart = () => {
 
       console.log('Checkout items:', items);
       console.log('Cart data for WayForPay:', cartData);
+      console.log('Item prices:', items.map(item => ({ name: item.name, price: item.price })));
 
       // Call backend to initialize WayForPay payment  
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';

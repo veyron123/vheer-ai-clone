@@ -740,7 +740,7 @@ const InlineMockupGenerator = React.memo(({ imageUrl, aspectRatio, scale, autoSh
       frameColorName: selectedColorData?.name,
       size: selectedSize, // используем выбранный размер
       sizeName: selectedSizeData?.name || selectedSize, // используем название выбранного размера
-      price: selectedSizeData?.price || 70, // используем цену выбранного размера
+      price: selectedSizeData?.price || 70, // используем цену выбранного размера (0.1 для 6x8)
       aspectRatio: detectedAspectRatio,
       rotation: rotation,
       scale: getCurrentScale(), // используем настройки пользователя

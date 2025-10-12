@@ -802,6 +802,12 @@ export const initializeCartPayment = async (req, res) => {
     const productPrices = items.map(item => item.price);
     const productCounts = items.map(item => item.quantity);
     
+    // Log prices for debugging
+    console.log('🔍 WAYFORPAY PRICES DEBUG:');
+    console.log('Items received:', items.map(item => ({ name: item.name, price: item.price })));
+    console.log('Product prices for WayForPay:', productPrices);
+    console.log('Total amount:', total);
+    
     // Generate payment data for WayForPay (one-time payment, no recurring)
     const paymentData = {
       merchantAccount: MERCHANT_LOGIN,
