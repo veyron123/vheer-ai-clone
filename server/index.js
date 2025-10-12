@@ -151,8 +151,7 @@ app.use('/api/health', healthRoutes);
 // Apply daily credit check middleware to all authenticated routes
 app.use('/api', checkDailyCredits);
 
-// API Routes
-app.use('/api/auth', authRoutes);
+// API Routes (excluding auth routes which are already mounted above)
 app.use('/api/users', userRoutes);
 app.use('/api/images', imagesRoutes); // New images route for saved images
 app.use('/api/image', imageRoutes); // Keep existing image route
@@ -261,9 +260,10 @@ handleUnhandledRejection();
 handleUncaughtException();
 
 // Start server with increased timeout
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, '127.0.0.1', () => {
   logger.info('Server started', {
     port: PORT,
+    host: '127.0.0.1',
     environment: process.env.NODE_ENV || 'development',
     nodeVersion: process.version
   });

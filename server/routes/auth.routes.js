@@ -17,13 +17,40 @@ const router = Router();
 // Capture frontend origin to redirect users back after OAuth
 const captureOAuthOrigin = (req, res, next) => {
   try {
+    const frontendCandidates = [];
     const referer = req.get('referer');
-    if (referer) {
-      const url = new URL(referer);
-      req.session.oauthFrontendBase = `${url.protocol}//${url.host}`;
-    } else if (req.query.redirect_uri) {
-      const url = new URL(req.query.redirect_uri);
-      req.session.oauthFrontendBase = `${url.protocol}//${url.host}`;
+    if (referer) frontendCandidates.push(referer);
+    if (req.query.redirect_uri) frontendCandidates.push(req.query.redirect_uri);
+
+    const configuredFrontend = process.env.FRONTEND_URL;
+    if (configuredFrontend) {
+      try {
+        const url = new URL(configuredFrontend);
+        frontendCandidates.push(`${url.protocol}//${url.host}`);
+      } catch (error) {
+        console.warn('⚠️ Invalid FRONTEND_URL value, ignoring for OAuth redirect:', configuredFrontend);
+      }
+    }
+
+    const serverHost = req.get('host');
+    frontendCandidates.some(candidate => {
+      try {
+        const url = new URL(candidate);
+        if (url.host !== serverHost) {
+          const base = `${url.protocol}//${url.host}`;
+          allowedHosts.add(base);
+          req.session.oauthFrontendBase = base;
+          console.log('🔁 [OAuth] Captured frontend origin for redirect:', base);
+          return true;
+        }
+      } catch (error) {
+        console.warn('⚠️ Failed to parse OAuth origin candidate:', candidate, error.message);
+      }
+      return false;
+    });
+
+    if (!req.session.oauthFrontendBase) {
+      console.log('ℹ️ [OAuth] Using default frontend origin for redirect');
     }
   } catch (error) {
     console.warn('⚠️ Failed to capture OAuth referer:', error.message);
