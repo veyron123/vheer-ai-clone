@@ -1160,7 +1160,7 @@ const InlineMockupGenerator = React.memo(({ imageUrl, aspectRatio, scale, autoSh
                       }`}
                     >
                       <div className="text-sm font-medium">{size.name}</div>
-                      <div className="text-xs text-gray-500">${size.price}</div>
+                      <div className="text-xs text-gray-500">₴{size.price}</div>
                     </button>
                   ))}
                 </div>
@@ -1265,7 +1265,7 @@ const InlineMockupGenerator = React.memo(({ imageUrl, aspectRatio, scale, autoSh
                   className="w-full px-4 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-lg hover:from-orange-700 hover:to-red-700 disabled:bg-gray-300 flex items-center justify-center gap-2 transition-colors font-semibold shadow-lg"
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  ADD TO CART - ${currentFrameSizes.find(s => s.id === selectedSize)?.price || 70}
+                  ADD TO CART - ₴{currentFrameSizes.find(s => s.id === selectedSize)?.price || 70}
                 </button>
 
                 {/* Информация о доставке - показывается под кнопкой Add to Cart только на мобильных */}

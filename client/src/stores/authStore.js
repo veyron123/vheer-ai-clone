@@ -11,6 +11,7 @@ export const useAuthStore = create(
       isAuthenticated: false,
       isLoading: false,
       lastAuthCheck: null,
+      hasHydrated: false,
       
       login: async (email, password) => {
         set({ isLoading: true });
@@ -129,6 +130,10 @@ export const useAuthStore = create(
 
       loginWithFacebook: () => {
         window.location.href = OAUTH_CONFIG.facebookURL;
+      },
+
+      setHasHydrated: (value) => {
+        set({ hasHydrated: value });
       }
     }),
     {
@@ -143,6 +148,7 @@ export const useAuthStore = create(
         if (state?.token) {
           api.defaults.headers.common['Authorization'] = `Bearer ${state.token}`;
         }
+        state?.setHasHydrated?.(true);
       }
     }
   )

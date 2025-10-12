@@ -8,14 +8,17 @@ import { useGlobalAnalytics } from './hooks/useGlobalAnalytics';
 
 function App() {
   const checkAuth = useAuthStore(state => state.checkAuth);
+  const hasHydrated = useAuthStore(state => state.hasHydrated);
   
   // 📊 Initialize global analytics
   useGlobalAnalytics();
 
   // Check authentication on app load
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    if (hasHydrated) {
+      checkAuth();
+    }
+  }, [checkAuth, hasHydrated]);
 
   return (
     <Layout>

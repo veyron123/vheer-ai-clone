@@ -142,8 +142,11 @@ app.use('/api', limiter);
 // Serve static files from uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// OAuth Routes (without /api prefix for simpler callback URLs)
+// OAuth Routes (without /api prefix for OAuth callback compatibility)
 app.use('/auth', authRoutes);
+
+// Additional API auth routes for SPA compatibility
+app.use('/api/auth', authRoutes);
 
 // Health check route (before authentication middleware)
 app.use('/api/health', healthRoutes);
@@ -195,10 +198,6 @@ app.use('/api/image-proxy', imageProxyRoutes);
 // Webhook routes
 app.use('/api/webhook', webhookRoutes);
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Server is running' });
-});
 
 // Favicon route - prevent 500 errors
 app.get('/favicon.ico', (req, res) => {

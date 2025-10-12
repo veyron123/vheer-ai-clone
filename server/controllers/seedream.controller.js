@@ -6,10 +6,19 @@ import { saveGeneratedImage } from './images.controller.js';
 import { logAIServiceError, getUserFriendlyAIError } from '../utils/aiServiceErrors.js';
 
 // FAL.ai Seedream V4 Configuration
-const FAL_API_KEY = process.env.FAL_API_KEY || '5fe870a0-bd86-4fda-96b1-af8aa26f4835:e56e8f9886dcfaa093554773fe937b5d';
+const DEFAULT_FAL_KEY = '5fe870a0-bd86-4fda-96b1-af8aa26f4835:e56e8f9886dcfaa093554773fe937b5d';
+const FAL_API_KEY = process.env.FAL_KEY || process.env.FAL_API_KEY || DEFAULT_FAL_KEY;
+const falKeySource = process.env.FAL_KEY ? 'FAL_KEY' : process.env.FAL_API_KEY ? 'FAL_API_KEY' : 'fallback';
+const maskedFalKey = FAL_API_KEY && FAL_API_KEY.length > 10
+  ? `${FAL_API_KEY.slice(0, 4)}...${FAL_API_KEY.slice(-4)}`
+  : FAL_API_KEY;
 const FAL_API_URL = 'https://fal.run/fal-ai/bytedance/seedream/v4/edit';
 
-console.log('🔑 FAL_API_KEY loaded:', FAL_API_KEY ? 'YES (length: ' + FAL_API_KEY.length + ')' : 'NO - MISSING!');
+console.log('🔑 [Seedream] FAL API key configuration:', {
+  source: falKeySource,
+  configured: !!FAL_API_KEY,
+  key: maskedFalKey || 'MISSING'
+});
 
 /**
  * Generate image with FAL.ai Seedream V4
@@ -37,8 +46,8 @@ export const generateImage = asyncHandler(async (req, res) => {
 
   // Check FAL API key
   if (!FAL_API_KEY) {
-    console.error('❌ FAL_API_KEY not configured');
-    return sendServerError(res, 'Seedream service not available', { error: 'API key missing' });
+    console.error('❌ FAL API key not configured (expected FAL_KEY or FAL_API_KEY)');
+    return sendServerError(res, 'Seedream service not available', { error: 'FAL API key missing' });
   }
 
   const modelId = model || 'seedream-v4';
