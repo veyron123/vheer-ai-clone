@@ -13,6 +13,12 @@ const maskedFalKey = FAL_API_KEY && FAL_API_KEY.length > 10
   ? `${FAL_API_KEY.slice(0, 4)}...${FAL_API_KEY.slice(-4)}`
   : FAL_API_KEY;
 const FAL_API_URL = 'https://fal.run/fal-ai/bytedance/seedream/v4/edit';
+const hasCloudinaryConfig = () => Boolean(
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET
+);
+const hasImgbbConfig = () => Boolean(process.env.IMGBB_API_KEY);
 
 console.log('🔑 [Seedream] FAL API key configuration:', {
   source: falKeySource,
@@ -280,7 +286,7 @@ async function processImageInputs(imageInputs) {
   for (const imageInput of imageInputs) {
     if (imageInput.startsWith('data:image/')) {
       // Convert base64 to URL using uploadBase64ToCloudinary or similar
-      const publicUrl = await uploadBase64ToCloudinary(imageInput);
+      const publicUrl = await uploadBase64ToPublicHost(imageInput);
       processedUrls.push(publicUrl);
     } else {
       // Assume it's already a URL
@@ -298,7 +304,7 @@ async function uploadBase64ToCloudinary(base64Data) {
   const { v2: cloudinary } = await import('cloudinary');
   
   // Check if Cloudinary is configured
-  if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+  if (!hasCloudinaryConfig()) {
     throw new Error('Cloudinary not configured for Seedream service');
   }
 
@@ -318,6 +324,64 @@ async function uploadBase64ToCloudinary(base64Data) {
   } else {
     throw new Error('Cloudinary upload failed - no secure_url in response');
   }
+}
+
+/**
+ * Upload base64 image to IMGBB as fallback when Cloudinary is unavailable
+ */
+async function uploadBase64ToImgbb(base64Data) {
+  if (!hasImgbbConfig()) {
+    throw new Error('IMGBB_API_KEY not configured');
+  }
+
+  console.log('📤 [FAL Seedream] Converting base64 to IMGBB public URL...');
+
+  const base64Content = base64Data.replace(/^data:image\/[a-z]+;base64,/, '');
+  const formData = new URLSearchParams();
+  formData.append('key', process.env.IMGBB_API_KEY);
+  formData.append('image', base64Content);
+
+  const response = await axios.post('https://api.imgbb.com/1/upload', formData, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    timeout: 30000
+  });
+
+  if (response.data?.success && response.data?.data?.url) {
+    console.log('✅ [FAL Seedream] IMGBB upload successful:', response.data.data.url);
+    return response.data.data.url;
+  }
+
+  throw new Error('IMGBB upload failed - no URL in response');
+}
+
+/**
+ * Upload base64 image to any available public host (Cloudinary preferred, IMGBB fallback)
+ */
+async function uploadBase64ToPublicHost(base64Data) {
+  const errors = [];
+
+  if (hasCloudinaryConfig()) {
+    try {
+      return await uploadBase64ToCloudinary(base64Data);
+    } catch (err) {
+      errors.push(`Cloudinary: ${err.message}`);
+      console.error('⚠️ [FAL Seedream] Cloudinary upload failed, trying fallback:', err.message);
+    }
+  }
+
+  if (hasImgbbConfig()) {
+    try {
+      return await uploadBase64ToImgbb(base64Data);
+    } catch (err) {
+      errors.push(`IMGBB: ${err.message}`);
+      console.error('⚠️ [FAL Seedream] IMGBB upload failed:', err.message);
+    }
+  }
+
+  const errorDetails = errors.length > 0 ? errors.join(' | ') : 'No hosting providers configured';
+  throw new Error(`No public image host available for Seedream service. ${errorDetails}`);
 }
 
 /**
