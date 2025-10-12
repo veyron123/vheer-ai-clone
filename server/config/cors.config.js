@@ -82,7 +82,8 @@ export const corsOptions = {
     
     // Allow requests with no origin (same-origin requests, mobile apps, Postman, etc.)
     // This includes SPA requests to the same server
-    if (!origin) {
+    // Also allow "null" origin (payment callbacks from iframes/popups)
+    if (!origin || origin === 'null') {
       return callback(null, true);
     }
     
