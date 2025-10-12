@@ -259,10 +259,10 @@ handleUnhandledRejection();
 handleUncaughtException();
 
 // Start server with increased timeout
-const server = app.listen(PORT, '127.0.0.1', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   logger.info('Server started', {
     port: PORT,
-    host: '127.0.0.1',
+    host: '0.0.0.0',
     environment: process.env.NODE_ENV || 'development',
     nodeVersion: process.version
   });
