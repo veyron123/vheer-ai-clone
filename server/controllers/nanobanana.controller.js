@@ -9,15 +9,23 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { getStorageProvider } from '../utils/storageProvider.js';
+
+const hasCloudinaryConfig = Boolean(
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET
+);
+const hasImgbbConfig = Boolean(process.env.IMGBB_API_KEY);
 
 // ES Module compatible __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // API Provider Configuration
-// Set USE_FAL_AI=true to use Fal.ai, false or undefined to use KIE API
-const USE_FAL_AI = process.env.USE_FAL_AI === 'true';
+// Set USE_FAL_AI=false to force KIE API; defaults to Fal.ai when unset
+const USE_FAL_AI = process.env.USE_FAL_AI
+  ? process.env.USE_FAL_AI.toLowerCase() === 'true'
+  : true;
 
 // KIE API Configuration (default)
 const KIE_API_KEY = process.env.NANO_BANANA_API_KEY || process.env.KIE_API_KEY;
@@ -28,39 +36,93 @@ console.log('🔑 KIE API configured:', {
   hasKey: !!KIE_API_KEY,
   keyLength: KIE_API_KEY?.length,
   apiUrl: KIE_API_URL,
-  hasCloudinaryConfig: !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET),
+  hasCloudinaryConfig,
+  hasImgbbConfig,
   cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME
 });
 
 /**
- * Upload base64 image to Cloudinary for public URL access
+ * Upload base64 image to a public host (IMGBB primary, Cloudinary fallback)
  * KIE API requires public HTTP URLs, not base64 data
  */
-async function uploadBase64ToCloudinary(base64Data) {
-  try {
-    console.log('📤 [CLOUDINARY] Converting base64 to public URL...');
-    
-    // Get storage provider (configured as Cloudinary)
-    const storageProvider = getStorageProvider({ provider: 'cloudinary' });
-    
-    // Upload base64 data directly to Cloudinary
-    const result = await storageProvider.uploadImage(base64Data, 'nano-banana-temp');
-    
-    console.log('✅ [CLOUDINARY] Base64 uploaded successfully:', result.url);
-    return result.url;
-  } catch (error) {
-    console.error('❌ [CLOUDINARY] Upload error:', error.message);
-    throw new Error(`Cloudinary upload failed: ${error.message}`);
+async function uploadBase64ToPublicHost(base64Data) {
+  const attempts = [];
+  const withPrefix = base64Data.startsWith('data:')
+    ? base64Data
+    : `data:image/png;base64,${base64Data}`;
+
+  if (hasImgbbConfig) {
+    try {
+      console.log('📤 [IMGBB] Converting base64 to public URL...');
+      const base64Content = withPrefix.replace(/^data:image\/[a-z0-9+.-]+;base64,/, '');
+      const formData = new URLSearchParams();
+      formData.append('key', process.env.IMGBB_API_KEY);
+      formData.append('image', base64Content);
+
+      const response = await axios.post('https://api.imgbb.com/1/upload', formData, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        timeout: 30000
+      });
+
+      const publicUrl = response.data?.data?.url;
+      if (response.data?.success && publicUrl) {
+        console.log('✅ [IMGBB] Base64 uploaded successfully:', publicUrl);
+        return publicUrl;
+      }
+
+      attempts.push('IMGBB: upload succeeded without URL in response');
+    } catch (error) {
+      console.error('❌ [IMGBB] Upload error:', error.message);
+      attempts.push(`IMGBB: ${error.message}`);
+    }
+  } else {
+    attempts.push('IMGBB: API key not configured');
   }
+
+  if (hasCloudinaryConfig) {
+    try {
+      console.log('📤 [CLOUDINARY] Converting base64 to public URL...');
+      const { v2: cloudinary } = await import('cloudinary');
+
+      cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET
+      });
+
+      const result = await cloudinary.uploader.upload(withPrefix, {
+        folder: 'vheer-ai/nano-banana',
+        resource_type: 'image',
+        quality: 'auto:good',
+        fetch_format: 'auto'
+      });
+
+      if (result?.secure_url) {
+        console.log('✅ [CLOUDINARY] Base64 uploaded successfully:', result.secure_url);
+        return result.secure_url;
+      }
+
+      attempts.push('Cloudinary: upload succeeded without secure_url in response');
+    } catch (error) {
+      console.error('❌ [CLOUDINARY] Upload error:', error.message);
+      attempts.push(`Cloudinary: ${error.message}`);
+    }
+  } else {
+    attempts.push('Cloudinary: credentials not configured');
+  }
+
+  throw new Error(`Image upload failed. ${attempts.join(' | ')}`);
 }
 
 /**
- * Upload local file to Cloudinary for public URL access
+ * Upload local file to a public host for URL access
  * Reads file from filesystem and converts to public URL
  */
-async function uploadLocalFileToCloudinary(filePath) {
+async function uploadLocalFileToPublicHost(filePath) {
   try {
-    console.log('📂 [CLOUDINARY] Reading local file:', filePath);
+    console.log('📂 [UPLOAD] Reading local file:', filePath);
     
     // Check if file exists before reading
     if (!fs.existsSync(filePath)) {
@@ -70,22 +132,35 @@ async function uploadLocalFileToCloudinary(filePath) {
     // Read file as buffer
     const fileBuffer = fs.readFileSync(filePath);
     
-    console.log('📤 [CLOUDINARY] Uploading local file to Cloudinary...');
+    console.log('📤 [UPLOAD] Uploading local file to public host...');
     
-    // Get storage provider (configured as Cloudinary)
-    const storageProvider = getStorageProvider({ provider: 'cloudinary' });
+    const mimeType = getMimeFromExtension(path.extname(filePath));
+    const base64Data = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+    const publicUrl = await uploadBase64ToPublicHost(base64Data);
     
-    // Upload buffer to Cloudinary
-    const result = await storageProvider.uploadImage(fileBuffer, 'nano-banana-styles');
-    
-    console.log('✅ [CLOUDINARY] Local file uploaded successfully:', result.url);
-    return result.url;
+    console.log('✅ [UPLOAD] Local file uploaded successfully:', publicUrl);
+    return publicUrl;
   } catch (error) {
-    console.error('❌ [CLOUDINARY] Local file upload error:', error.message);
+    console.error('❌ [UPLOAD] Local file upload error:', error.message);
     if (error.code === 'ENOENT') {
       throw new Error(`File not found: ${filePath}`);
     }
-    throw new Error(`Cloudinary local file upload failed: ${error.message}`);
+    throw new Error(`Public host local file upload failed: ${error.message}`);
+  }
+}
+
+function getMimeFromExtension(ext) {
+  switch (ext.toLowerCase()) {
+    case '.jpg':
+    case '.jpeg':
+      return 'image/jpeg';
+    case '.webp':
+      return 'image/webp';
+    case '.gif':
+      return 'image/gif';
+    case '.png':
+    default:
+      return 'image/png';
   }
 }
 
@@ -215,7 +290,7 @@ export const generateImage = asyncHandler(async (req, res) => {
           console.log('🔧 [NANO-BANANA] Added data URL prefix to base64 string');
         }
         
-        imageUrl = await uploadBase64ToCloudinary(base64WithPrefix);
+        imageUrl = await uploadBase64ToPublicHost(base64WithPrefix);
         console.log('✅ [NANO-BANANA] Base64 converted to public URL:', imageUrl);
       } catch (error) {
         console.error('❌ [NANO-BANANA] Failed to convert base64 to URL:', error.message);
@@ -251,11 +326,11 @@ export const generateImage = asyncHandler(async (req, res) => {
       // Submit to Fal.ai nano-banana
       const falResult = await fal.subscribe('fal-ai/nano-banana/edit', {
         input: {
-          prompt,
-          image_urls: [imageUrl],
-          num_images: 1,
-          output_format: 'png',
-          sync_mode: false
+          prompt: prompt.length > 150 ? prompt.substring(0, 150) + '...' : prompt,
+          image_url: imageUrl,
+          strength: 0.8,
+          guidance_scale: 7.5,
+          num_inference_steps: 20
         }
       });
 
@@ -469,7 +544,7 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
     if (userImageUrl.startsWith('data:') || (userImageUrl.length > 100 && !userImageUrl.startsWith('http'))) {
       console.log('📷 [NANO-BANANA] Converting user image base64 to public URL...');
       let base64WithPrefix = userImageUrl.startsWith('data:') ? userImageUrl : `data:image/png;base64,${userImageUrl}`;
-      processedUserImageUrl = await uploadBase64ToCloudinary(base64WithPrefix);
+      processedUserImageUrl = await uploadBase64ToPublicHost(base64WithPrefix);
       console.log('✅ [NANO-BANANA] User image converted:', processedUserImageUrl.substring(0, 50) + '...');
     }
     
@@ -478,7 +553,7 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
       // Handle base64 style images
       console.log('🎨 [NANO-BANANA] Converting style image base64 to public URL...');
       let base64WithPrefix = styleImageUrl.startsWith('data:') ? styleImageUrl : `data:image/png;base64,${styleImageUrl}`;
-      processedStyleImageUrl = await uploadBase64ToCloudinary(base64WithPrefix);
+      processedStyleImageUrl = await uploadBase64ToPublicHost(base64WithPrefix);
       console.log('✅ [NANO-BANANA] Style image converted:', processedStyleImageUrl.substring(0, 50) + '...');
     } else if (styleImageUrl.startsWith('/')) {
       // Handle local file paths (starts with /) - most common case for Pet Portrait styles
@@ -499,7 +574,7 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
         try {
           if (fs.existsSync(tryPath)) {
             console.log('✅ [NANO-BANANA] Found file at:', tryPath);
-            processedStyleImageUrl = await uploadLocalFileToCloudinary(tryPath);
+            processedStyleImageUrl = await uploadLocalFileToPublicHost(tryPath);
             console.log('✅ [NANO-BANANA] Local style image uploaded:', processedStyleImageUrl.substring(0, 50) + '...');
             uploadedSuccessfully = true;
             break;
@@ -654,7 +729,7 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
         message: 'Pet Portrait generated successfully',
         model: modelId,
         metadata: {
-          provider: USE_FAL_AI === 'true' ? 'Fal.ai' : 'KIE API',
+          provider: USE_FAL_AI ? 'Fal.ai' : 'KIE API',
           model: 'google/nano-banana-edit',
           mode: 'pet-portrait-dual-image',
           styleName,
@@ -777,7 +852,7 @@ export const generateFromPrompt = asyncHandler(async (req, res) => {
         base64WithPrefix = `data:image/png;base64,${baseImageUrl}`;
         console.log('🔧 [NANO-BANANA TEXT] Added data URL prefix to base image');
       }
-      baseImageUrl = await uploadBase64ToCloudinary(base64WithPrefix);
+      baseImageUrl = await uploadBase64ToPublicHost(base64WithPrefix);
     }
     
     // Create task with KIE API using the base image

@@ -75,7 +75,9 @@ If there is a pet, show it as a smaller toy figure in the same style, positioned
 
 The packaging design is minimalist, cute, and clean — light brown cardboard color, realistic lighting and soft shadows.
 The entire package should fill most of the frame (tight composition, front-facing).
-Do not include any external background, frame, or environment — only the package itself.`;
+Do not include any external background, frame, or environment — only the package itself.
+
+Style: 3D Pixar Style product render, cartoonish cute toy aesthetic, professional lighting.`;
 
       // Use the same nano-banana approach as Pet Portrait generator
       const result = await generateWithNanoBananaImageToImage(
