@@ -72,21 +72,18 @@ export const useActionFigureGeneration = () => {
       }
 
       const itemsText = figureItems.trim()
-        ? `Each character should have their own matching accessories placed next to them — for example, ${figureItems}.`
+        ? `Include small supporting items related to the character's hobby or job next to the figure, like ${figureItems}.`
         : '';
 
-      const basePrompt = `Create a realistic 3D render of a collectible action figure toy set displayed inside a transparent blister package on a cardboard backing.
-If there is more than one subject in the photo, include all of them together in the same packaging — each with their own section and name label.
-
-At the top of the packaging, write all names combined, like "${figureName}" (or only one name if there is one person).
+      const basePrompt = `Make a close-up, centered shot of a 3D action figure toy inside a transparent blister package, filling almost the entire frame.
+Show the full packaging clearly from the front, with minimal empty background space around it.
+The packaging is on a light brown cardboard backing with realistic lighting and soft shadows.
+Do not include any environment or frame.
+At the top of the package, write in large white text: "${figureName}", and below it smaller: "${figureName}".
 ${itemsText}
-If there is a pet, show it as a smaller toy figure in the same style, positioned near its owner${figureItems.trim() ? ` with fitting accessories like ${figureItems}` : ''}.
-
-The packaging design is minimalist, cute, and clean — light brown cardboard color, realistic lighting and soft shadows.
-The entire package should fill most of the frame (tight composition, front-facing).
-Do not include any external background, frame, or environment — only the package itself.
-
-Style: 3D Pixar Style product render, cartoonish cute toy aesthetic, professional lighting.`;
+Keep the design minimalist, cute, clean, and realistic — like an official product photo.
+Framing: tight crop, front-facing, centered composition, almost no extra background.
+Style: 3D PIXAR render, detailed, cute toy aesthetic.`;
 
       const finalPrompt = `${basePrompt}
 
