@@ -91,6 +91,8 @@ NANO_BANANA: {
 4. Enter your transformation prompt
 5. Click Generate (costs 20 credits)
 
+> **Note:** On the **Photo to Action Figure** page we always request a `3:4` aspect ratio so that both the initial Nano-Banana pass and the follow-up Qwen Pixar pass return consistent packaging proportions.
+
 ## API Request Format
 
 ### Text-to-Image Request
@@ -147,7 +149,7 @@ NANO_BANANA: {
 - **Timeout**: 5 minutes for generation requests
 - **Caching**: Results cached for 1 hour
 - **Queue Priority**: Authenticated users get higher priority
-- **Image Size**: Generated images are ALWAYS 1024x1024px (aspect ratio is not supported by Gemini API)
+- **Aspect Ratio**: Fal.ai endpoint accepts predefined ratios (e.g., `3:4`, `4:5`, `16:9`). We pass `3:4` for Action Figure flows to match packaging mockups.
 
 ## Security
 

@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { useAuthStore } from '../stores/authStore';
-import { generateActionFigure } from '../services/imageGeneration';
+import { generateActionFigure, stylizeWithQwenPixar } from '../services/imageGeneration';
 
 export const useActionFigureGeneration = () => {
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -95,9 +95,9 @@ Make sure the packaging title highlights: ${figureName}.`;
         image: styleData?.image || '/example-results/idyXE20dVrPCQE62CUUxJ.jpeg'
       };
 
-      const finalAspectRatio = aiModel === 'nano-banana' ? '1:1' : (aspectRatio || '1:1');
+      const finalAspectRatio = '3:4';
 
-      const result = await generateActionFigure(
+      const nanoBananaResult = await generateActionFigure(
         imageBase64,
         styleReference.image,
         styleReference.name,
@@ -107,13 +107,20 @@ Make sure the packaging title highlights: ${figureName}.`;
         abortControllerRef.current.signal
       );
 
-      if (!result || (!result.url && !result.imageUrl)) {
+      if (!nanoBananaResult || (!nanoBananaResult.url && !nanoBananaResult.imageUrl)) {
         throw new Error('No image generated');
       }
 
+      const nanoBananaImageUrl = nanoBananaResult.url || nanoBananaResult.imageUrl;
+
+      const finalImageUrl = await stylizeWithQwenPixar(
+        nanoBananaImageUrl,
+        abortControllerRef.current.signal
+      );
+
       const endTime = Date.now();
       setGenerationTime(Math.round((endTime - startTime) / 1000));
-      setGeneratedImage(result.url || result.imageUrl);
+      setGeneratedImage(finalImageUrl);
 
       toast.success(`Action figure "${figureName}" generated successfully!`);
 

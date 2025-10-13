@@ -330,7 +330,8 @@ export const generateImage = asyncHandler(async (req, res) => {
           image_urls: [imageUrl],
           strength: 0.8,
           guidance_scale: 7.5,
-          num_inference_steps: 20
+          num_inference_steps: 20,
+          aspect_ratio: aspectRatio
         }
       });
 
@@ -366,7 +367,8 @@ export const generateImage = asyncHandler(async (req, res) => {
         model: 'google/nano-banana-edit',
         input: {
           prompt,
-          image_urls: [imageUrl]
+          image_urls: [imageUrl],
+          aspect_ratio: aspectRatio
         }
       };
 
@@ -636,7 +638,8 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
           image_urls: [processedUserImageUrl, processedStyleImageUrl], // Dual images!
           num_images: 1,
           output_format: 'png',
-          sync_mode: false
+          sync_mode: false,
+          aspect_ratio: aspectRatio
         }
       });
       
@@ -676,7 +679,8 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
         model: 'google/nano-banana-edit',
         input: {
           prompt: enhancedPrompt,
-          image_urls: [processedUserImageUrl, processedStyleImageUrl] // Dual images!
+          image_urls: [processedUserImageUrl, processedStyleImageUrl], // Dual images!
+          aspect_ratio: aspectRatio
         }
       };
       

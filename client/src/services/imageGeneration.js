@@ -929,7 +929,7 @@ export async function generateActionFigure(userImageUrl, styleImageUrl, styleNam
     styleName,
     prompt,
     aiModel: 'nano-banana',
-    aspectRatio: '1:1',
+    aspectRatio,
     mode: 'action-figure'
   };
 
@@ -957,6 +957,54 @@ export async function generateActionFigure(userImageUrl, styleImageUrl, styleNam
     generation: result.generation,
     remainingCredits: result.remainingCredits
   };
+}
+
+export async function stylizeWithQwenPixar(imageUrl, abortSignal = null) {
+  const token = useAuthStore.getState().token;
+
+  if (!token) {
+    throw new Error('Please sign in to generate action figures');
+  }
+
+  const pixarPrompt = 'Transform this photo into Pixar 3D animated character style with bright lighting, expressive eyes, smooth textures, high quality render, masterpiece';
+
+  const requestBody = {
+    prompt: pixarPrompt,
+    input_image: imageUrl,
+    style: 'pixar',
+    aspectRatio: '3:4',
+    negativePrompt: 'blurry, low quality, dark, horror, scary'
+  };
+
+  const response = await fetch(getApiUrl('/qwen/edit'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    },
+    body: JSON.stringify(requestBody),
+    signal: abortSignal
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    if (response.status === 400 && errorData.error === 'Insufficient credits') {
+      throw new Error('Insufficient credits');
+    }
+    throw new Error(errorData.error || errorData.message || `HTTP error! status: ${response.status}`);
+  }
+
+  const result = await response.json();
+
+  if (result.success && result.image) {
+    return result.image;
+  }
+
+  if (result.images && result.images.length > 0) {
+    return result.images[0].url;
+  }
+
+  throw new Error('Failed to generate Pixar stylized image');
 }
 
 
