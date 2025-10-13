@@ -495,17 +495,27 @@ export const generateImage = asyncHandler(async (req, res) => {
  * Supports both user pet image and style reference image
  */
 export const generatePetPortrait = asyncHandler(async (req, res) => {
-  const { userImageUrl, styleImageUrl, styleName, prompt, aspectRatio = '1:1' } = req.body;
+  const {
+    userImageUrl,
+    styleImageUrl,
+    styleName,
+    prompt,
+    aspectRatio = '1:1',
+    mode: requestMode
+  } = req.body;
   const userId = req.user?.id;
+  const normalizedMode = (requestMode || (req.originalUrl?.includes('action-figure') ? 'action-figure' : 'pet-portrait')).toLowerCase();
+  const isActionFigure = normalizedMode === 'action-figure';
+  const featureLabel = isActionFigure ? 'Action Figure' : 'Pet Portrait';
 
   // Require authentication
   if (!userId) {
-    return sendUnauthorized(res, 'Please sign in to generate pet portraits');
+    return sendUnauthorized(res, 'Please sign in to use this generator');
   }
 
   // Validate required fields
   if (!prompt || !userImageUrl || !styleImageUrl) {
-    return sendBadRequest(res, 'Prompt, user image, and style image are required for pet portraits');
+    return sendBadRequest(res, 'Prompt, user image, and style image are required for this generator');
   }
 
   const modelId = 'nano-banana';
@@ -524,7 +534,7 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
       status: 'PENDING'
     });
 
-    console.log('🎨 [NANO-BANANA] Pet Portrait generation request:', {
+    console.log(`🎨 [NANO-BANANA] ${featureLabel} generation request:`, {
       hasPrompt: !!prompt,
       hasUserImage: !!userImageUrl,
       hasStyleImage: !!styleImageUrl,
@@ -557,7 +567,7 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
       console.log('✅ [NANO-BANANA] Style image converted:', processedStyleImageUrl.substring(0, 50) + '...');
     } else if (styleImageUrl.startsWith('/')) {
       // Handle local file paths (starts with /) - most common case for Pet Portrait styles
-      console.log('📁 [NANO-BANANA] Processing local style image file:', styleImageUrl);
+      console.log(`📁 [NANO-BANANA] Processing local style image file for ${featureLabel}:`, styleImageUrl);
       
       // Try multiple possible paths
       const possiblePaths = [
@@ -594,11 +604,13 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
       console.log('🔗 [NANO-BANANA] Using style image as URL (no conversion needed):', styleImageUrl.substring(0, 50) + '...');
     }
 
-    // Enhanced prompt for Pet Portrait with style transfer
-    const enhancedPrompt = `Transform the pet from the first image into a painted portrait masterpiece that completely matches the artistic style, brushwork, lighting, and aesthetic of the second reference image. The pet must be rendered in the same painterly, artistic style as the clothing and background - NOT photorealistic. CRITICAL: The pet must have a FULLY CLOSED MOUTH - no open mouth, no visible tongue, no teeth showing, lips completely sealed shut in a dignified manner like classical portrait subjects. The pet should have a calm, composed facial expression with mouth firmly closed, displaying regal nobility and aristocratic bearing. The pet's face should have the same painted, artistic quality as historical portraits with soft brushstrokes and classical painting techniques. Apply the elegant ${styleName} painting style to the pet's entire form, making it look like it was painted by the same artist who created classical royal portraits. Remember: mouth must be completely closed and sealed - this is essential for the noble portrait aesthetic. No photorealistic elements - everything should be unified in one cohesive painted artistic style. ${prompt}`;
+    // Build prompt tailored to the requested generator
+    const enhancedPrompt = isActionFigure
+      ? prompt
+      : `Transform the pet from the first image into a painted portrait masterpiece that completely matches the artistic style, brushwork, lighting, and aesthetic of the second reference image. The pet must be rendered in the same painterly, artistic style as the clothing and background - NOT photorealistic. CRITICAL: The pet must have a FULLY CLOSED MOUTH - no open mouth, no visible tongue, no teeth showing, lips completely sealed shut in a dignified manner like classical portrait subjects. The pet should have a calm, composed facial expression with mouth firmly closed, displaying regal nobility and aristocratic bearing. The pet's face should have the same painted, artistic quality as historical portraits with soft brushstrokes and classical painting techniques. Apply the elegant ${styleName} painting style to the pet's entire form, making it look like it was painted by the same artist who created classical royal portraits. Remember: mouth must be completely closed and sealed - this is essential for the noble portrait aesthetic. No photorealistic elements - everything should be unified in one cohesive painted artistic style. ${prompt}`;
     
     if (USE_FAL_AI) {
-      console.log('🚀 [FAL.AI] Using Fal.ai nano-banana for Pet Portrait generation...');
+      console.log(`🚀 [FAL.AI] Using Fal.ai nano-banana for ${featureLabel} generation...`);
       
       // Import fal client
       const { fal } = await import('@fal-ai/client');
@@ -608,7 +620,7 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
         credentials: process.env.FAL_KEY
       });
       
-      console.log('🚀 [FAL.AI] Pet Portrait request to Fal.ai nano-banana:', {
+      console.log(`🚀 [FAL.AI] ${featureLabel} request to Fal.ai nano-banana:`, {
         prompt: enhancedPrompt.substring(0, 100) + '...',
         userImageUrl: processedUserImageUrl.substring(0, 50) + '...',
         styleImageUrl: processedStyleImageUrl.substring(0, 50) + '...',
@@ -629,7 +641,7 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
       });
       
       console.log('🔍 [FAL.AI] Raw response from Fal.ai:', JSON.stringify(falResult, null, 2));
-      console.log('✅ [FAL.AI] Pet Portrait generation completed');
+      console.log(`✅ [FAL.AI] ${featureLabel} generation completed`);
       
       if (!falResult || typeof falResult !== 'object') {
         console.error('❌ [FAL.AI] Invalid response format:', falResult);
@@ -643,7 +655,7 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
         console.error('❌ [FAL.AI] No images in response. Available keys:', Object.keys(falResult));
         console.error('❌ [FAL.AI] Images field:', images);
         console.error('❌ [FAL.AI] Data field:', falResult.data);
-        throw new Error('No Pet Portrait images generated by Fal.ai');
+        throw new Error(`No ${featureLabel} images generated by Fal.ai`);
       }
       
       // Set taskId for Fal.ai (use requestId if available)
@@ -657,7 +669,7 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
       };
       
     } else {
-      console.log('🔑 [KIE API] Using KIE API nano-banana for Pet Portrait generation...');
+      console.log(`🔑 [KIE API] Using KIE API nano-banana for ${featureLabel} generation...`);
       
       // Create task with KIE API using dual images
       const requestBody = {
@@ -668,7 +680,7 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
         }
       };
       
-      console.log('🚀 [NANO-BANANA] Pet Portrait request to KIE API:', {
+      console.log(`🚀 [NANO-BANANA] ${featureLabel} request to KIE API:`, {
         url: `${KIE_API_URL}/createTask`,
         model: requestBody.model,
         prompt: enhancedPrompt.substring(0, 100) + '...',
@@ -694,11 +706,11 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
       const taskResult = await createTaskResponse.json();
       
       if (taskResult.code !== 200) {
-        throw new Error(taskResult.message || 'Failed to create pet portrait task');
+        throw new Error(taskResult.message || `Failed to create ${featureLabel.toLowerCase()} task`);
       }
 
-      const taskId = taskResult.data.taskId;
-      console.log('🎯 [NANO-BANANA] Created Pet Portrait task:', taskId);
+      taskId = taskResult.data.taskId;
+      console.log(`🎯 [NANO-BANANA] Created ${featureLabel} task:`, taskId);
 
       // Poll for task completion
       result = await pollTaskStatus(taskId);
@@ -715,9 +727,9 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
           user,
           generation
         );
-        console.log('🖼️ Pet Portrait image saved to user gallery');
+        console.log(`🖼️ ${featureLabel} image saved to user gallery`);
       } catch (saveError) {
-        console.log('Pet Portrait image not saved:', saveError.message);
+        console.log(`${featureLabel} image not saved:`, saveError.message);
       }
       
       // Prepare response data in the format frontend expects
@@ -726,12 +738,12 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
         imageUrl: result.url,
         generation: generation,
         remainingCredits: user.totalCredits - creditsUsed,
-        message: 'Pet Portrait generated successfully',
+        message: `${featureLabel} generated successfully`,
         model: modelId,
         metadata: {
           provider: USE_FAL_AI ? 'Fal.ai' : 'KIE API',
           model: 'google/nano-banana-edit',
-          mode: 'pet-portrait-dual-image',
+          mode: isActionFigure ? 'action-figure-dual-image' : 'pet-portrait-dual-image',
           styleName,
           taskId
         }
@@ -751,16 +763,16 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
         model: responseData.model
       }, null, 2));
       
-      console.log('🍌 Nano-banana Pet Portrait success! {');
+      console.log(`🍌 Nano-banana ${featureLabel} success! {`);
       
       // Send success response
       return res.status(200).json(responseData);
     } else {
-      throw new Error(result.error || 'Pet Portrait generation failed');
+      throw new Error(result.error || `${featureLabel} generation failed`);
     }
 
   } catch (error) {
-    console.error('❌ [NANO-BANANA] Pet Portrait error:', error.message);
+    console.error(`❌ [NANO-BANANA] ${featureLabel} error:`, error.message);
     logAIServiceError(error, 'Nano-Banana', 'generatePetPortrait');
     
     // If generation was created but failed, update its status
@@ -771,9 +783,9 @@ export const generatePetPortrait = asyncHandler(async (req, res) => {
     // If credits were deducted but generation failed, refund them
     if (creditsUsed > 0 && userId) {
       try {
-        await refundCredits(userId, creditsUsed, 'Nano-Banana Pet Portrait generation failed');
+        await refundCredits(userId, creditsUsed, `Nano-Banana ${featureLabel} generation failed`);
       } catch (refundError) {
-        console.error('Failed to refund Pet Portrait credits:', refundError);
+        console.error(`Failed to refund ${featureLabel} credits:`, refundError);
       }
     }
     

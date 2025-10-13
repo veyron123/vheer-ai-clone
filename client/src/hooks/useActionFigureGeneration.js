@@ -1,8 +1,7 @@
 import { useState, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { useAuthStore } from '../stores/authStore';
-import { generateWithNanoBananaImageToImage } from '../services/nanoBananaGeneration';
-import { urlToBase64 } from '../utils/imageUtils';
+import { generateActionFigure } from '../services/imageGeneration';
 
 export const useActionFigureGeneration = () => {
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -11,6 +10,7 @@ export const useActionFigureGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationTime, setGenerationTime] = useState(null);
   const fileInputRef = useRef(null);
+  const abortControllerRef = useRef(null);
   const { user } = useAuthStore();
 
   const handleImageUpload = (file) => {
@@ -19,7 +19,6 @@ export const useActionFigureGeneration = () => {
     const reader = new FileReader();
     reader.onload = (e) => {
       setUploadedImage(e.target.result);
-      // Clear any previous generated image
       setGeneratedImage(null);
       setGenerationTime(null);
     };
@@ -27,6 +26,11 @@ export const useActionFigureGeneration = () => {
   };
 
   const handleImageRemove = () => {
+    if (abortControllerRef.current && isGenerating) {
+      abortControllerRef.current.abort();
+      setIsGenerating(false);
+    }
+
     setUploadedImage(null);
     setGeneratedImage(null);
     setGenerationTime(null);
@@ -46,14 +50,18 @@ export const useActionFigureGeneration = () => {
       return;
     }
 
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
     setIsGenerating(true);
+    setGeneratedImage(null);
     const startTime = Date.now();
 
     try {
-      // Convert uploaded image to base64 if needed (for nano-banana approach)
       let imageBase64 = uploadedImage;
       if (uploadedImage.startsWith('blob:')) {
-        // Convert blob URL to base64
         const response = await fetch(uploadedImage);
         const blob = await response.blob();
         imageBase64 = await new Promise((resolve) => {
@@ -63,10 +71,11 @@ export const useActionFigureGeneration = () => {
         });
       }
 
-      // Create the detailed prompt for blister packaging style
-      const itemsText = figureItems.trim() ? `Each character should have their own matching accessories placed next to them — for example, ${figureItems}.` : '';
+      const itemsText = figureItems.trim()
+        ? `Each character should have their own matching accessories placed next to them — for example, ${figureItems}.`
+        : '';
 
-      const stylePrompt = `Create a realistic 3D render of a collectible action figure toy set displayed inside a transparent blister package on a cardboard backing.
+      const basePrompt = `Create a realistic 3D render of a collectible action figure toy set displayed inside a transparent blister package on a cardboard backing.
 If there is more than one subject in the photo, include all of them together in the same packaging — each with their own section and name label.
 
 At the top of the packaging, write all names combined, like "${figureName}" (or only one name if there is one person).
@@ -79,25 +88,44 @@ Do not include any external background, frame, or environment — only the packa
 
 Style: 3D Pixar Style product render, cartoonish cute toy aesthetic, professional lighting.`;
 
-      // Use the same nano-banana approach as Pet Portrait generator
-      const result = await generateWithNanoBananaImageToImage(
+      const finalPrompt = `${basePrompt}
+
+Make sure the packaging title highlights: ${figureName}.`;
+
+      const styleReference = {
+        id: styleData?.id || 'action-figure-packaging',
+        name: styleData?.name || 'Action Figure Packaging',
+        image: styleData?.image || '/example-results/idyXE20dVrPCQE62CUUxJ.jpeg'
+      };
+
+      const finalAspectRatio = aiModel === 'nano-banana' ? '1:1' : (aspectRatio || '1:1');
+
+      const result = await generateActionFigure(
         imageBase64,
-        stylePrompt,
-        'none',
-        aspectRatio || '1:1'
+        styleReference.image,
+        styleReference.name,
+        finalPrompt,
+        aiModel,
+        finalAspectRatio,
+        abortControllerRef.current.signal
       );
 
-      if (!result || !result.url) {
+      if (!result || (!result.url && !result.imageUrl)) {
         throw new Error('No image generated');
       }
 
       const endTime = Date.now();
       setGenerationTime(Math.round((endTime - startTime) / 1000));
-      setGeneratedImage(result.url);
+      setGeneratedImage(result.url || result.imageUrl);
 
       toast.success(`Action figure "${figureName}" generated successfully!`);
 
     } catch (error) {
+      if (error.name === 'AbortError') {
+        toast.error('Generation cancelled');
+        return;
+      }
+
       console.error('Action figure generation error:', error);
       let errorMessage = 'Failed to generate action figure. ';
 
@@ -118,13 +146,17 @@ Style: 3D Pixar Style product render, cartoonish cute toy aesthetic, professiona
   };
 
   const cancelGeneration = () => {
-    setIsGenerating(false);
-    toast.error('Generation cancelled');
+    if (abortControllerRef.current && isGenerating) {
+      abortControllerRef.current.abort();
+      setIsGenerating(false);
+      toast.error('Generation cancelled');
+    }
   };
 
   return {
     uploadedImage,
     generatedImage,
+    generatedImages,
     isGenerating,
     generationTime,
     fileInputRef,

@@ -63,8 +63,8 @@ const ActionFigureGeneratorPage = () => {
 
     // Create custom style data for the action figure
     const customStyleData = {
-      id: 'custom',
-      name: combinedName,
+      id: 'action-figure-packaging',
+      name: 'Action Figure Packaging',
       image: '/example-results/idyXE20dVrPCQE62CUUxJ.jpeg' // Default style reference image
     };
 

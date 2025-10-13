@@ -908,6 +908,57 @@ export async function generatePetPortrait(userImageUrl, styleImageUrl, styleName
   }
 }
 
+/**
+ * Generate Action Figure using dual-image Nano-Banana route
+ * Mirrors pet portrait pipeline but with custom prompt/styling
+ */
+export async function generateActionFigure(userImageUrl, styleImageUrl, styleName, prompt, aiModel = 'nano-banana', aspectRatio = '1:1', abortSignal = null) {
+  const token = useAuthStore.getState().token;
+
+  if (!token) {
+    throw new Error('Please sign in to generate action figures');
+  }
+
+  if (aiModel !== 'nano-banana') {
+    throw new Error(`Action figure generation currently supports only Nano-Banana model. Requested: ${aiModel}`);
+  }
+
+  const requestBody = {
+    userImageUrl,
+    styleImageUrl,
+    styleName,
+    prompt,
+    aiModel: 'nano-banana',
+    aspectRatio: '1:1',
+    mode: 'action-figure'
+  };
+
+  const response = await fetch(getApiUrl('/nano-banana/action-figure'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    },
+    body: JSON.stringify(requestBody),
+    signal: abortSignal
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    if (response.status === 400 && errorData.error === 'Insufficient credits') {
+      throw new Error('Insufficient credits');
+    }
+    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+  }
+
+  const result = await response.json();
+  return {
+    imageUrl: result.imageUrl || result.image,
+    generation: result.generation,
+    remainingCredits: result.remainingCredits
+  };
+}
+
 
 // Qwen Pet Portrait generation
 async function generateWithQwenPetPortrait(userImageUrl, styleImageUrl, prompt, aspectRatio, abortSignal) {
