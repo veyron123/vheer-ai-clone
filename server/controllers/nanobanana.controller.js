@@ -327,7 +327,7 @@ export const generateImage = asyncHandler(async (req, res) => {
       const falResult = await fal.subscribe('fal-ai/nano-banana/edit', {
         input: {
           prompt: prompt.length > 150 ? prompt.substring(0, 150) + '...' : prompt,
-          image_url: imageUrl,
+          image_urls: [imageUrl],
           strength: 0.8,
           guidance_scale: 7.5,
           num_inference_steps: 20
