@@ -80,20 +80,60 @@ const ActionFigureGeneratorPage = () => {
   };
 
   // Action figure specific example images
-   const actionFigureExampleImages = [
-     {
-       id: 1,
-       original: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop',
-       generated: '/example-results/idyXE20dVrPCQE62CUUxJ.jpeg',
-       style: 'Action Figure Style'
-     },
-     {
-       id: 2,
-       original: 'https://images.unsplash.com/photo-1494790108755-2616b612b851?w=300&h=400&fit=crop',
-       generated: '/example-results/output.jpeg',
-       style: 'Action Figure Style'
-     }
-   ];
+    const actionFigureExampleImages = [
+      {
+        id: 1,
+        original: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop',
+        generated: '/example-results/idyXE20dVrPCQE62CUUxJ.jpeg',
+        style: 'Action Figure Style'
+      },
+      {
+        id: 2,
+        original: 'https://images.unsplash.com/photo-1494790108755-2616b612b851?w=300&h=400&fit=crop',
+        generated: '/example-results/output.jpeg',
+        style: 'Action Figure Style'
+      }
+    ];
+
+  // Кастомные отзывы для Action Figure страницы
+  const actionFigureReviews = [
+    {
+      id: 1,
+      image: '/Image for main reviews/output (3).jpeg',
+      customerPhoto: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face',
+      name: 'Mike Chen',
+      rating: 5,
+      comment: "DUDE! This action figure of me came out INSANE! 🔥 I'm like a total superhero with that cape and everything. My kids won't stop playing with it - they think I'm actually a superhero now lol. Worth every penny!",
+      verified: true
+    },
+    {
+      id: 2,
+      image: '/Image for main reviews/output (4).jpeg',
+      customerPhoto: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=80&h=80&fit=crop&crop=face',
+      name: 'Sarah Williams',
+      rating: 5,
+      comment: "Oh my gosh, this turned out SO much better than I expected! 😍 I got myself as a fantasy warrior princess and the detail is incredible. The packaging looks super professional too - like a real collectible!",
+      verified: true
+    },
+    {
+      id: 3,
+      image: '/Image for main reviews/output (5).jpeg',
+      customerPhoto: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face',
+      name: 'Carlos Rodriguez',
+      rating: 5,
+      comment: "Got this for my son's birthday - he wanted to be a video game character and this blew his mind! 🎮 The quality is amazing and it actually looks like something you'd buy in a store. Already planning to get one of my daughter too!",
+      verified: true
+    },
+    {
+      id: 4,
+      image: '/Image for main reviews/output.jpeg',
+      customerPhoto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face',
+      name: 'Jennifer Park',
+      rating: 5,
+      comment: "This is the coolest gift I ever got for my husband! 😂 He looks like such a badass action hero - complete with weapons and that serious expression. His coworkers keep asking where they can get one too!",
+      verified: true
+    }
+  ];
 
   return (
     <>
@@ -433,38 +473,39 @@ const ActionFigureGeneratorPage = () => {
     </div>
 
     {/* How It Works Section */}
-    <div className="bg-gradient-to-r from-purple-50 to-pink-50 py-16">
+    <div className="bg-orange-50 py-16">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">How It Works</h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="text-center">
-            <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
+        <div className="flex justify-center items-center gap-4 sm:gap-8 md:gap-12">
+          <div className="text-center flex-shrink-0">
+            <div className="bg-purple-100 w-32 h-32 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
               <img
-                src="/example-results/idyXE20dVrPCQE62CUUxJ.jpeg"
+                src="/how-it-works-upload.png"
                 alt="Upload Photo AI Generation"
                 className="w-full h-full object-cover"
               />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Upload Photo</h3>
-            <p className="text-gray-600">Upload any portrait photo you want to transform</p>
+            <h3 className="text-lg sm:text-xl font-semibold">Upload Photo</h3>
           </div>
-          <div className="text-center">
-            <div className="bg-pink-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">🎭</span>
-            </div>
-            <h3 className="text-xl font-semibold mb-2">AI Generation</h3>
-            <p className="text-gray-600">Advanced AI transforms your photo into action figure</p>
-          </div>
-          <div className="text-center">
-            <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
+          <div className="text-center flex-shrink-0">
+            <div className="bg-pink-100 w-32 h-32 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
               <img
-                src="/example-results/output.jpeg"
-                alt="Get Your Figure"
+                src="/how-it-works-ai.png"
+                alt="AI Generation"
                 className="w-full h-full object-cover"
               />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Get Your Figure</h3>
-            <p className="text-gray-600">Download your custom action figure in seconds!</p>
+            <h3 className="text-lg sm:text-xl font-semibold">AI Generation</h3>
+          </div>
+          <div className="text-center flex-shrink-0">
+            <div className="bg-purple-100 w-32 h-32 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
+              <img
+                src="/how-it-works-figure.jpeg"
+                alt="Get Your Framed Poster"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <h3 className="text-lg sm:text-xl font-semibold">Get Your Framed Poster</h3>
           </div>
         </div>
       </div>
@@ -473,7 +514,7 @@ const ActionFigureGeneratorPage = () => {
     {/* Reviews Section */}
     <div className="bg-gray-50 py-12">
       <div className="container mx-auto px-4">
-        <ReviewsSection />
+        <ReviewsSection customReviews={actionFigureReviews} />
       </div>
     </div>
     

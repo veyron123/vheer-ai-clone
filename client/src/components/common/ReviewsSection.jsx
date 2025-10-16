@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Star, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
 
-const ReviewsSection = () => {
+const ReviewsSection = ({ customReviews }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollRef = useRef(null);
 
-  // Sample reviews with customer artwork - using local AI-generated images
-  const reviews = [
+  // Use custom reviews if provided, otherwise use default reviews
+  const reviews = customReviews || [
     {
       id: 1,
       image: '/Image for main reviews/personalized-anime-portrait-640x533.jpg', // Dragon Ball Z style art
@@ -172,7 +172,7 @@ const ReviewsSection = () => {
           {reviews.map((review) => (
             <div
               key={review.id}
-              className="flex-shrink-0 w-80 h-[450px] snap-center"
+              className="flex-shrink-0 w-80 h-[500px] snap-center"
             >
               {/* Карточка отзыва */}
               <div className="bg-white rounded-xl overflow-hidden shadow-xl h-full flex flex-col">
@@ -203,13 +203,8 @@ const ReviewsSection = () => {
                   </p>
 
                   {/* Информация о клиенте */}
-                  <div className="flex items-center gap-2 pt-3 border-t border-gray-100 mt-auto">
-                    <img
-                      src={review.customerPhoto}
-                      alt={review.name}
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                    <div className="flex-1">
+                  <div className="flex items-center justify-center gap-2 pt-3 border-t border-gray-100 mt-auto">
+                    <div className="flex-1 text-center">
                       <p className="text-sm font-medium text-gray-900">{review.name}</p>
                       <p className="text-xs text-gray-500">Verified Customer</p>
                     </div>
