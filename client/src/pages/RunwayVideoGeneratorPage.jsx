@@ -15,7 +15,9 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useRunwayVideoGeneration } from '../hooks/useRunwayVideoGeneration';
+import { useSora2VideoGeneration } from '../hooks/useSora2VideoGeneration';
 import { RUNWAY_VIDEO_CONSTANTS } from '../constants/runwayVideo.constants';
+import { SORA2_VIDEO_CONSTANTS } from '../constants/sora2Video.constants';
 import BaseImageUploader from '../components/common/BaseImageUploader';
 import UniversalGenerateButton from '../components/common/UniversalGenerateButton';
 import VideoResultDisplay from '../components/common/VideoResultDisplay';
@@ -25,12 +27,17 @@ import { toast } from 'react-hot-toast';
 
 const RunwayVideoGeneratorPage = () => {
   const { t } = useTranslation();
+  // Use appropriate hook based on selected model
+  const runwayHook = useRunwayVideoGeneration();
+  const sora2Hook = useSora2VideoGeneration();
+
+  const currentHook = selectedModel === 'sora2' ? sora2Hook : runwayHook;
+
   const {
     isGenerating,
     generatedVideo,
     generationProgress,
     taskId,
-    userCredits,
     options,
     generateVideo,
     fetchOptions,
@@ -38,7 +45,13 @@ const RunwayVideoGeneratorPage = () => {
     validateParams,
     getEstimatedTime,
     reset
-  } = useRunwayVideoGeneration();
+  } = currentHook;
+
+  // Get user credits from the hook (assuming it's available in both hooks)
+  const userCredits = currentHook.userCredits || 0;
+
+  // Selected model
+  const [selectedModel, setSelectedModel] = useState('runway');
 
   // Form state
   const [formData, setFormData] = useState({
@@ -47,7 +60,10 @@ const RunwayVideoGeneratorPage = () => {
     duration: RUNWAY_VIDEO_CONSTANTS.DEFAULTS.DURATION,
     quality: RUNWAY_VIDEO_CONSTANTS.DEFAULTS.QUALITY,
     aspectRatio: RUNWAY_VIDEO_CONSTANTS.DEFAULTS.ASPECT_RATIO,
-    waterMark: RUNWAY_VIDEO_CONSTANTS.DEFAULTS.WATERMARK
+    waterMark: RUNWAY_VIDEO_CONSTANTS.DEFAULTS.WATERMARK,
+    n_frames: SORA2_VIDEO_CONSTANTS.DEFAULTS.DURATION,
+    size: SORA2_VIDEO_CONSTANTS.DEFAULTS.QUALITY,
+    remove_watermark: SORA2_VIDEO_CONSTANTS.DEFAULTS.REMOVE_WATERMARK
   });
 
   // UI state
@@ -57,7 +73,44 @@ const RunwayVideoGeneratorPage = () => {
 
   useEffect(() => {
     fetchOptions();
-  }, [fetchOptions]);
+  }, [fetchOptions, selectedModel]);
+
+  // Get current model constants
+  const getCurrentConstants = () => {
+    return selectedModel === 'sora2' ? SORA2_VIDEO_CONSTANTS : RUNWAY_VIDEO_CONSTANTS;
+  };
+
+  // Get current model options
+  const getCurrentOptions = () => {
+    const constants = getCurrentConstants();
+    if (selectedModel === 'sora2') {
+      return {
+        aspectRatios: constants.ASPECT_RATIOS,
+        durationOptions: constants.FRAME_OPTIONS,
+        qualityOptions: constants.QUALITY_OPTIONS
+      };
+    }
+    return options; // From the hook (Runway options)
+  };
+
+  // Get current model name for API
+  const getCurrentModelName = () => {
+    return selectedModel === 'sora2' ? SORA2_VIDEO_CONSTANTS.MODEL_NAME : 'runway';
+  };
+
+  // Reset form when model changes
+  useEffect(() => {
+    const constants = getCurrentConstants();
+    setFormData(prev => ({
+      ...prev,
+      duration: selectedModel === 'sora2' ? parseInt(constants.DEFAULTS.DURATION) : constants.DEFAULTS.DURATION,
+      quality: selectedModel === 'sora2' ? constants.DEFAULTS.QUALITY : constants.DEFAULTS.QUALITY,
+      aspectRatio: constants.DEFAULTS.ASPECT_RATIO,
+      n_frames: selectedModel === 'sora2' ? constants.DEFAULTS.DURATION : undefined,
+      size: selectedModel === 'sora2' ? constants.DEFAULTS.QUALITY : undefined,
+      remove_watermark: selectedModel === 'sora2' ? constants.DEFAULTS.REMOVE_WATERMARK : undefined
+    }));
+  }, [selectedModel]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -89,18 +142,28 @@ const RunwayVideoGeneratorPage = () => {
       return;
     }
 
-    if (formData.prompt.length < RUNWAY_VIDEO_CONSTANTS.LIMITS.PROMPT_MIN_LENGTH) {
-      toast.error(`Description must be at least ${RUNWAY_VIDEO_CONSTANTS.LIMITS.PROMPT_MIN_LENGTH} characters`);
+    const constants = getCurrentConstants();
+    if (formData.prompt.length < constants.LIMITS.PROMPT_MIN_LENGTH) {
+      toast.error(`Description must be at least ${constants.LIMITS.PROMPT_MIN_LENGTH} characters`);
       return;
     }
 
-    const validation = validateParams(formData.duration, formData.quality);
+    let validation = { valid: true };
+    let requiredCredits = 0;
+
+    if (selectedModel === 'sora2') {
+      // SORA 2 validation and credit calculation
+      requiredCredits = constants.BASE_CREDIT_COSTS[`${formData.n_frames}_seconds_${formData.size}`] || 80;
+    } else {
+      // Runway validation and credit calculation
+      validation = validateParams(formData.duration, formData.quality);
+      requiredCredits = calculateCredits(formData.duration, formData.quality);
+    }
+
     if (!validation.valid) {
       toast.error(validation.error);
       return;
     }
-
-    const requiredCredits = calculateCredits(formData.duration, formData.quality);
     if (userCredits < requiredCredits) {
       toast.error(`Insufficient credits. Required: ${requiredCredits}, Available: ${userCredits}`);
       return;
@@ -114,16 +177,26 @@ const RunwayVideoGeneratorPage = () => {
     }
   };
 
-  const requiredCredits = calculateCredits(formData.duration, formData.quality);
-  const estimatedTime = getEstimatedTime(formData.duration, formData.quality);
-  const paramValidation = validateParams(formData.duration, formData.quality);
+  // Calculate credits and time based on selected model
+  let requiredCredits = 0;
+  let estimatedTime = '2-3 minutes';
+  let paramValidation = { valid: true };
+
+  if (selectedModel === 'sora2') {
+    requiredCredits = SORA2_VIDEO_CONSTANTS.BASE_CREDIT_COSTS[`${formData.n_frames}_seconds_${formData.size}`] || 80;
+    estimatedTime = formData.size === 'high' ? '3-5 minutes' : '2-4 minutes';
+  } else {
+    requiredCredits = calculateCredits(formData.duration, formData.quality);
+    estimatedTime = getEstimatedTime(formData.duration, formData.quality);
+    paramValidation = validateParams(formData.duration, formData.quality);
+  }
 
   return (
     <>
-      <SEO 
-        title="AI Video Generator - Create Videos from Text or Images"
-        description="Generate stunning AI videos from text descriptions or images using advanced Runway AI technology. Create professional videos with customizable duration, quality, and aspect ratios."
-        keywords="AI video generator, text to video, image to video, Runway AI, video creation, AI animation"
+      <SEO
+        title="AI Video Generator - Create Videos with Runway AI & SORA 2"
+        description="Generate stunning AI videos from text descriptions or images using advanced Runway AI and SORA 2 technology. Create professional videos with customizable duration, quality, and aspect ratios."
+        keywords="AI video generator, text to video, image to video, Runway AI, SORA 2, video creation, AI animation"
         url="https://vheer.ai/video-generator"
       />
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -148,9 +221,39 @@ const RunwayVideoGeneratorPage = () => {
                   AI
                 </span>
               </div>
-              <p className="text-lg text-gray-600">
-                Create stunning AI-generated videos from text descriptions or images using advanced Runway AI technology.
+              <p className="text-lg text-gray-600 mb-6">
+                Create stunning AI-generated videos from text descriptions or images using advanced AI technology. Choose between Runway AI and SORA 2 for different video generation styles.
               </p>
+
+              {/* Model Selection */}
+              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border">
+                <span className="text-sm font-medium text-gray-700">AI Model:</span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSelectedModel('runway')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      selectedModel === 'runway'
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    Runway AI
+                  </button>
+                  <button
+                    onClick={() => setSelectedModel('sora2')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      selectedModel === 'sora2'
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    SORA 2
+                  </button>
+                </div>
+                <div className="text-xs text-gray-500">
+                  {selectedModel === 'runway' ? 'Professional video generation' : 'Advanced image-to-video AI'}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -175,10 +278,10 @@ const RunwayVideoGeneratorPage = () => {
                       placeholder="Describe the video you want to create... Be specific about subjects, actions, and visual style."
                       className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                       rows={4}
-                      maxLength={RUNWAY_VIDEO_CONSTANTS.LIMITS.PROMPT_MAX_LENGTH}
+                      maxLength={getCurrentConstants().LIMITS.PROMPT_MAX_LENGTH}
                     />
                     <div className="absolute bottom-2 right-2 text-xs text-gray-500">
-                      {formData.prompt.length}/{RUNWAY_VIDEO_CONSTANTS.LIMITS.PROMPT_MAX_LENGTH}
+                      {formData.prompt.length}/{getCurrentConstants().LIMITS.PROMPT_MAX_LENGTH}
                     </div>
                   </div>
                   
@@ -192,7 +295,7 @@ const RunwayVideoGeneratorPage = () => {
                       {showExamples ? 'Hide Examples' : 'Show Example Prompts'}
                     </button>
                     <div className="text-xs text-gray-500">
-                      Minimum {RUNWAY_VIDEO_CONSTANTS.LIMITS.PROMPT_MIN_LENGTH} characters
+                      Minimum {getCurrentConstants().LIMITS.PROMPT_MIN_LENGTH} characters
                     </div>
                   </div>
                 </div>
@@ -377,7 +480,7 @@ const RunwayVideoGeneratorPage = () => {
                   isGenerating={isGenerating}
                   disabled={!formData.prompt.trim() || !paramValidation.valid || userCredits < requiredCredits}
                   className="w-full"
-                  variant="runway"
+                  variant={selectedModel}
                 >
                   {isGenerating ? (
                     <span className="flex items-center justify-center">
@@ -389,12 +492,12 @@ const RunwayVideoGeneratorPage = () => {
                       {formData.imageUrl ? (
                         <>
                           <ImageIcon className="w-4 h-4 mr-2" />
-                          Generate Video from Image ({requiredCredits} Credits)
+                          Generate {selectedModel === 'sora2' ? 'SORA 2' : 'Runway'} Video ({requiredCredits} Credits)
                         </>
                       ) : (
                         <>
                           <Play className="w-4 h-4 mr-2" />
-                          Generate Video ({requiredCredits} Credits)
+                          Generate {selectedModel === 'sora2' ? 'SORA 2' : 'Runway'} Video ({requiredCredits} Credits)
                         </>
                       )}
                     </span>
@@ -441,6 +544,10 @@ const RunwayVideoGeneratorPage = () => {
                 </h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
+                    <span className="text-gray-600">AI Model:</span>
+                    <span className="font-medium">{selectedModel === 'sora2' ? 'SORA 2' : 'Runway AI'}</span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="text-gray-600">Mode:</span>
                     <span className="font-medium flex items-center">
                       {formData.imageUrl ? (
@@ -460,14 +567,29 @@ const RunwayVideoGeneratorPage = () => {
                     <span className="text-gray-600">Cost:</span>
                     <span className="font-medium">{requiredCredits} credits</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Duration:</span>
-                    <span className="font-medium">{formData.duration}s</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Quality:</span>
-                    <span className="font-medium">{formData.quality}</span>
-                  </div>
+                  {selectedModel === 'sora2' ? (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Duration:</span>
+                        <span className="font-medium">{formData.n_frames} seconds</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Quality:</span>
+                        <span className="font-medium">{formData.size}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Duration:</span>
+                        <span className="font-medium">{formData.duration}s</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Quality:</span>
+                        <span className="font-medium">{formData.quality}</span>
+                      </div>
+                    </>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-gray-600">Estimated time:</span>
                     <span className="font-medium">{estimatedTime}</span>

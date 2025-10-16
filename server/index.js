@@ -31,6 +31,7 @@ import seedreamRoutes from './routes/seedream.routes.js';
 // Video generator moved to .ignore folder
 // import lumaVideoRoutes from './routes/lumaVideoRoutes.js';
 import runwayVideoRoutes from './routes/runwayVideo.routes.js';
+import sora2VideoRoutes from './routes/sora2Video.routes.js';
 import wayforpayRoutes from './routes/wayforpay.routes.js';
 import testSubscriptionRoutes from './routes/test-subscription-expiry.js';
 import adminRoutes from './routes/admin.routes.js';
@@ -174,6 +175,7 @@ app.use('/api/seedream', seedreamRoutes);
 // Video generator moved to .ignore folder
 // app.use('/api/video', lumaVideoRoutes);
 app.use('/api/runway-video', runwayVideoRoutes);
+app.use('/api/sora2-video', sora2VideoRoutes);
 app.use('/api/payments/wayforpay', wayforpayRoutes);
 
 // Test routes (only in development)
