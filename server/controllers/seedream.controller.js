@@ -6,12 +6,11 @@ import { saveGeneratedImage } from './images.controller.js';
 import { logAIServiceError, getUserFriendlyAIError } from '../utils/aiServiceErrors.js';
 
 // FAL.ai Seedream V4 Configuration
-const DEFAULT_FAL_KEY = '5fe870a0-bd86-4fda-96b1-af8aa26f4835:e56e8f9886dcfaa093554773fe937b5d';
-const FAL_API_KEY = process.env.FAL_KEY || process.env.FAL_API_KEY || DEFAULT_FAL_KEY;
-const falKeySource = process.env.FAL_KEY ? 'FAL_KEY' : process.env.FAL_API_KEY ? 'FAL_API_KEY' : 'fallback';
-const maskedFalKey = FAL_API_KEY && FAL_API_KEY.length > 10
-  ? `${FAL_API_KEY.slice(0, 4)}...${FAL_API_KEY.slice(-4)}`
-  : FAL_API_KEY;
+const FAL_KEY = process.env.FAL_KEY || null;
+const falKeySource = FAL_KEY ? 'FAL_KEY' : 'missing';
+const maskedFalKey = FAL_KEY && FAL_KEY.length > 10
+  ? `${FAL_KEY.slice(0, 4)}...${FAL_KEY.slice(-4)}`
+  : FAL_KEY;
 const FAL_API_URL = 'https://fal.run/fal-ai/bytedance/seedream/v4/edit';
 const hasCloudinaryConfig = () => Boolean(
   process.env.CLOUDINARY_CLOUD_NAME &&
@@ -22,7 +21,7 @@ const hasImgbbConfig = () => Boolean(process.env.IMGBB_API_KEY);
 
 console.log('🔑 [Seedream] FAL API key configuration:', {
   source: falKeySource,
-  configured: !!FAL_API_KEY,
+  configured: !!FAL_KEY,
   key: maskedFalKey || 'MISSING'
 });
 
@@ -51,8 +50,8 @@ export const generateImage = asyncHandler(async (req, res) => {
   }
 
   // Check FAL API key
-  if (!FAL_API_KEY) {
-    console.error('❌ FAL API key not configured (expected FAL_KEY or FAL_API_KEY)');
+  if (!FAL_KEY) {
+    console.error('❌ FAL API key not configured (expected FAL_KEY env variable)');
     return sendServerError(res, 'Seedream service not available', { error: 'FAL API key missing' });
   }
 
@@ -236,7 +235,7 @@ async function generateWithFALSeedream(prompt, input_image, style, aspectRatio, 
     const response = await axios.post(FAL_API_URL, requestBody, {
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Key ${FAL_API_KEY}`
+        'Authorization': `Key ${FAL_KEY}`
       },
       timeout: 120000 // 2 minute timeout
     });
@@ -414,7 +413,7 @@ async function pollForFALResult(requestId, req = null) {
       // Check task status
       const statusResponse = await axios.get(`https://fal.run/fal-ai/bytedance/seedream/v4/edit/requests/${requestId}/status`, {
         headers: {
-          'Authorization': `Key ${FAL_API_KEY}`
+          'Authorization': `Key ${FAL_KEY}`
         },
         timeout: 10000
       });
@@ -427,7 +426,7 @@ async function pollForFALResult(requestId, req = null) {
         // Get the final result
         const resultResponse = await axios.get(`https://fal.run/fal-ai/bytedance/seedream/v4/edit/requests/${requestId}`, {
           headers: {
-            'Authorization': `Key ${FAL_API_KEY}`
+            'Authorization': `Key ${FAL_KEY}`
           }
         });
         

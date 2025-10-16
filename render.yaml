@@ -88,8 +88,6 @@ services:
         value: https://colibrrri.com/api
       - key: NODE_ENV
         value: production
-      # Frontend API keys are managed in Render Dashboard
-      # Set these in Service Environment:
-      # - VITE_FAL_API_KEY
-      # - VITE_FLUX_API_KEY
+      # Frontend public keys are managed in Render Dashboard (e.g. VITE_FLUX_API_KEY)
+      # Fal.ai секрет задаётся только на серверном сервисе через переменную окружения FAL_KEY
     autoDeploy: true

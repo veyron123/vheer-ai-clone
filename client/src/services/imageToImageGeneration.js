@@ -1,13 +1,7 @@
-import { fal } from "@fal-ai/client";
 import { getApiUrl } from '../config/api.config';
 import { useAuthStore } from '../stores/authStore';
-import { urlToBase64 } from '../utils/imageUtils';
+import { urlToBase64, fileToBase64 } from '../utils/imageUtils';
 import { generateWithNanoBananaImageToImage } from './nanoBananaGeneration';
-
-// Configure API key from environment variable
-fal.config({
-  credentials: import.meta.env.VITE_FAL_API_KEY || "e405913f-48b3-42e6-9016-cddd8844add5:20315b83d223a2b6664fe3945238f67d"
-});
 
 // urlToBase64 function removed - now imported from utils/imageUtils.js
 
@@ -228,42 +222,13 @@ export async function generateWithMidjourneyImageToImage(imageBase64, positivePr
  */
 export async function generateWithQwenImageToImage(imageBase64, positivePrompt, negativePrompt, creativeStrength, controlStrength, aspectRatio = '1:1', abortSignal = null, scale = 3.5) {
   try {
-    // Upload image to FAL storage first
-    let uploadedImageUrl;
+    // Prepare image payload for backend (supports URL or base64)
+    let processedImage = imageBase64;
     
-    if (imageBase64.startsWith('http')) {
-      // If it's already a URL, use it directly
-      uploadedImageUrl = imageBase64;
-    } else {
-      // If it's base64, convert to blob and upload to FAL storage
-      let base64Data = imageBase64;
-      if (!imageBase64.startsWith('data:')) {
-        base64Data = await urlToBase64(imageBase64);
-      }
-      
-      // Convert base64 to blob without using fetch (avoids CSP issues)
-      // Extract the base64 content and mime type
-      const [header, base64Content] = base64Data.split(',');
-      const mimeMatch = header.match(/:(.*?);/);
-      const mimeType = mimeMatch ? mimeMatch[1] : 'image/png';
-      
-      // Decode base64 to binary
-      const binaryString = atob(base64Content);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-      
-      // Create blob from binary data
-      const blob = new Blob([bytes], { type: mimeType });
-      
-      // Create a File object from blob
-      const file = new File([blob], 'image.png', { type: mimeType });
-      
-      // Upload to FAL storage
-      console.log('Uploading image to FAL storage for Qwen...');
-      uploadedImageUrl = await fal.storage.upload(file);
-      console.log('Image uploaded to FAL:', uploadedImageUrl);
+    if (!imageBase64.startsWith('http')) {
+      processedImage = imageBase64.startsWith('data:')
+        ? imageBase64
+        : await urlToBase64(imageBase64);
     }
     
     // Construct the prompt for Qwen Image
@@ -306,7 +271,7 @@ export async function generateWithQwenImageToImage(imageBase64, positivePrompt, 
       body: JSON.stringify({
         prompt: fullPrompt,
         negative_prompt: negativePrompt,
-        input_image: uploadedImageUrl,
+        input_image: processedImage,
         aspectRatio: aspectRatio,
         scale: scale
       }),
@@ -525,14 +490,13 @@ export async function generateImageToImage(imageUrl, positivePrompt, negativePro
 }
 
 /**
- * Upload image file to fal.ai storage
- * @param {File} file - Image file to upload
- * @returns {Promise<string>} URL of uploaded image
+ * Convert uploaded image file to base64 string
+ * @param {File} file - Image file to convert
+ * @returns {Promise<string>} Base64 encoded string
  */
 export async function uploadImage(file) {
   try {
-    const url = await fal.storage.upload(file);
-    return url;
+    return await fileToBase64(file);
   } catch (error) {
     console.error("Error uploading image:", error);
     throw error;

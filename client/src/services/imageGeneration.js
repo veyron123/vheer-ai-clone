@@ -1,14 +1,8 @@
-import { fal } from "@fal-ai/client";
 import { getApiUrl } from '../config/api.config';
 import { useAuthStore } from '../stores/authStore';
-import { urlToBase64 } from '../utils/imageUtils';
+import { urlToBase64, fileToBase64 } from '../utils/imageUtils';
 import analytics from './analytics';
 import { generateWithNanoBananaImageToImage } from './nanoBananaGeneration';
-
-// Configure API key from environment variable
-fal.config({
-  credentials: import.meta.env.VITE_FAL_API_KEY || "e405913f-48b3-42e6-9016-cddd8844add5:20315b83d223a2b6664fe3945238f67d"
-});
 
 // Flux API configuration
 const FLUX_API_KEY = import.meta.env.VITE_FLUX_API_KEY || "2f58d1ef-d2d1-48f0-8c1f-a7b5525748c0";
@@ -819,30 +813,77 @@ export async function generateImageFromText(prompt, options = {}) {
       numSteps = 30,
       guidanceScale = 2.5,
       negativePrompt = 'blurry, ugly, distorted',
-      acceleration = 'regular'
+      acceleration = 'regular',
+      aspectRatio = '1:1'
     } = options;
+
+    const token = useAuthStore.getState().token;
+    const headers = {
+      'Content-Type': 'application/json'
+    };
     
-    const result = await fal.subscribe("fal-ai/qwen-image", {
-      input: {
-        prompt: prompt,
-        image_size: imageSize,
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(getApiUrl('/qwen/generate'), {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        prompt,
+        negativePrompt,
+        aspectRatio,
         num_inference_steps: numSteps,
         guidance_scale: guidanceScale,
-        num_images: 1,
-        enable_safety_checker: true,
-        output_format: "png",
-        negative_prompt: negativePrompt,
-        acceleration: acceleration
-      },
-      logs: false,
-      onQueueUpdate: (update) => {
-        if (update.status === "IN_PROGRESS") {
-          console.log("Generating image...");
-        }
-      },
+        acceleration,
+        mode: 'text-to-image'
+      })
     });
-    
-    return result.data;
+
+    if (!response.ok) {
+      // Handle cancelled requests
+      if (response.status === 499) {
+        const errorData = await response.json().catch(() => ({}));
+        if (errorData.cancelled) {
+          throw new DOMException('Request was cancelled', 'AbortError');
+        }
+      }
+
+      if (response.status === 401) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Authentication required');
+      }
+
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || errorData.error || `Server error: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (result.success && result.image) {
+      return {
+        images: [{
+          url: result.image,
+          thumbnailUrl: result.thumbnailUrl || result.image,
+          width: 1024,
+          height: 1024,
+          content_type: 'image/png'
+        }]
+      };
+    }
+
+    if (result.success && result.images && result.images.length > 0) {
+      return {
+        images: result.images.map(img => ({
+          url: img.url,
+          width: img.width || 1024,
+          height: img.height || 1024,
+          content_type: img.content_type || 'image/png'
+        }))
+      };
+    }
+
+    throw new Error(result.error || 'Failed to generate image');
   } catch (error) {
     console.error("Error generating image:", error);
     throw error;
@@ -850,14 +891,13 @@ export async function generateImageFromText(prompt, options = {}) {
 }
 
 /**
- * Upload image file to fal.ai storage
- * @param {File} file - Image file to upload
- * @returns {Promise<string>} URL of uploaded image
+ * Convert uploaded image file to base64 string
+ * @param {File} file - Image file to convert
+ * @returns {Promise<string>} Base64 encoded string
  */
 export async function uploadImage(file) {
   try {
-    const url = await fal.storage.upload(file);
-    return url;
+    return await fileToBase64(file);
   } catch (error) {
     console.error("Error uploading image:", error);
     throw error;

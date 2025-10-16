@@ -39,7 +39,14 @@ export const useActionFigureGeneration = () => {
     }
   };
 
-  const generateActionFigureImage = async (figureName, figureItems, styleData, aiModel, aspectRatio) => {
+  const generateActionFigureImage = async ({
+    title,
+    profession,
+    items = [],
+    styleData,
+    aiModel,
+    aspectRatio
+  }) => {
     if (!uploadedImage) {
       toast.error('Please upload an image first');
       return;
@@ -71,23 +78,29 @@ export const useActionFigureGeneration = () => {
         });
       }
 
-      const itemsText = figureItems.trim()
-        ? `Include small supporting items related to the character's hobby or job next to the figure, like ${figureItems}.`
+      const itemsPrompt = Array.isArray(items) && items.length > 0
+        ? `Include small supporting items related to each character's hobby or role next to the figure, such as ${items.join(', ')}.`
+        : '';
+
+      const professionPrompt = profession
+        ? `Under the name, in smaller bold text, display: "${profession}".`
         : '';
 
       const basePrompt = `Make a close-up, centered shot of a 3D action figure toy inside a transparent blister package, filling almost the entire frame.
 Show the full packaging clearly from the front, with minimal empty background space around it.
 The packaging is on a light brown cardboard backing with realistic lighting and soft shadows.
 Do not include any environment or frame.
-At the top of the package, write in large white text: "${figureName}", and below it smaller: "${figureName}".
-${itemsText}
+At the top of the package, write in large white text: "${title}".
+${professionPrompt}
+${itemsPrompt}
+The figure must clearly match the original person from the photo: replicate hairstyle, hair color, facial structure, eye color, skin tone, clothing colors and materials, accessories, and overall vibe. Treat it like a stylized toy version of the same individual(s), not a new character.
 Keep the design minimalist, cute, clean, and realistic — like an official product photo.
 Framing: tight crop, front-facing, centered composition, almost no extra background.
 Style: 3D PIXAR render, detailed, cute toy aesthetic.`;
 
       const finalPrompt = `${basePrompt}
 
-Make sure the packaging title highlights: ${figureName}.`;
+Make sure the packaging title highlights: ${title}.`;
 
       const styleReference = {
         id: styleData?.id || 'action-figure-packaging',
@@ -122,7 +135,7 @@ Make sure the packaging title highlights: ${figureName}.`;
       setGenerationTime(Math.round((endTime - startTime) / 1000));
       setGeneratedImage(finalImageUrl);
 
-      toast.success(`Action figure "${figureName}" generated successfully!`);
+      toast.success(`Action figure "${title}" generated successfully!`);
 
     } catch (error) {
       if (error.name === 'AbortError') {

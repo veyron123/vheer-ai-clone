@@ -20,8 +20,10 @@ import { useActionFigureGeneration } from '../hooks/useActionFigureGeneration';
 
 const ActionFigureGeneratorPage = () => {
   const [figureName, setFigureName] = useState('');
+  const [figureProfession, setFigureProfession] = useState('');
   const [figureItems, setFigureItems] = useState('');
   const [secondFigureName, setSecondFigureName] = useState('');
+  const [secondFigureProfession, setSecondFigureProfession] = useState('');
   const [secondFigureItems, setSecondFigureItems] = useState('');
   const [hasSecondFigure, setHasSecondFigure] = useState(false);
   // Using Nano-Banana model for Action Figure generation (best for style transfer)
@@ -47,19 +49,18 @@ const ActionFigureGeneratorPage = () => {
       return;
     }
 
-    // Handle multiple figures
-    let combinedName = figureName;
-    let combinedItems = figureItems;
+    const primaryName = figureName.trim();
+    const secondaryName = hasSecondFigure ? secondFigureName.trim() : '';
+    const title = secondaryName ? `${primaryName} & ${secondaryName}` : primaryName;
 
-    if (hasSecondFigure && secondFigureName.trim()) {
-      combinedName = `${figureName} & ${secondFigureName}`;
-      combinedItems = figureItems;
-      if (secondFigureItems.trim()) {
-        combinedItems += ` for ${figureName}, and ${secondFigureItems} for ${secondFigureName}`;
-      } else {
-        combinedItems += ` for ${figureName}`;
-      }
-    }
+    const professionParts = [];
+    if (figureProfession.trim()) professionParts.push(figureProfession.trim());
+    if (secondaryName && secondFigureProfession.trim()) professionParts.push(secondFigureProfession.trim());
+    const professionLabel = professionParts.join(' & ');
+
+    const itemsList = [];
+    if (figureItems.trim()) itemsList.push(figureItems.trim());
+    if (secondaryName && secondFigureItems.trim()) itemsList.push(secondFigureItems.trim());
 
     // Create custom style data for the action figure
     const customStyleData = {
@@ -68,8 +69,14 @@ const ActionFigureGeneratorPage = () => {
       image: '/example-results/idyXE20dVrPCQE62CUUxJ.jpeg' // Default style reference image
     };
 
-    // Generate action figure with custom name and items
-    generateActionFigureImage(combinedName, combinedItems, customStyleData, aiModel, aspectRatio);
+    generateActionFigureImage({
+      title,
+      profession: professionLabel,
+      items: itemsList,
+      styleData: customStyleData,
+      aiModel,
+      aspectRatio
+    });
   };
 
   // Action figure specific example images
@@ -163,6 +170,20 @@ const ActionFigureGeneratorPage = () => {
               />
             </div>
 
+            {/* First Figure - Profession Input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Profession / Role (optional)
+              </label>
+              <input
+                type="text"
+                value={figureProfession}
+                onChange={(e) => setFigureProfession(e.target.value)}
+                placeholder="e.g., Space Explorer, Chef, Gamer"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+            </div>
+
             {/* First Figure - Items Input */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -201,6 +222,22 @@ const ActionFigureGeneratorPage = () => {
                   value={secondFigureName}
                   onChange={(e) => setSecondFigureName(e.target.value)}
                   placeholder="Enter name for second figure..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+            )}
+
+            {/* Second Figure - Profession Input (conditional) */}
+            {hasSecondFigure && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Second Profession / Role (optional)
+                </label>
+                <input
+                  type="text"
+                  value={secondFigureProfession}
+                  onChange={(e) => setSecondFigureProfession(e.target.value)}
+                  placeholder="e.g., Tech Genius, Pet Detective"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
               </div>
@@ -276,6 +313,20 @@ const ActionFigureGeneratorPage = () => {
               />
             </div>
 
+            {/* First Figure - Profession Input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Profession / Role (optional)
+              </label>
+              <input
+                type="text"
+                value={figureProfession}
+                onChange={(e) => setFigureProfession(e.target.value)}
+                placeholder="e.g., Space Explorer, Chef, Gamer"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+            </div>
+
             {/* First Figure - Items Input */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -314,6 +365,22 @@ const ActionFigureGeneratorPage = () => {
                   value={secondFigureName}
                   onChange={(e) => setSecondFigureName(e.target.value)}
                   placeholder="Enter name for second figure..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+            )}
+
+            {/* Second Figure - Profession Input (conditional) */}
+            {hasSecondFigure && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Second Profession / Role (optional)
+                </label>
+                <input
+                  type="text"
+                  value={secondFigureProfession}
+                  onChange={(e) => setSecondFigureProfession(e.target.value)}
+                  placeholder="e.g., Tech Genius, Pet Detective"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
               </div>

@@ -133,7 +133,6 @@ export function maskSensitiveData(key, value) {
     'FAL_KEY',
     'GOOGLE_CLIENT_SECRET',
     'SESSION_SECRET',
-    'VITE_FAL_API_KEY',
     'VITE_FLUX_API_KEY'
   ];
 

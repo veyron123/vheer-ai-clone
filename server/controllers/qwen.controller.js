@@ -7,11 +7,11 @@ import fetch from 'node-fetch';
 import axios from 'axios';
 
 // FAL API Configuration for Qwen
-const FAL_API_KEY = process.env.FAL_KEY || 'your-fal-api-key-here';
+const FAL_KEY = process.env.FAL_KEY || null;
 
 console.log('🔑 FAL API configured for Qwen:', {
-  hasKey: !!FAL_API_KEY,
-  keyLength: FAL_API_KEY?.length
+  hasKey: !!FAL_KEY,
+  keyLength: FAL_KEY ? FAL_KEY.length : 0
 });
 
 const mapAspectRatioToFalSize = (aspectRatio) => {
@@ -265,12 +265,16 @@ export const generateImageTurbo = asyncHandler(async (req, res) => {
     // Process image URL
     const imageUrl = await processImageUrl(input_image);
 
+    if (!FAL_KEY) {
+      throw new Error('FAL API key not configured');
+    }
+
     // Import fal client for Qwen Image
     const { fal } = await import('@fal-ai/client');
 
     // Configure fal client
     fal.config({
-      credentials: FAL_API_KEY
+      credentials: FAL_KEY
     });
 
     console.log('🚀 [QWEN FAL.AI] Sending request to Fal.ai Qwen Image:', {
@@ -493,12 +497,16 @@ export const generateImageUltra = asyncHandler(async (req, res) => {
     const imageUrl = await processImageUrl(input_image);
     console.log('🎯 [QWEN ULTRA] Image URL processed:', imageUrl ? 'SUCCESS' : 'FAILED');
 
+    if (!FAL_KEY) {
+      throw new Error('FAL API key not configured');
+    }
+
     // Import fal client for Qwen Image Ultra
     const { fal } = await import('@fal-ai/client');
 
     // Configure fal client
     fal.config({
-      credentials: FAL_API_KEY
+      credentials: FAL_KEY
     });
 
     console.log('🚀 [QWEN ULTRA FAL.AI] Sending request to Fal.ai Qwen Image:', {

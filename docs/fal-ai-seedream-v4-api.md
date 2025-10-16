@@ -18,7 +18,7 @@ All requests require FAL API Key authentication:
 ```
 FAL_KEY=your_fal_api_key_here
 ```
-> **Note:** The backend looks for the key in `FAL_KEY` (preferred) or `FAL_API_KEY` for compatibility. Set `FAL_KEY` locally to avoid fallback credentials.
+> **Note:** Бэкенд читает ключ только из переменной окружения `FAL_KEY`. Пропишите её в `server/.env` или настройках окружения вашего хостинга перед запуском.
 
 ## API Usage Patterns
 
