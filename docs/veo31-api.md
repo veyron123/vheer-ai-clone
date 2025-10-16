@@ -238,3 +238,328 @@ curl -X POST "https://api.kie.ai/api/v1/veo/generate" \
 
 ### Прямая загрузка
 После успешного завершения задачи видео доступны по прямым ссылкам в результатах.
+
+## Получение деталей задачи
+
+**Endpoint:** `GET https://api.kie.ai/api/v1/veo/record-info?taskId={taskId}`
+
+**Аутентификация:** Bearer token в заголовке `Authorization`
+
+### Параметры запроса
+- `taskId` (обязательный) - ID задачи для проверки статуса
+
+### Пример ответа
+
+```json
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "taskId": "veo_task_abcdef123456",
+    "paramJson": "{\"prompt\":\"A futuristic city with flying cars at sunset.\",\"waterMark\":\"KieAI\"}",
+    "completeTime": "2025-06-06 10:30:00",
+    "response": {
+      "taskId": "veo_task_abcdef123456",
+      "resultUrls": ["http://example.com/video1.mp4"],
+      "originUrls": ["http://example.com/original_video1.mp4"],
+      "resolution": "1080p"
+    },
+    "successFlag": 1,
+    "errorCode": null,
+    "errorMessage": "",
+    "createTime": "2025-06-06 10:25:00",
+    "fallbackFlag": false
+  }
+}
+```
+
+### Коды статусов
+- `0` - Генерируется
+- `1` - Успех
+- `2` - Ошибка
+- `3` - Генерация неудачна
+
+## Callback уведомления
+
+При указании `callBackUrl` система отправляет POST запросы на указанный URL при завершении задачи.
+
+### Механизм callback
+- **HTTP метод:** POST
+- **Content-Type:** application/json
+- **Таймаут:** 15 секунд
+
+### Успешный callback
+
+```json
+{
+  "code": 200,
+  "msg": "Veo3.1 video generated successfully.",
+  "data": {
+    "taskId": "veo_task_abcdef123456",
+    "info": {
+      "resultUrls": ["http://example.com/video1.mp4"],
+      "originUrls": ["http://example.com/original_video1.mp4"],
+      "resolution": "1080p"
+    },
+    "fallbackFlag": false
+  }
+}
+```
+
+### Callback ошибки
+
+```json
+{
+  "code": 400,
+  "msg": "Your prompt was flagged by Website as violating content policies.",
+  "data": {
+    "taskId": "veo_task_abcdef123456",
+    "fallbackFlag": false
+  }
+}
+```
+
+### Fallback callback
+
+```json
+{
+  "code": 200,
+  "msg": "Veo3.1 video generated successfully (using fallback model).",
+  "data": {
+    "taskId": "veo_task_abcdef123456",
+    "info": {
+      "resultUrls": ["http://example.com/video1.mp4"],
+      "resolution": "1080p"
+    },
+    "fallbackFlag": true
+  }
+}
+```
+
+## Детальное описание полей callback
+
+### code (обязательный)
+Статус код результата обработки задачи:
+- `200` - Успех
+- `400` - Ошибка клиента (нарушение политик контента)
+- `422` - Fallback неудачен
+- `500` - Внутренняя ошибка сервера
+- `501` - Задача генерации неудачна
+
+### msg (обязательный)
+Детальное описание статуса с различными сообщениями об ошибках
+
+### data.taskId (обязательный)
+ID задачи, совпадает с taskId из запроса создания
+
+### data.info (опциональный)
+Информация о результатах (только при успешном завершении):
+- `resultUrls` - Массив URL сгенерированных видео
+- `originUrls` - Массив оригинальных видео (только если aspectRatio не 16:9)
+- `resolution` - Разрешение видео
+
+### data.fallbackFlag (обязательный)
+Флаг использования резервной модели:
+- `true` - Использовалась резервная модель
+- `false` - Использовалась основная модель
+
+## Fallback функциональность
+
+### Условия активации
+Fallback активируется при одновременном выполнении условий:
+1. Параметр `enableFallback` установлен в `true`
+2. Соотношение сторон `16:9`
+3. Произошла одна из следующих ошибок:
+   - `public error minor upload`
+   - `Your prompt was flagged by Website as violating content policies`
+   - `public error prominent people upload`
+
+### Ограничения fallback режима
+- **Разрешение:** 1080P по умолчанию
+- **Видео:** Недоступны через Get 1080P Video endpoint
+- **Соотношение:** Требует 16:9 aspect ratio
+- **Кредиты:** Разный расход кредитов
+
+### Обработка ошибок
+- **Fallback включен:** Автоматическое переключение на резервную модель
+- **Fallback выключен:** Возврат кода 422 с предложением включить fallback
+
+## Примеры обработки callback
+
+### Node.js пример
+
+```javascript
+const express = require('express');
+const fs = require('fs');
+const https = require('https');
+const app = express();
+
+app.use(express.json());
+
+app.post('/veo3-callback', (req, res) => {
+  const { code, msg, data } = req.body;
+
+  console.log('Veo3.1 callback received:', {
+    taskId: data.taskId,
+    status: code,
+    message: msg
+  });
+
+  if (code === 200) {
+    const { taskId, info, fallbackFlag } = data;
+    const { resultUrls, originUrls, resolution } = info;
+
+    console.log('Video generation successful!');
+    console.log(`Task ID: ${taskId}`);
+    console.log(`Generated video URLs: ${resultUrls}`);
+    console.log(`Video resolution: ${resolution}`);
+    console.log(`Using fallback model: ${fallbackFlag ? 'Yes' : 'No'}`);
+
+    // Скачивание видео
+    resultUrls.forEach((url, index) => {
+      if (url) {
+        downloadFile(url, `veo3.1_generated_${taskId}_${index}.mp4`)
+          .then(() => console.log(`Video ${index + 1} downloaded successfully`))
+          .catch(err => console.error(`Video ${index + 1} download failed:`, err));
+      }
+    });
+  }
+
+  res.status(200).json({ code: 200, msg: 'success' });
+});
+
+function downloadFile(url, filename) {
+  return new Promise((resolve, reject) => {
+    const file = fs.createWriteStream(filename);
+
+    https.get(url, (response) => {
+      if (response.statusCode === 200) {
+        response.pipe(file);
+        file.on('finish', () => {
+          file.close();
+          resolve();
+        });
+      } else {
+        reject(new Error(`HTTP ${response.statusCode}`));
+      }
+    }).on('error', reject);
+  });
+}
+
+app.listen(3000, () => {
+  console.log('Callback server running on port 3000');
+});
+```
+
+### Python пример
+
+```python
+from flask import Flask, request, jsonify
+import requests
+import json
+import os
+
+app = Flask(__name__)
+
+@app.route('/veo3-callback', methods=['POST'])
+def handle_callback():
+    data = request.json
+
+    code = data.get('code')
+    msg = data.get('msg')
+    callback_data = data.get('data', {})
+    task_id = callback_data.get('taskId')
+
+    print(f"Veo3.1 callback received: {task_id}, Status: {code}")
+
+    if code == 200:
+        info = callback_data.get('info', {})
+        result_urls = info.get('resultUrls')
+        origin_urls = info.get('originUrls')
+        resolution = info.get('resolution')
+        fallback_flag = callback_data.get('fallbackFlag', False)
+
+        print(f"Generated video URLs: {result_urls}")
+        print(f"Video resolution: {resolution}")
+        print(f"Using fallback model: {'Yes' if fallback_flag else 'No'}")
+
+        # Скачивание видео
+        if result_urls:
+            for i, url in enumerate(result_urls):
+                if url:
+                    try:
+                        video_filename = f"veo3.1_generated_{task_id}_{i}.mp4"
+                        download_file(url, video_filename)
+                        print(f"Video {i + 1} downloaded successfully")
+                    except Exception as e:
+                        print(f"Video {i + 1} download failed: {e}")
+
+    res.status(200).json({ code: 200, msg: 'success' });
+
+def download_file(url, filename):
+    response = requests.get(url, stream=True)
+    response.raise_for_status()
+
+    os.makedirs('downloads', exist_ok=True)
+    filepath = os.path.join('downloads', filename)
+
+    with open(filepath, 'wb') as f:
+        for chunk in response.iter_content(chunk_size=8192):
+            f.write(chunk)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=3000)
+```
+
+## Лучшие практики
+
+### Рекомендации по настройке callback URL
+1. **Используйте HTTPS** для безопасности передачи данных
+2. **Проверяйте источник** запросов в обработке callback
+3. **Идемпотентная обработка** - один taskId может получить несколько callback
+4. **Быстрый ответ** - возвращайте 200 статус как можно скорее
+5. **Асинхронная обработка** - сложную логику выполняйте асинхронно
+6. **Своевременное скачивание** - URL видео имеют ограниченный срок действия
+7. **Обработка массивов** - resultUrls и originUrls в формате массивов
+
+### Важные напоминания
+- Callback URL должен быть публично доступен
+- Сервер должен отвечать в течение 15 секунд
+- После 3 неудачных попыток система прекращает отправку callback
+- **Только английские промпты** поддерживаются
+- Стабильность логики обработки критична
+- Правильно обрабатывайте ошибки контентной модерации
+
+## Troubleshooting
+
+### Проблемы с сетью
+- Убедитесь что callback URL доступен из публичной сети
+- Проверьте настройки файрвола
+- Убедитесь в корректном разрешении доменного имени
+
+### Проблемы с ответом сервера
+- Убедитесь что сервер возвращает HTTP 200 в течение 15 секунд
+- Проверьте логи сервера на наличие ошибок
+- Убедитесь что путь и HTTP метод корректны
+
+### Проблемы с контентом
+- Анализируйте сообщения об ошибках контентной модерации
+- Убедитесь что промпты на английском языке
+- Проверьте изображения на соответствие политикам безопасности
+- Соблюдайте политики платформы контента
+
+### Проблемы с качеством генерации
+- Проверьте качество и разрешение сгенерированного видео
+- Убедитесь что длительность видео соответствует ожиданиям
+- Оцените качество и стиль сгенерированного видео
+- Если есть originUrls, сравните различия между оригиналом и результатом
+
+## Специфические особенности Veo 3.1
+
+### Особенности генерации видео Veo 3.1
+1. **Высококачественная генерация** - Veo 3.1 обеспечивает высококачественные AI видео
+2. **Поддержка разных aspect ratio** - различные соотношения сторон, оригинальное видео при не 16:9
+3. **Английские промпты** - поддержка только английских промптов
+4. **Контентная безопасность** - строгий механизм модерации контента
+5. **Гибкий вывод** - resultUrls может содержать несколько видеофайлов
+6. **Сохранение оригинала** - при aspect ratio не 16:9 сохраняется оригинальный размер видео
