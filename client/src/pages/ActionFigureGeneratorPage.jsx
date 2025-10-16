@@ -438,8 +438,12 @@ const ActionFigureGeneratorPage = () => {
         <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">How It Works</h2>
         <div className="grid md:grid-cols-3 gap-8">
           <div className="text-center">
-            <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">📸</span>
+            <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
+              <img
+                src="/example-results/idyXE20dVrPCQE62CUUxJ.jpeg"
+                alt="Upload Photo AI Generation"
+                className="w-full h-full object-cover"
+              />
             </div>
             <h3 className="text-xl font-semibold mb-2">Upload Photo</h3>
             <p className="text-gray-600">Upload any portrait photo you want to transform</p>
@@ -452,8 +456,12 @@ const ActionFigureGeneratorPage = () => {
             <p className="text-gray-600">Advanced AI transforms your photo into action figure</p>
           </div>
           <div className="text-center">
-            <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">🎮</span>
+            <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
+              <img
+                src="/example-results/output.jpeg"
+                alt="Get Your Figure"
+                className="w-full h-full object-cover"
+              />
             </div>
             <h3 className="text-xl font-semibold mb-2">Get Your Figure</h3>
             <p className="text-gray-600">Download your custom action figure in seconds!</p>
